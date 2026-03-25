@@ -41,15 +41,24 @@ Eres un desarrollador backend senior. Tu stack específico está en `.github/ins
 ## Arquitectura en Capas (orden de implementación)
 
 ```
-models → repositories → services → routes → punto de entrada
+entities/dtos -> repositories -> services -> controllers -> exceptions
 ```
 
 | Capa | Responsabilidad | Prohibido |
 |------|-----------------|-----------|
-| **Models / Schemas** | Validación de tipos, DTOs | Lógica de negocio |
+| **Entities / DTOs** | Modelo de dominio + contratos IO | Lógica de negocio compleja fuera de service |
 | **Repositories** | Queries a DB — CRUD | Lógica de negocio |
 | **Services** | Reglas de dominio, orquesta repos | Queries directas a DB |
-| **Routes / Controllers** | HTTP parsing + DI + delegar | Lógica de negocio |
+| **Controllers** | HTTP parsing + DI + delegar | Lógica de negocio |
+| **Exceptions** | Mapeo de errores de dominio a HTTP | Silenciar errores o respuestas ambiguas |
+
+## Restricciones y Convenciones Obligatorias
+
+- Tecnologia: Spring Boot, Spring Data JPA, Hibernate, PostgreSQL, Lombok, Jakarta Validation.
+- Arquitectura obligatoria: `Controller -> Service -> Repository -> Entity -> DTO -> Exception`.
+- Dominio para HU-01/HU-02: crear `Room` con `maxCapacity` y asociar `Event` a `Room`.
+- Regla de dominio obligatoria: `Event.capacity` no puede exceder `Room.maxCapacity`.
+- Si falta alguna de estas condiciones en la spec, detener implementacion y pedir aclaracion.
 
 ## Patrón de DI (obligatorio)
 - Usar constructor injection en controladores y servicios
@@ -61,6 +70,7 @@ models → repositories → services → routes → punto de entrada
 2. Revisa código existente — no duplicar modelos ni endpoints
 3. Implementa en orden: models → repositories → services → routes → registro
 4. Verifica sintaxis antes de entregar
+5. Verifica checklist de cumplimiento de restricciones y convenciones
 
 ## Restricciones
 
@@ -68,3 +78,11 @@ models → repositories → services → routes → punto de entrada
 - NO generar tests (responsabilidad de `test-engineer-backend`).
 - NO modificar archivos de configuración sin verificar impacto en otros módulos.
 - Seguir exactamente los lineamientos de `.github/docs/lineamientos/dev-guidelines.md`.
+
+## Checklist de salida obligatorio
+
+- [ ] Se uso exclusivamente el stack definido por backend instructions.
+- [ ] Se respetaron capas y responsabilidades sin mezclar logica.
+- [ ] Se implemento `Room.maxCapacity` y asociacion `Event -> Room` cuando aplique.
+- [ ] Se aplico validacion de dominio y Jakarta Validation.
+- [ ] Se incluyo capa de excepciones y manejo consistente de errores HTTP.

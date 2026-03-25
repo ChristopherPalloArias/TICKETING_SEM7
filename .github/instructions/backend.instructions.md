@@ -6,18 +6,27 @@ applyTo: "ms-*/src/main/java/**/*.java"
 
 # Instrucciones para Archivos de Backend (Java/Spring Boot)
 
+## Restricciones y Convenciones Obligatorias
+
+- **Tecnologia obligatoria**: Spring Boot, Spring Data JPA, Hibernate, PostgreSQL, Lombok, Jakarta Validation.
+- **Arquitectura obligatoria**: estructura por capas `Controller -> Service -> Repository -> Entity -> DTO -> Exception`.
+- **Dominio obligatorio para HU-01/HU-02**: incluir entidad `Room` (Sala) con `maxCapacity`, y entidad `Event` asociada a `Room`.
+- **No desviaciones de stack**: no usar frameworks alternativos de persistencia o validacion fuera del stack definido por la spec.
+
 ## Arquitectura en Capas
 
 Siempre sigue la arquitectura en capas del microservicio:
 
 ```
-controllers → services → repositories → PostgreSQL
+controllers -> services -> repositories -> PostgreSQL
 ```
 
 - **`src/main/java/.../controller/`**: Parsear HTTP, validar entrada y delegar al service.
 - **`src/main/java/.../service/`**: Lógica de negocio y orquestación transaccional.
 - **`src/main/java/.../repository/`**: Único lugar con acceso a BD usando Spring Data JPA.
-- **`src/main/java/.../model/`** y/o **`dto/`**: Entidades y contratos de entrada/salida.
+- **`src/main/java/.../model/`**: Entidades JPA (incluye `Room` y `Event` cuando aplique).
+- **`src/main/java/.../dto/`**: Contratos de entrada/salida.
+- **`src/main/java/.../exception/`**: Excepciones de dominio y handler global.
 
 ## Wiring de Dependencias (patrón obligatorio)
 
@@ -49,10 +58,19 @@ Evitar estado global mutable y lógica de negocio en controladores.
 ## Nuevos Endpoints / Componentes
 
 Para agregar un endpoint:
-1. Crear o actualizar controlador en la capa de entrada.
-2. Implementar/ajustar servicio con reglas de negocio.
-3. Implementar/ajustar repositorio JPA y modelo de datos.
-4. Validar contrato de request/response según spec aprobada.
+1. Crear o actualizar `Entity` y `DTO` segun la spec.
+2. Implementar o ajustar `Repository` JPA.
+3. Implementar o ajustar `Service` con reglas de negocio.
+4. Crear o ajustar `Controller` para exponer endpoint HTTP.
+5. Definir `Exception` de dominio y mapearlas en handler global.
+6. Validar contrato request/response segun spec aprobada.
+
+## Reglas de Dominio para Ticketing
+
+- `Room.maxCapacity` define el limite superior permitido para `Event.capacity`.
+- Ningun `Event` puede persistirse con `capacity > Room.maxCapacity`.
+- El modelo `Event` debe mantener asociacion explicita a `Room` (por FK o relacion JPA equivalente).
+- Mantener `created_at` y `updated_at` en UTC en todas las entidades persistidas.
 
 > Ver `README.md` para estructura real por microservicio (`api-gateway`, `ms-events`, `ms-ticketing`, `ms-notifications`).
 
