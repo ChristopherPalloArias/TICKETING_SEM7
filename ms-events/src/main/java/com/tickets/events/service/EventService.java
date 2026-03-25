@@ -24,22 +24,16 @@ public class EventService {
     private final RoomRepository roomRepository;
     
     public EventResponse createEvent(EventCreateRequest request, String role, String userId) {
-        // Validate authorization: only ADMIN can create events
         validateAdminRole(role);
         
-        // Retrieve and validate room existence
         Room room = retrieveRoom(request.roomId());
         
-        // Validate capacity does not exceed room's max capacity
         validateCapacity(request.capacity(), room.getMaxCapacity());
         
-        // Validate date is in the future
         validateFutureDate(request.date());
         
-        // Check if event with same title and date already exists
         checkEventUniqueness(request.title(), request.date());
-        
-        // Create and save event
+
         Event event = new Event();
         event.setRoomId(request.roomId());
         event.setRoom(room);

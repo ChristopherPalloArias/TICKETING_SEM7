@@ -1,5 +1,4 @@
--- V1__init.sql
--- Create room table
+
 
 CREATE TABLE room (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -9,7 +8,7 @@ CREATE TABLE room (
     updated_at TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
 );
 
--- Create event table
+
 
 CREATE TABLE event (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -23,11 +22,10 @@ CREATE TABLE event (
     created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC') NOT NULL,
     updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC') NOT NULL,
     UNIQUE(title, date),
-    CONSTRAINT event_date_future CHECK (date > CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
-    CONSTRAINT event_capacity_check CHECK (capacity <= (SELECT max_capacity FROM room WHERE id = room_id))
+    CONSTRAINT event_date_future CHECK (date > CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
 );
 
--- Create indexes
+
 
 CREATE INDEX idx_event_status ON event(status);
 CREATE INDEX idx_event_created_at ON event(created_at);
