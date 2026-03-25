@@ -62,6 +62,9 @@ public class EventService {
     }
     
     private Room retrieveRoom(java.util.UUID roomId) {
+        if (roomId == null) {
+            throw new InvalidEventDateException("Room ID cannot be null");
+        }
         Optional<Room> room = roomRepository.findById(roomId);
         if (room.isEmpty()) {
             throw new RoomNotFoundException("Room with id '" + roomId + "' does not exist");
