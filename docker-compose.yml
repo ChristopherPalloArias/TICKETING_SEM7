@@ -1,0 +1,45 @@
+services:
+  db-events:
+    image: postgres:15-alpine
+    container_name: db-events
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${EVENTS_DB_NAME}
+    ports:
+      - "${EVENTS_DB_PORT}:5432"
+    volumes:
+      - db-events-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${EVENTS_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tickets-network
+    restart: unless-stopped
+
+  ms-events:
+    build:
+      context: .
+      dockerfile: ./ms-events/Dockerfile
+    container_name: ms-events
+    depends_on:
+      db-events:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: ${EVENTS_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${EVENTS_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${EVENTS_DATASOURCE_PASSWORD}
+    ports:
+      - "${EVENTS_PORT}:8081"
+    networks:
+      - tickets-network
+    restart: unless-stopped
+
+networks:
+  tickets-network:
+    driver: bridge
+
+volumes:
+  db-events-data:
