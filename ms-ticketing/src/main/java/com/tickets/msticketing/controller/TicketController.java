@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -20,6 +21,22 @@ import java.util.UUID;
 public class TicketController {
 
     private final ReservationService reservationService;
+
+    @GetMapping
+    @Operation(
+        summary = "Listar tickets del comprador",
+        description = "Retorna todos los tickets confirmados (VALID) del comprador identificado por X-User-Id, ordenados por fecha de creación descendente."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista de tickets (puede ser vacía)"),
+        @ApiResponse(responseCode = "400", description = "Header X-User-Id faltante o con formato UUID inválido")
+    })
+    public ResponseEntity<List<TicketResponse>> getTickets(
+            @RequestHeader("X-User-Id") UUID buyerId) {
+        log.info("GET /api/v1/tickets - buyer={}", buyerId);
+        List<TicketResponse> tickets = reservationService.getTicketsByBuyer(buyerId);
+        return ResponseEntity.ok(tickets);
+    }
 
     @GetMapping("/{ticketId}")
     @Operation(

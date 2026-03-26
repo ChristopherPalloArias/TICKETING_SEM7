@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -201,6 +202,16 @@ public class ReservationService {
         }
 
         return mapToTicketResponse(ticket);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TicketResponse> getTicketsByBuyer(UUID buyerId) {
+        log.info("Fetching all VALID tickets for buyer={}", buyerId);
+        return ticketRepository
+            .findByBuyerIdAndStatusOrderByCreatedAtDescIdDesc(buyerId, TicketStatus.VALID)
+            .stream()
+            .map(this::mapToTicketResponse)
+            .toList();
     }
 
     private ReservationResponse mapToReservationResponse(Reservation reservation) {
