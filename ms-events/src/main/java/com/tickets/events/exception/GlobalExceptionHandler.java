@@ -53,6 +53,62 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT)
             .body(new ErrorResponse("EVENT_ALREADY_EXISTS", ex.getMessage()));
     }
+
+    @ExceptionHandler(EventNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<ErrorResponse> handleEventNotFoundException(EventNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(new ErrorResponse("EVENT_NOT_FOUND", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidEventStateException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<InvalidStateErrorResponse> handleInvalidEventStateException(InvalidEventStateException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new InvalidStateErrorResponse("INVALID_EVENT_STATE", ex.getMessage(), ex.getCurrentStatus()));
+    }
+
+    @ExceptionHandler(TiersAlreadyConfiguredException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<ErrorResponse> handleTiersAlreadyConfiguredException(TiersAlreadyConfiguredException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new ErrorResponse("TIERS_ALREADY_CONFIGURED", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidTierConfigurationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleInvalidTierConfigurationException(InvalidTierConfigurationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorResponse("INVALID_TIER_CONFIGURATION", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidPriceException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleInvalidPriceException(InvalidPriceException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorResponse("INVALID_PRICE", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidQuotaException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleInvalidQuotaException(InvalidQuotaException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorResponse("INVALID_QUOTA", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidEarlyBirdValidityException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<TierTypeErrorResponse> handleInvalidEarlyBirdValidityException(InvalidEarlyBirdValidityException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new TierTypeErrorResponse("INVALID_EARLY_BIRD_VALIDITY", ex.getMessage(), "EARLY_BIRD"));
+    }
+
+    @ExceptionHandler(QuotaExceedsCapacityException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<QuotaErrorResponse> handleQuotaExceedsCapacityException(QuotaExceedsCapacityException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new QuotaErrorResponse("QUOTA_EXCEEDS_CAPACITY", ex.getMessage(), ex.getTotalQuota(), ex.getEventCapacity()));
+    }
     
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -70,7 +126,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new ErrorResponse("INTERNAL_SERVER_ERROR", "An unexpected error occurred while creating the event"));
+            .body(new ErrorResponse("INTERNAL_SERVER_ERROR", "An unexpected error occurred while processing the request"));
     }
     
     @Data
@@ -86,6 +142,31 @@ public class GlobalExceptionHandler {
         private String error;
         private String message;
         private Integer roomMaxCapacity;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class QuotaErrorResponse {
+        private String error;
+        private String message;
+        private Integer totalQuota;
+        private Integer eventCapacity;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class TierTypeErrorResponse {
+        private String error;
+        private String message;
+        private String tierType;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class InvalidStateErrorResponse {
+        private String error;
+        private String message;
+        private String currentStatus;
     }
     
     @Data
