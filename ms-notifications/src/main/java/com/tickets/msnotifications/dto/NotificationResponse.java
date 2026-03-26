@@ -1,10 +1,14 @@
-package com.tickets.msticketing.dto;
+package com.tickets.msnotifications.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.LocalDateTime;
+
+import java.time.Instant;
 import java.util.UUID;
 
-public record TicketPaymentFailedEvent(
+public record NotificationResponse(
+    @JsonProperty("id")
+    UUID id,
+
     @JsonProperty("reservationId")
     UUID reservationId,
 
@@ -17,12 +21,15 @@ public record TicketPaymentFailedEvent(
     @JsonProperty("buyerId")
     UUID buyerId,
 
+    @JsonProperty("type")
+    String type,
+
     @JsonProperty("motif")
     String motif,
 
-    @JsonProperty("timestamp")
-    LocalDateTime timestamp,
+    @JsonProperty("status")
+    String status,
 
-    @JsonProperty("version")
-    String version
+    @JsonProperty("createdAt")
+    Instant createdAt
 ) {}

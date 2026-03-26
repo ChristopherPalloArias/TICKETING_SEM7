@@ -14,6 +14,12 @@ public record TicketExpiredEvent(
     @JsonProperty("tierId")
     UUID tierId,
 
+    @JsonProperty("buyerId")
+    UUID buyerId,
+
     @JsonProperty("timestamp")
-    LocalDateTime timestamp
+    LocalDateTime timestamp,
+
+    @JsonProperty("version")
+    String version
 ) {}

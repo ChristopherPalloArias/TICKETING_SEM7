@@ -1,0 +1,166 @@
+package com.tickets.msnotifications.config;
+
+import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.interceptor.RetryOperationsInterceptor;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Configuration
+public class RabbitMQConfig {
+
+    // Main exchange (shared with ms-ticketing)
+    public static final String TICKETS_EXCHANGE = "tickets.exchange";
+
+    // DLQ exchange
+    public static final String TICKETS_DLQ_EXCHANGE = "tickets.dlq.exchange";
+
+    // Main queues
+    public static final String TICKET_PAID_QUEUE = "ticketing.ticket.paid";
+    public static final String TICKET_FAILED_QUEUE = "ticketing.ticket.failed";
+    public static final String TICKET_EXPIRED_QUEUE = "ticketing.ticket.expired";
+
+    // DLQ queues
+    public static final String TICKET_PAID_DLQ = "ticketing.ticket.paid.dlq";
+    public static final String TICKET_FAILED_DLQ = "ticketing.ticket.failed.dlq";
+    public static final String TICKET_EXPIRED_DLQ = "ticketing.ticket.expired.dlq";
+
+    // Routing keys
+    public static final String TICKET_PAID_ROUTING_KEY = "ticket.paid";
+    public static final String TICKET_FAILED_ROUTING_KEY = "ticket.payment_failed";
+    public static final String TICKET_EXPIRED_ROUTING_KEY = "ticket.expired";
+
+    // ─── Exchanges ────────────────────────────────────────────────────────────
+
+    @Bean
+    public TopicExchange ticketsExchange() {
+        return new TopicExchange(TICKETS_EXCHANGE, true, false);
+    }
+
+    @Bean
+    public DirectExchange ticketsDlqExchange() {
+        return new DirectExchange(TICKETS_DLQ_EXCHANGE, true, false);
+    }
+
+    // ─── Main queues (with DLQ headers) ──────────────────────────────────────
+
+    @Bean
+    public Queue ticketPaidQueue() {
+        return QueueBuilder.durable(TICKET_PAID_QUEUE)
+            .withArgument("x-dead-letter-exchange", TICKETS_DLQ_EXCHANGE)
+            .withArgument("x-dead-letter-routing-key", TICKET_PAID_DLQ)
+            .build();
+    }
+
+    @Bean
+    public Queue ticketFailedQueue() {
+        return QueueBuilder.durable(TICKET_FAILED_QUEUE)
+            .withArgument("x-dead-letter-exchange", TICKETS_DLQ_EXCHANGE)
+            .withArgument("x-dead-letter-routing-key", TICKET_FAILED_DLQ)
+            .build();
+    }
+
+    @Bean
+    public Queue ticketExpiredQueue() {
+        return QueueBuilder.durable(TICKET_EXPIRED_QUEUE)
+            .withArgument("x-dead-letter-exchange", TICKETS_DLQ_EXCHANGE)
+            .withArgument("x-dead-letter-routing-key", TICKET_EXPIRED_DLQ)
+            .build();
+    }
+
+    // ─── DLQ queues ───────────────────────────────────────────────────────────
+
+    @Bean
+    public Queue ticketPaidDlq() {
+        return QueueBuilder.durable(TICKET_PAID_DLQ).build();
+    }
+
+    @Bean
+    public Queue ticketFailedDlq() {
+        return QueueBuilder.durable(TICKET_FAILED_DLQ).build();
+    }
+
+    @Bean
+    public Queue ticketExpiredDlq() {
+        return QueueBuilder.durable(TICKET_EXPIRED_DLQ).build();
+    }
+
+    // ─── Bindings (main) ─────────────────────────────────────────────────────
+
+    @Bean
+    public Binding bindPaidQueue(Queue ticketPaidQueue, TopicExchange ticketsExchange) {
+        return BindingBuilder.bind(ticketPaidQueue).to(ticketsExchange).with(TICKET_PAID_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindFailedQueue(Queue ticketFailedQueue, TopicExchange ticketsExchange) {
+        return BindingBuilder.bind(ticketFailedQueue).to(ticketsExchange).with(TICKET_FAILED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindExpiredQueue(Queue ticketExpiredQueue, TopicExchange ticketsExchange) {
+        return BindingBuilder.bind(ticketExpiredQueue).to(ticketsExchange).with(TICKET_EXPIRED_ROUTING_KEY);
+    }
+
+    // ─── Bindings (DLQ) ──────────────────────────────────────────────────────
+
+    @Bean
+    public Binding bindPaidDlq(Queue ticketPaidDlq, DirectExchange ticketsDlqExchange) {
+        return BindingBuilder.bind(ticketPaidDlq).to(ticketsDlqExchange).with(TICKET_PAID_DLQ);
+    }
+
+    @Bean
+    public Binding bindFailedDlq(Queue ticketFailedDlq, DirectExchange ticketsDlqExchange) {
+        return BindingBuilder.bind(ticketFailedDlq).to(ticketsDlqExchange).with(TICKET_FAILED_DLQ);
+    }
+
+    @Bean
+    public Binding bindExpiredDlq(Queue ticketExpiredDlq, DirectExchange ticketsDlqExchange) {
+        return BindingBuilder.bind(ticketExpiredDlq).to(ticketsDlqExchange).with(TICKET_EXPIRED_DLQ);
+    }
+
+    // ─── Message converter ────────────────────────────────────────────────────
+
+    @Bean
+    public MessageConverter jackson2JsonMessageConverter() {
+        return new Jackson2JsonMessageConverter();
+    }
+
+    @Bean
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+        RabbitTemplate template = new RabbitTemplate(connectionFactory);
+        template.setMessageConverter(jackson2JsonMessageConverter());
+        return template;
+    }
+
+    // ─── Listener container factory with MANUAL ACK + retry ──────────────────
+
+    @Bean
+    public RetryOperationsInterceptor retryInterceptor() {
+        return RetryInterceptorBuilder.stateless()
+            .maxAttempts(3)
+            .backOffOptions(1000, 2.0, 4000)
+            .recoverer(new RejectAndDontRequeueRecoverer())
+            .build();
+    }
+
+    @Bean
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
+            ConnectionFactory connectionFactory) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(jackson2JsonMessageConverter());
+        factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);
+        factory.setAdviceChain(retryInterceptor());
+        return factory;
+    }
+}

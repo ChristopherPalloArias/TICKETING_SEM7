@@ -102,6 +102,50 @@ services:
       - tickets-network
     restart: unless-stopped
 
+  db-notifications:
+    image: postgres:15-alpine
+    container_name: db-notifications
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${NOTIFICATIONS_DB_NAME:-notifications_db}
+    ports:
+      - "${NOTIFICATIONS_DB_PORT:-5435}:5432"
+    volumes:
+      - db-notifications-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${NOTIFICATIONS_DB_NAME:-notifications_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tickets-network
+    restart: unless-stopped
+
+  ms-notifications:
+    build:
+      context: .
+      dockerfile: ./ms-notifications/Dockerfile
+    container_name: ms-notifications
+    depends_on:
+      db-notifications:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-notifications:5432/${NOTIFICATIONS_DB_NAME:-notifications_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    ports:
+      - "${NOTIFICATIONS_PORT:-8083}:8083"
+    networks:
+      - tickets-network
+    restart: unless-stopped
+
 networks:
   tickets-network:
     driver: bridge
@@ -109,4 +153,5 @@ networks:
 volumes:
   db-events-data:
   db-ticketing-data:
+  db-notifications-data:
   rabbitmq-data:

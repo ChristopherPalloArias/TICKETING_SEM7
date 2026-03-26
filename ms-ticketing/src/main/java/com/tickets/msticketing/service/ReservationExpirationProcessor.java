@@ -42,7 +42,9 @@ public class ReservationExpirationProcessor {
                 reservation.getId(),
                 reservation.getEventId(),
                 reservation.getTierId(),
-                now
+                reservation.getBuyerId(),
+                now,
+                "1.0"
             );
             rabbitMQPublisherService.publishTicketExpiredEvent(event);
 

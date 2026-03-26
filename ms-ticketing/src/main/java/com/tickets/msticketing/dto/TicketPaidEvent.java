@@ -22,5 +22,8 @@ public record TicketPaidEvent(
     BigDecimal amount,
 
     @JsonProperty("timestamp")
-    LocalDateTime timestamp
+    LocalDateTime timestamp,
+
+    @JsonProperty("version")
+    String version
 ) {}

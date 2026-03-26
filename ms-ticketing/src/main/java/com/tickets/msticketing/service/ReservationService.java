@@ -66,7 +66,9 @@ public class ReservationService {
                 reservation.getId(),
                 reservation.getEventId(),
                 reservation.getTierId(),
-                now
+                reservation.getBuyerId(),
+                now,
+                "1.0"
             );
             rabbitMQPublisherService.publishTicketExpiredEvent(expiredEvent);
 
@@ -102,8 +104,12 @@ public class ReservationService {
 
             TicketPaymentFailedEvent failedEvent = new TicketPaymentFailedEvent(
                 reservation.getId(),
+                reservation.getEventId(),
+                reservation.getTierId(),
+                reservation.getBuyerId(),
                 "Payment declined by mock service",
-                now
+                now,
+                "1.0"
             );
             rabbitMQPublisherService.publishTicketPaymentFailedEvent(failedEvent);
 
@@ -147,7 +153,8 @@ public class ReservationService {
             reservation.getTierId(),
             reservation.getBuyerId(),
             paymentRequest.amount(),
-            now
+            now,
+            "1.0"
         );
         rabbitMQPublisherService.publishTicketPaidEvent(paidEvent);
 

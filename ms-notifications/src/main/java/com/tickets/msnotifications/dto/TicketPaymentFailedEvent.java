@@ -1,6 +1,7 @@
-package com.tickets.msticketing.dto;
+package com.tickets.msnotifications.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
