@@ -5,6 +5,7 @@ WORKDIR /build
 COPY ms-ticketing/gradle/ gradle/
 COPY ms-ticketing/gradlew* ./
 COPY ms-ticketing/build.gradle ms-ticketing/
+COPY ms-ticketing/settings.gradle ms-ticketing/
 
 RUN chmod +x ./gradlew
 

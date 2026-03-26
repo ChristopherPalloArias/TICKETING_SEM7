@@ -8,7 +8,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
+import jakarta.validation.ConstraintViolationException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -118,6 +120,30 @@ public class GlobalExceptionHandler {
             error -> details.put(error.getField(), error.getDefaultMessage())
         );
         
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ValidationErrorResponse("VALIDATION_ERROR", "Invalid request data", details));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ValidationErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
+        Map<String, String> details = new HashMap<>();
+        ex.getConstraintViolations().forEach(
+            violation -> details.put(violation.getPropertyPath().toString(), violation.getMessage())
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ValidationErrorResponse("VALIDATION_ERROR", "Invalid request data", details));
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ValidationErrorResponse> handleHandlerMethodValidationException(HandlerMethodValidationException ex) {
+        Map<String, String> details = new HashMap<>();
+        ex.getAllValidationResults().forEach(result ->
+            result.getResolvableErrors().forEach(error ->
+                details.put(result.getMethodParameter().getParameterName(), error.getDefaultMessage())
+            )
+        );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(new ValidationErrorResponse("VALIDATION_ERROR", "Invalid request data", details));
     }

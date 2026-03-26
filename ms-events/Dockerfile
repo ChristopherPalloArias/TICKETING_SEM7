@@ -5,6 +5,7 @@ WORKDIR /build
 COPY ms-events/gradle/ gradle/
 COPY ms-events/gradlew* ./
 COPY ms-events/build.gradle ms-events/
+COPY ms-events/settings.gradle ms-events/
 
 RUN chmod +x ./gradlew
 

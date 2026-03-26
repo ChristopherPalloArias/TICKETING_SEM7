@@ -5,6 +5,7 @@ WORKDIR /build
 COPY ms-notifications/gradle/ gradle/
 COPY ms-notifications/gradlew* ./
 COPY ms-notifications/build.gradle ms-notifications/
+COPY ms-notifications/settings.gradle ms-notifications/
 
 RUN chmod +x ./gradlew
 
