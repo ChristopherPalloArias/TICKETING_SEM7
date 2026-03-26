@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -85,7 +86,7 @@ public class EventService {
     }
     
     private void validateFutureDate(LocalDateTime date) {
-        if (date != null && date.isBefore(LocalDateTime.now())) {
+        if (date != null && date.isBefore(LocalDateTime.now(ZoneOffset.UTC))) {
             throw new InvalidEventDateException("Event date must be in the future");
         }
     }
@@ -171,5 +172,30 @@ public class EventService {
             room.getCreatedAt(),
             room.getUpdatedAt()
         );
+    }
+
+    @Transactional
+    public EventResponse publishEvent(UUID eventId, String role) {
+        validateAdminRole(role);
+
+        Event event = eventRepository.findById(eventId)
+            .orElseThrow(() -> new EventNotFoundException("Event with id '" + eventId + "' does not exist"));
+
+        if (event.getStatus() != EventStatus.DRAFT) {
+            throw new InvalidEventStateException(
+                "Event with id '" + eventId + "' cannot be published: current status is " + event.getStatus(),
+                event.getStatus().name()
+            );
+        }
+
+        if (!tierRepository.existsByEventId(eventId)) {
+            throw new EventHasNoTiersException("Event with id '" + eventId + "' cannot be published: no tiers configured");
+        }
+
+        event.setStatus(EventStatus.PUBLISHED);
+        event.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+        Event saved = eventRepository.save(event);
+
+        return convertToResponse(saved);
     }
 }

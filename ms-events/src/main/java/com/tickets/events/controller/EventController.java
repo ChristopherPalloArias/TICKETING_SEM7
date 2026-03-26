@@ -78,4 +78,24 @@ public class EventController {
         EventDetailResponse event = eventService.getEventDetail(eventId);
         return ResponseEntity.ok(event);
     }
+
+    @PatchMapping("/{eventId}/publish")
+    @Operation(
+        summary = "Publicar evento",
+        description = "Transiciona un evento de DRAFT a PUBLISHED. Requiere al menos un tier configurado. Solo usuarios con rol ADMIN."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Evento publicado exitosamente"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado - se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "404", description = "Evento no encontrado"),
+        @ApiResponse(responseCode = "409", description = "Evento no está en estado DRAFT"),
+        @ApiResponse(responseCode = "422", description = "Evento no tiene tiers configurados")
+    })
+    public ResponseEntity<EventResponse> publishEvent(
+        @PathVariable UUID eventId,
+        @RequestHeader("X-Role") String role
+    ) {
+        EventResponse response = eventService.publishEvent(eventId, role);
+        return ResponseEntity.ok(response);
+    }
 }

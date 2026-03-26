@@ -135,7 +135,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT)
             .body(new ErrorResponse("TIER_QUOTA_EXHAUSTED", ex.getMessage()));
     }
-    
+
+    @ExceptionHandler(EventHasNoTiersException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ResponseEntity<ErrorResponse> handleEventHasNoTiersException(EventHasNoTiersException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+            .body(new ErrorResponse("EVENT_HAS_NO_TIERS", ex.getMessage()));
+    }
+
+    @ExceptionHandler(UnauthorizedServiceException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedServiceException(UnauthorizedServiceException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(new ErrorResponse("UNAUTHORIZED", ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {

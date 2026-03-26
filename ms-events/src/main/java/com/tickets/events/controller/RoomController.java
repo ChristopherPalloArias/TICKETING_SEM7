@@ -2,6 +2,7 @@ package com.tickets.events.controller;
 
 import com.tickets.events.dto.RoomCreateRequest;
 import com.tickets.events.dto.RoomResponse;
+import com.tickets.events.exception.ForbiddenAccessException;
 import com.tickets.events.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -33,7 +34,12 @@ public class RoomController {
         @ApiResponse(responseCode = "400", description = "Datos inválidos (nombre vacío, maxCapacity <= 0)"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public ResponseEntity<RoomResponse> createRoom(@Valid @RequestBody RoomCreateRequest request) {
+    public ResponseEntity<RoomResponse> createRoom(
+            @RequestHeader(value = "X-Role", required = false) String role,
+            @Valid @RequestBody RoomCreateRequest request) {
+        if (!"ADMIN".equals(role)) {
+            throw new ForbiddenAccessException("Only users with X-Role: ADMIN can create rooms");
+        }
         RoomResponse response = roomService.createRoom(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

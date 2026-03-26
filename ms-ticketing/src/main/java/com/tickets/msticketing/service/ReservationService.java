@@ -7,9 +7,11 @@ import com.tickets.msticketing.repository.ReservationRepository;
 import com.tickets.msticketing.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -30,15 +32,40 @@ public class ReservationService {
     public ReservationResponse createReservation(CreateReservationRequest request, UUID buyerId) {
         log.info("Creating reservation for buyer={}, eventId={}, tierId={}", buyerId, request.eventId(), request.tierId());
 
+        // Validate event is PUBLISHED
+        EventDetailResponse eventDetail = msEventsIntegrationService.getEventDetail(request.eventId());
+
+        // Validate tier exists on event
+        boolean tierExists = eventDetail.availableTiers() != null &&
+            eventDetail.availableTiers().stream()
+                .anyMatch(t -> request.tierId().equals(t.id()));
+        if (!tierExists) {
+            throw new EventNotPublishedException("Tier '" + request.tierId() + "' not found in event '" + request.eventId() + "'");
+        }
+
+        // Pre-generate reservation ID to use as idempotency key
+        UUID reservationId = UUID.randomUUID();
+
+        // Decrement quota (blocks inventory before creating reservation)
+        TierResponse tierResponse = msEventsIntegrationService.decrementTierQuota(
+            request.eventId(),
+            request.tierId(),
+            reservationId
+        );
+
+        // Persist reservation with tierType from ms-events response
         Reservation reservation = Reservation.builder()
+            .id(reservationId)
             .eventId(request.eventId())
             .tierId(request.tierId())
             .buyerId(buyerId)
             .status(ReservationStatus.PENDING)
+            .tierType(tierResponse.tierType())
             .build();
 
         Reservation saved = reservationRepository.save(reservation);
-        log.info("Reservation created: id={}, status=PENDING", saved.getId());
+
+        log.info("Reservation created: id={}, status=PENDING, tierType={}", saved.getId(), saved.getTierType());
 
         return mapToReservationResponse(Objects.requireNonNull(saved, "Saved reservation must not be null"));
     }
@@ -46,6 +73,15 @@ public class ReservationService {
     @Transactional(noRollbackFor = {ReservationExpiredException.class, PaymentFailedException.class})
     public PaymentResponse processPayment(UUID reservationId, PaymentRequest paymentRequest, UUID buyerId) {
         log.info("Processing payment for reservation={}, buyer={}", reservationId, buyerId);
+        try {
+            return doProcessPayment(reservationId, paymentRequest, buyerId);
+        } catch (ObjectOptimisticLockingFailureException ex) {
+            log.warn("Optimistic lock conflict on reservation={} — reservation was concurrently modified", reservationId);
+            throw new ReservationExpiredException("Reservation is no longer available (concurrent modification)");
+        }
+    }
+
+    private PaymentResponse doProcessPayment(UUID reservationId, PaymentRequest paymentRequest, UUID buyerId) {
 
         Reservation reservation = Objects.requireNonNull(
             reservationRepository.findById(reservationId)
@@ -57,11 +93,22 @@ public class ReservationService {
             throw new ForbiddenAccessException("You can only pay for your own reservations");
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         LocalDateTime validUntil = reservation.getValidUntilAt();
         if (validUntil != null && now.isAfter(validUntil)) {
             reservation.setStatus(ReservationStatus.EXPIRED);
             reservationRepository.save(reservation);
+
+            // Return inventory since quota was decremented at reservation creation
+            try {
+                msEventsIntegrationService.incrementTierQuota(
+                    reservation.getEventId(),
+                    reservation.getTierId(),
+                    reservation.getId()
+                );
+            } catch (Exception ex) {
+                log.error("Failed to increment quota on time-expired reservation={}: {}", reservation.getId(), ex.getMessage());
+            }
 
             TicketExpiredEvent expiredEvent = new TicketExpiredEvent(
                 reservation.getId(),
@@ -86,6 +133,29 @@ public class ReservationService {
         if (paymentAttempts >= MAX_PAYMENT_ATTEMPTS) {
             reservation.setStatus(ReservationStatus.EXPIRED);
             reservationRepository.save(reservation);
+
+            // Return inventory since no further payment can succeed
+            try {
+                msEventsIntegrationService.incrementTierQuota(
+                    reservation.getEventId(),
+                    reservation.getTierId(),
+                    reservation.getId()
+                );
+            } catch (Exception ex) {
+                log.error("Failed to increment quota on max attempts for reservation={}: {}", reservation.getId(), ex.getMessage());
+            }
+
+            TicketExpiredEvent maxAttemptsEvent = new TicketExpiredEvent(
+                reservation.getId(),
+                reservation.getEventId(),
+                reservation.getTierId(),
+                reservation.getBuyerId(),
+                now,
+                "1.0",
+                "Maximum payment attempts exceeded"
+            );
+            rabbitMQPublisherService.publishTicketExpiredEvent(maxAttemptsEvent);
+
             throw new MaxPaymentAttemptsExceededException("Maximum payment attempts exceeded");
         }
         if (!paymentRequest.paymentMethod().equals("MOCK")) {
@@ -117,28 +187,18 @@ public class ReservationService {
             throw new PaymentFailedException("Payment declined. Your reservation remains active for 10 minutes", reservation.getId().toString());
         }
 
-        try {
-            msEventsIntegrationService.decrementTierQuota(
-                reservation.getEventId(),
-                reservation.getTierId(),
-                reservation.getId()
-            );
-        } catch (TierQuotaExhaustedException | InventoryServiceUnavailableException ex) {
-            reservation.setStatus(ReservationStatus.EXPIRED);
-            reservationRepository.save(reservation);
-            throw ex;
-        }
+        // No decrementTierQuota here — quota was already decremented when reservation was created
 
         UUID buyerIdNonNull = Objects.requireNonNull(reservation.getBuyerId(), "Buyer ID must not be null");
         UUID eventIdNonNull = Objects.requireNonNull(reservation.getEventId(), "Event ID must not be null");
         UUID tierIdNonNull = Objects.requireNonNull(reservation.getTierId(), "Tier ID must not be null");
-        
+
         Ticket ticket = Ticket.builder()
             .reservationId(reservation.getId())
             .buyerId(buyerIdNonNull)
             .eventId(eventIdNonNull)
             .tierId(tierIdNonNull)
-            .tierType(TierType.valueOf(getTierTypeFromContext(tierIdNonNull)))
+            .tierType(TierType.valueOf(reservation.getTierType() != null ? reservation.getTierType() : "GENERAL"))
             .price(paymentRequest.amount())
             .status(TicketStatus.VALID)
             .build();
@@ -255,7 +315,7 @@ public class ReservationService {
             ticket.getId(),
             message != null ? message : "Payment processed",
             mapToTicketResponse(ticket),
-            LocalDateTime.now()
+            LocalDateTime.now(ZoneOffset.UTC)
         );
     }
 
@@ -274,9 +334,5 @@ public class ReservationService {
             ticket.getStatus(),
             ticket.getCreatedAt()
         );
-    }
-
-    private String getTierTypeFromContext(UUID tierId) {
-        return "GENERAL";
     }
 }

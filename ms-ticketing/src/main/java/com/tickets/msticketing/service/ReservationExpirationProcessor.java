@@ -6,6 +6,7 @@ import com.tickets.msticketing.model.ReservationStatus;
 import com.tickets.msticketing.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ public class ReservationExpirationProcessor {
 
     private final ReservationRepository reservationRepository;
     private final RabbitMQPublisherService rabbitMQPublisherService;
+    private final MsEventsIntegrationService msEventsIntegrationService;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void expireSingle(Reservation reservation) {
@@ -37,6 +39,18 @@ public class ReservationExpirationProcessor {
             reservation.setStatus(ReservationStatus.EXPIRED);
             reservation.setUpdatedAt(now);
             reservationRepository.save(reservation);
+
+            // Return inventory to ms-events
+            try {
+                msEventsIntegrationService.incrementTierQuota(
+                    reservation.getEventId(),
+                    reservation.getTierId(),
+                    reservation.getId()
+                );
+            } catch (Exception ex) {
+                log.error("ExpirationService: failed to increment quota for reservation={}: {}",
+                    reservation.getId(), ex.getMessage());
+            }
 
             TicketExpiredEvent event = new TicketExpiredEvent(
                 reservation.getId(),
@@ -50,6 +64,10 @@ public class ReservationExpirationProcessor {
 
             log.info("ExpirationService: expired reservation={} eventId={} tierId={} previousStatus={}",
                 reservation.getId(), reservation.getEventId(), reservation.getTierId(), previousStatus);
+        } catch (ObjectOptimisticLockingFailureException ex) {
+            log.warn("ExpirationService: optimistic lock conflict on reservation={} — skipping (already modified)",
+                reservation.getId());
+            // REQUIRES_NEW rolls back for this item; no rethrow so the batch continues
         } catch (Exception ex) {
             log.error("ExpirationService: failed to expire reservation={} eventId={} tierId={} error={}",
                 reservation.getId(), reservation.getEventId(), reservation.getTierId(), ex.getMessage(), ex);

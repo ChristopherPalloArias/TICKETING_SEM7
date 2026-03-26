@@ -1,0 +1,1 @@
+ALTER TABLE reservation ADD COLUMN IF NOT EXISTS tier_type VARCHAR(20);

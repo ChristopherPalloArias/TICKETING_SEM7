@@ -21,5 +21,13 @@ public record TicketExpiredEvent(
     LocalDateTime timestamp,
 
     @JsonProperty("version")
-    String version
-) {}
+    String version,
+
+    @JsonProperty("motif")
+    String motif
+) {
+    public TicketExpiredEvent(UUID reservationId, UUID eventId, UUID tierId, UUID buyerId,
+                               LocalDateTime timestamp, String version) {
+        this(reservationId, eventId, tierId, buyerId, timestamp, version, null);
+    }
+}

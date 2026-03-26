@@ -1,9 +1,11 @@
 package com.tickets.events.controller;
 
 import com.tickets.events.dto.DecrementQuotaRequest;
+import com.tickets.events.dto.IncrementQuotaRequest;
 import com.tickets.events.dto.TierConfigurationResponse;
 import com.tickets.events.dto.TierCreateRequest;
 import com.tickets.events.dto.TierResponse;
+import com.tickets.events.exception.UnauthorizedServiceException;
 import com.tickets.events.service.TierService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -11,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +28,9 @@ import java.util.UUID;
 public class TierController {
 
     private final TierService tierService;
+
+    @Value("${service.auth.secret}")
+    private String serviceAuthSecret;
 
     @PostMapping("/{eventId}/tiers")
     @Operation(
@@ -86,11 +92,12 @@ public class TierController {
     @PatchMapping("/{eventId}/tiers/{tierId}/quota")
     @Operation(
         summary = "Decrementar quota de un tier",
-        description = "Decrementa atómicamente la quota disponible de un tier. Uso interno de ms-ticketing al confirmar pago. Protegido con optimistic lock para evitar sobreventa."
+        description = "Decrementa atómicamente la quota disponible de un tier. Uso interno de ms-ticketing al crear reservation. Requiere X-Service-Auth e X-Idempotency-Key para idempotencia."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Quota decrementada exitosamente"),
         @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(responseCode = "401", description = "X-Service-Auth ausente o incorrecto"),
         @ApiResponse(responseCode = "404", description = "Tier o evento no encontrado"),
         @ApiResponse(responseCode = "409", description = "Quota insuficiente o conflicto de concurrencia")
     })
@@ -98,9 +105,39 @@ public class TierController {
         @PathVariable UUID eventId,
         @PathVariable UUID tierId,
         @Valid @RequestBody DecrementQuotaRequest request,
+        @RequestHeader(value = "X-Service-Auth", required = false) String serviceAuth,
         @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey
     ) {
-        TierResponse response = tierService.decrementQuota(eventId, tierId, request.decrementBy());
+        validateServiceAuth(serviceAuth);
+        TierResponse response = tierService.decrementQuota(eventId, tierId, request.decrementBy(), idempotencyKey);
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{eventId}/tiers/{tierId}/quota/increment")
+    @Operation(
+        summary = "Incrementar quota de un tier",
+        description = "Incrementa la quota disponible de un tier. Uso interno para devolución de inventario al expirar reservation. Requiere X-Service-Auth."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Quota incrementada exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(responseCode = "401", description = "X-Service-Auth ausente o incorrecto"),
+        @ApiResponse(responseCode = "404", description = "Tier o evento no encontrado")
+    })
+    public ResponseEntity<TierResponse> incrementTierQuota(
+        @PathVariable UUID eventId,
+        @PathVariable UUID tierId,
+        @Valid @RequestBody IncrementQuotaRequest request,
+        @RequestHeader(value = "X-Service-Auth", required = false) String serviceAuth
+    ) {
+        validateServiceAuth(serviceAuth);
+        TierResponse response = tierService.incrementQuota(eventId, tierId, request.incrementBy());
+        return ResponseEntity.ok(response);
+    }
+
+    private void validateServiceAuth(String serviceAuth) {
+        if (serviceAuth == null || !serviceAuth.equals(serviceAuthSecret)) {
+            throw new UnauthorizedServiceException("Invalid or missing X-Service-Auth header");
+        }
     }
 }

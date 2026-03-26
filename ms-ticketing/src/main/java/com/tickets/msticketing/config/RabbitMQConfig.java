@@ -12,9 +12,19 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     public static final String TICKETS_EXCHANGE = "tickets.exchange";
+    public static final String TICKETS_DLQ_EXCHANGE = "tickets.dlq.exchange";
+
     public static final String TICKET_PAID_ROUTING_KEY = "ticket.paid";
     public static final String TICKET_FAILED_ROUTING_KEY = "ticket.payment_failed";
     public static final String TICKET_EXPIRED_ROUTING_KEY = "ticket.expired";
+
+    public static final String TICKET_PAID_QUEUE = "ticketing.ticket.paid";
+    public static final String TICKET_FAILED_QUEUE = "ticketing.ticket.failed";
+    public static final String TICKET_EXPIRED_QUEUE = "ticketing.ticket.expired";
+
+    public static final String TICKET_PAID_DLQ = "ticketing.ticket.paid.dlq";
+    public static final String TICKET_FAILED_DLQ = "ticketing.ticket.failed.dlq";
+    public static final String TICKET_EXPIRED_DLQ = "ticketing.ticket.expired.dlq";
 
     @Bean
     public TopicExchange ticketsExchange() {
@@ -22,18 +32,47 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public DirectExchange ticketsDlqExchange() {
+        return new DirectExchange(TICKETS_DLQ_EXCHANGE, true, false);
+    }
+
+    @Bean
     public Queue ticketPaidQueue() {
-        return new Queue("ticketing.ticket.paid");
+        return QueueBuilder.durable(TICKET_PAID_QUEUE)
+            .withArgument("x-dead-letter-exchange", TICKETS_DLQ_EXCHANGE)
+            .withArgument("x-dead-letter-routing-key", TICKET_PAID_DLQ)
+            .build();
     }
 
     @Bean
     public Queue ticketFailedQueue() {
-        return new Queue("ticketing.ticket.failed");
+        return QueueBuilder.durable(TICKET_FAILED_QUEUE)
+            .withArgument("x-dead-letter-exchange", TICKETS_DLQ_EXCHANGE)
+            .withArgument("x-dead-letter-routing-key", TICKET_FAILED_DLQ)
+            .build();
     }
 
     @Bean
     public Queue ticketExpiredQueue() {
-        return new Queue("ticketing.ticket.expired");
+        return QueueBuilder.durable(TICKET_EXPIRED_QUEUE)
+            .withArgument("x-dead-letter-exchange", TICKETS_DLQ_EXCHANGE)
+            .withArgument("x-dead-letter-routing-key", TICKET_EXPIRED_DLQ)
+            .build();
+    }
+
+    @Bean
+    public Queue ticketPaidDlq() {
+        return QueueBuilder.durable(TICKET_PAID_DLQ).build();
+    }
+
+    @Bean
+    public Queue ticketFailedDlq() {
+        return QueueBuilder.durable(TICKET_FAILED_DLQ).build();
+    }
+
+    @Bean
+    public Queue ticketExpiredDlq() {
+        return QueueBuilder.durable(TICKET_EXPIRED_DLQ).build();
     }
 
     @Bean
@@ -52,6 +91,21 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Binding bindPaidDlq(Queue ticketPaidDlq, DirectExchange ticketsDlqExchange) {
+        return BindingBuilder.bind(ticketPaidDlq).to(ticketsDlqExchange).with(TICKET_PAID_DLQ);
+    }
+
+    @Bean
+    public Binding bindFailedDlq(Queue ticketFailedDlq, DirectExchange ticketsDlqExchange) {
+        return BindingBuilder.bind(ticketFailedDlq).to(ticketsDlqExchange).with(TICKET_FAILED_DLQ);
+    }
+
+    @Bean
+    public Binding bindExpiredDlq(Queue ticketExpiredDlq, DirectExchange ticketsDlqExchange) {
+        return BindingBuilder.bind(ticketExpiredDlq).to(ticketsDlqExchange).with(TICKET_EXPIRED_DLQ);
+    }
+
+    @Bean
     public MessageConverter jackson2JsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
@@ -63,3 +117,4 @@ public class RabbitMQConfig {
         return template;
     }
 }
+

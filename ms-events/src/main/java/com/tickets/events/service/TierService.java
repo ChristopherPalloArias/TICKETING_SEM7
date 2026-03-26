@@ -1,5 +1,7 @@
 package com.tickets.events.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tickets.events.dto.AvailableTierResponse;
 import com.tickets.events.dto.DecrementQuotaRequest;
 import com.tickets.events.dto.TierConfigurationResponse;
@@ -9,9 +11,11 @@ import com.tickets.events.exception.*;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import com.tickets.events.model.Event;
 import com.tickets.events.model.EventStatus;
+import com.tickets.events.model.ProcessedIdempotencyKey;
 import com.tickets.events.model.Tier;
 import com.tickets.events.model.TierType;
 import com.tickets.events.repository.EventRepository;
+import com.tickets.events.repository.IdempotencyKeyRepository;
 import com.tickets.events.repository.TierRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,9 +23,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -32,6 +38,8 @@ public class TierService {
 
     private final EventRepository eventRepository;
     private final TierRepository tierRepository;
+    private final IdempotencyKeyRepository idempotencyKeyRepository;
+    private final ObjectMapper objectMapper;
 
     @Transactional
     public TierConfigurationResponse configureEventTiers(UUID eventId, List<TierCreateRequest> tierRequests, String role, String userId) {
@@ -164,7 +172,7 @@ public class TierService {
                 throw new InvalidEarlyBirdValidityException("Early Bird tier validFrom must be before validUntil");
             }
 
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
             if (!safeValidFrom.isAfter(now) || !safeValidUntil.isAfter(now)) {
                 throw new InvalidEarlyBirdValidityException("Early Bird validity dates must be in the future");
             }
@@ -192,9 +200,21 @@ public class TierService {
     }
 
     @Transactional
-    public TierResponse decrementQuota(UUID eventId, UUID tierId, Integer decrementBy) {
+    public TierResponse decrementQuota(UUID eventId, UUID tierId, Integer decrementBy, String idempotencyKey) {
         UUID safeEventId = Objects.requireNonNull(eventId, "eventId must not be null");
         UUID safeTierId = Objects.requireNonNull(tierId, "tierId must not be null");
+
+        // Idempotency check: return cached response if key was already processed
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            Optional<ProcessedIdempotencyKey> cached = idempotencyKeyRepository.findById(idempotencyKey);
+            if (cached.isPresent()) {
+                try {
+                    return objectMapper.readValue(cached.get().getResponsePayload(), TierResponse.class);
+                } catch (JsonProcessingException e) {
+                    throw new IllegalStateException("Failed to deserialize cached idempotency response", e);
+                }
+            }
+        }
 
         Tier tier = tierRepository.findByIdAndEventId(safeTierId, safeEventId)
             .orElseThrow(() -> new TierNotFoundException(
@@ -210,9 +230,46 @@ public class TierService {
 
         try {
             Tier saved = tierRepository.saveAndFlush(tier);
-            return toTierResponse(saved);
+            TierResponse response = toTierResponse(saved);
+
+            // Persist idempotency key with cached response
+            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                try {
+                    String payload = objectMapper.writeValueAsString(response);
+                    ProcessedIdempotencyKey processed = ProcessedIdempotencyKey.builder()
+                        .idempotencyKey(idempotencyKey)
+                        .tierId(safeTierId)
+                        .responsePayload(payload)
+                        .build();
+                    idempotencyKeyRepository.save(processed);
+                } catch (JsonProcessingException e) {
+                    throw new IllegalStateException("Failed to serialize idempotency response", e);
+                }
+            }
+
+            return response;
         } catch (ObjectOptimisticLockingFailureException ex) {
             throw new TierQuotaInsufficientException("Tier quota exhausted. Concurrent update conflict.");
+        }
+    }
+
+    @Transactional
+    public TierResponse incrementQuota(UUID eventId, UUID tierId, Integer incrementBy) {
+        UUID safeEventId = Objects.requireNonNull(eventId, "eventId must not be null");
+        UUID safeTierId = Objects.requireNonNull(tierId, "tierId must not be null");
+
+        Tier tier = tierRepository.findByIdAndEventId(safeTierId, safeEventId)
+            .orElseThrow(() -> new TierNotFoundException(
+                "Tier '" + safeTierId + "' not found for event '" + safeEventId + "'"));
+
+        int amount = incrementBy != null ? incrementBy : 1;
+        tier.setQuota(tier.getQuota() + amount);
+
+        try {
+            Tier saved = tierRepository.saveAndFlush(tier);
+            return toTierResponse(saved);
+        } catch (ObjectOptimisticLockingFailureException ex) {
+            throw new TierQuotaInsufficientException("Concurrent update conflict while incrementing quota.");
         }
     }
 
@@ -242,7 +299,7 @@ public class TierService {
             return false;
         }
         
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         
         // Check validFrom: if null, no lower bound restriction
         if (tier.getValidFrom() != null && now.isBefore(tier.getValidFrom())) {
@@ -270,9 +327,9 @@ public class TierService {
         if (!available) {
             if (tier.getQuota() <= 0) {
                 reason = "SOLD_OUT";
-            } else if (tier.getValidUntil() != null && LocalDateTime.now().isAfter(tier.getValidUntil())) {
+            } else if (tier.getValidUntil() != null && LocalDateTime.now(ZoneOffset.UTC).isAfter(tier.getValidUntil())) {
                 reason = "EXPIRED";
-            } else if (tier.getValidFrom() != null && LocalDateTime.now().isBefore(tier.getValidFrom())) {
+            } else if (tier.getValidFrom() != null && LocalDateTime.now(ZoneOffset.UTC).isBefore(tier.getValidFrom())) {
                 reason = "NOT_YET_AVAILABLE";
             }
         }

@@ -80,6 +80,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler(EventNotPublishedException.class)
+    public ResponseEntity<Map<String, Object>> handleEventNotPublished(EventNotPublishedException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("error", ex.getMessage());
+        response.put("timestamp", LocalDateTime.now());
+        return new ResponseEntity<>(response, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
     @ExceptionHandler(InventoryServiceUnavailableException.class)
     public ResponseEntity<Map<String, Object>> handleInventoryServiceUnavailable(InventoryServiceUnavailableException ex) {
         Map<String, Object> response = new HashMap<>();
