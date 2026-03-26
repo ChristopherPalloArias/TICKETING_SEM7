@@ -1,7 +1,7 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.2.0'
-    id 'io.spring.dependency-management' version '1.1.0'
+    id 'org.springframework.boot' version '3.3.0'
+    id 'io.spring.dependency-management' version '1.1.5'
 }
 
 java {
@@ -16,30 +16,23 @@ repositories {
 }
 
 dependencies {
-    // Spring Boot Starters
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
 
-    // PostgreSQL Driver
     runtimeOnly 'org.postgresql:postgresql:42.6.0'
 
-    // Lombok
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
-    // Flyway for migrations
     implementation 'org.flywaydb:flyway-core:9.22.3'
 
-    // Jackson for JSON serialization with RabbitMQ
     implementation 'com.fasterxml.jackson.core:jackson-databind'
 
-    // Netty for WebClient
     implementation 'io.projectreactor.netty:reactor-netty-http:1.1.10'
 
-    // Testing
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

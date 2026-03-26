@@ -1,7 +1,9 @@
 package com.tickets.events.controller;
 
+import com.tickets.events.dto.DecrementQuotaRequest;
 import com.tickets.events.dto.TierConfigurationResponse;
 import com.tickets.events.dto.TierCreateRequest;
+import com.tickets.events.dto.TierResponse;
 import com.tickets.events.service.TierService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -79,5 +81,26 @@ public class TierController {
     ) {
         tierService.deleteEventTiers(eventId, role, userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{eventId}/tiers/{tierId}/quota")
+    @Operation(
+        summary = "Decrementar quota de un tier",
+        description = "Decrementa atómicamente la quota disponible de un tier. Uso interno de ms-ticketing al confirmar pago. Protegido con optimistic lock para evitar sobreventa."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Quota decrementada exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(responseCode = "404", description = "Tier o evento no encontrado"),
+        @ApiResponse(responseCode = "409", description = "Quota insuficiente o conflicto de concurrencia")
+    })
+    public ResponseEntity<TierResponse> decrementTierQuota(
+        @PathVariable UUID eventId,
+        @PathVariable UUID tierId,
+        @Valid @RequestBody DecrementQuotaRequest request,
+        @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey
+    ) {
+        TierResponse response = tierService.decrementQuota(eventId, tierId, request.decrementBy());
+        return ResponseEntity.ok(response);
     }
 }

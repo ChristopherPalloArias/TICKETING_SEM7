@@ -1,10 +1,12 @@
 package com.tickets.events.service;
 
 import com.tickets.events.dto.AvailableTierResponse;
+import com.tickets.events.dto.DecrementQuotaRequest;
 import com.tickets.events.dto.TierConfigurationResponse;
 import com.tickets.events.dto.TierCreateRequest;
 import com.tickets.events.dto.TierResponse;
 import com.tickets.events.exception.*;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import com.tickets.events.model.Event;
 import com.tickets.events.model.EventStatus;
 import com.tickets.events.model.Tier;
@@ -187,6 +189,31 @@ public class TierService {
             .toList();
 
         return new TierConfigurationResponse(eventId, tierResponses);
+    }
+
+    @Transactional
+    public TierResponse decrementQuota(UUID eventId, UUID tierId, Integer decrementBy) {
+        UUID safeEventId = Objects.requireNonNull(eventId, "eventId must not be null");
+        UUID safeTierId = Objects.requireNonNull(tierId, "tierId must not be null");
+
+        Tier tier = tierRepository.findByIdAndEventId(safeTierId, safeEventId)
+            .orElseThrow(() -> new TierNotFoundException(
+                "Tier '" + safeTierId + "' not found for event '" + safeEventId + "'"));
+
+        int amount = decrementBy != null ? decrementBy : 1;
+        if (tier.getQuota() < amount) {
+            throw new TierQuotaInsufficientException(
+                "Tier quota exhausted. Available: " + tier.getQuota() + ", requested: " + amount);
+        }
+
+        tier.setQuota(tier.getQuota() - amount);
+
+        try {
+            Tier saved = tierRepository.saveAndFlush(tier);
+            return toTierResponse(saved);
+        } catch (ObjectOptimisticLockingFailureException ex) {
+            throw new TierQuotaInsufficientException("Tier quota exhausted. Concurrent update conflict.");
+        }
     }
 
     private TierResponse toTierResponse(Tier tier) {

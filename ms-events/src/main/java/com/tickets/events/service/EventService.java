@@ -114,11 +114,6 @@ public class EventService {
         );
     }
 
-    /**
-     * Retrieves all published events with their available tiers
-     *
-     * @return EventDetailResponse list wrapped in a response container
-     */
     @Transactional(readOnly = true)
     public List<EventDetailResponse> getPublishedEvents() {
         List<Event> publishedEvents = eventRepository.findByStatus(EventStatus.PUBLISHED);
@@ -128,13 +123,6 @@ public class EventService {
             .toList();
     }
 
-    /**
-     * Retrieves a specific published event with its available tiers
-     *
-     * @param eventId The UUID of the event to retrieve
-     * @return EventDetailResponse with event details and available tiers
-     * @throws EventNotFoundException if event not found or not published
-     */
     @Transactional(readOnly = true)
     public EventDetailResponse getEventDetail(UUID eventId) {
         if (eventId == null) {
@@ -151,21 +139,13 @@ public class EventService {
         return convertToEventDetailResponse(event);
     }
 
-    /**
-     * Converts an Event entity to EventDetailResponse with available tiers
-     *
-     * @param event The event to convert
-     * @return EventDetailResponse
-     */
     private EventDetailResponse convertToEventDetailResponse(Event event) {
-        // Convert room
         Room room = event.getRoom();
         if (room == null) {
             room = retrieveRoom(event.getRoomId());
         }
         RoomResponse roomResponse = convertRoomToResponse(room);
         
-        // Get and filter tiers by availability
         List<Tier> tiers = tierRepository.findByEventId(event.getId());
         List<AvailableTierResponse> availableTiers = tiers.stream()
             .map(tierService::toAvailableTierResponse)
@@ -183,12 +163,6 @@ public class EventService {
         );
     }
 
-    /**
-     * Converts Room entity to RoomResponse
-     *
-     * @param room The room to convert
-     * @return RoomResponse
-     */
     private RoomResponse convertRoomToResponse(Room room) {
         return new RoomResponse(
             room.getId(),

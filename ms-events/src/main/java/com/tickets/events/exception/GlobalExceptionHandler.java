@@ -121,6 +121,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(new ValidationErrorResponse("VALIDATION_ERROR", "Invalid request data", details));
     }
+
+    @ExceptionHandler(TierNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<ErrorResponse> handleTierNotFoundException(TierNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(new ErrorResponse("TIER_NOT_FOUND", ex.getMessage()));
+    }
+
+    @ExceptionHandler(TierQuotaInsufficientException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<ErrorResponse> handleTierQuotaInsufficientException(TierQuotaInsufficientException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new ErrorResponse("TIER_QUOTA_EXHAUSTED", ex.getMessage()));
+    }
     
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

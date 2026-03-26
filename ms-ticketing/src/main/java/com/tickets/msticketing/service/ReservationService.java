@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -28,7 +29,6 @@ public class ReservationService {
     public ReservationResponse createReservation(CreateReservationRequest request, UUID buyerId) {
         log.info("Creating reservation for buyer={}, eventId={}, tierId={}", buyerId, request.eventId(), request.tierId());
 
-        // Create and save reservation in PENDING state
         Reservation reservation = Reservation.builder()
             .eventId(request.eventId())
             .tierId(request.tierId())
@@ -39,25 +39,26 @@ public class ReservationService {
         Reservation saved = reservationRepository.save(reservation);
         log.info("Reservation created: id={}, status=PENDING", saved.getId());
 
-        return mapToReservationResponse(saved);
+        return mapToReservationResponse(Objects.requireNonNull(saved, "Saved reservation must not be null"));
     }
 
     @Transactional
     public PaymentResponse processPayment(UUID reservationId, PaymentRequest paymentRequest, UUID buyerId) {
         log.info("Processing payment for reservation={}, buyer={}", reservationId, buyerId);
 
-        // 1. Fetch reservation
-        Reservation reservation = reservationRepository.findById(reservationId)
-            .orElseThrow(() -> new ReservationNotFoundException("Reservation not found"));
+        Reservation reservation = Objects.requireNonNull(
+            reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ReservationNotFoundException("Reservation not found")),
+            "Reservation must not be null"
+        );
 
-        // 2. Verify ownership
         if (!reservation.getBuyerId().equals(buyerId)) {
             throw new ForbiddenAccessException("You can only pay for your own reservations");
         }
 
-        // 3. Check if reservation is expired
         LocalDateTime now = LocalDateTime.now();
-        if (now.isAfter(reservation.getValidUntilAt())) {
+        LocalDateTime validUntil = reservation.getValidUntilAt();
+        if (validUntil != null && now.isAfter(validUntil)) {
             reservation.setStatus(ReservationStatus.EXPIRED);
             reservationRepository.save(reservation);
 
@@ -72,20 +73,18 @@ public class ReservationService {
             throw new ReservationExpiredException("Reservation has expired");
         }
 
-        // 4. Check reservation status (must be PENDING or PAYMENT_FAILED for retry)
-        if (!reservation.getStatus().equals(ReservationStatus.PENDING) && 
-            !reservation.getStatus().equals(ReservationStatus.PAYMENT_FAILED)) {
+        ReservationStatus status = reservation.getStatus();
+        if (status == null || (!status.equals(ReservationStatus.PENDING) && 
+            !status.equals(ReservationStatus.PAYMENT_FAILED))) {
             throw new IllegalArgumentException("Reservation is not available for payment");
         }
 
-        // 5. Check payment attempts limit
-        if (reservation.getPaymentAttempts() != null && reservation.getPaymentAttempts() >= MAX_PAYMENT_ATTEMPTS) {
+        int paymentAttempts = reservation.getPaymentAttempts() != null ? reservation.getPaymentAttempts() : 0;
+        if (paymentAttempts >= MAX_PAYMENT_ATTEMPTS) {
             reservation.setStatus(ReservationStatus.EXPIRED);
             reservationRepository.save(reservation);
             throw new MaxPaymentAttemptsExceededException("Maximum payment attempts exceeded");
         }
-
-        // 6. Validate payment request
         if (!paymentRequest.paymentMethod().equals("MOCK")) {
             throw new InvalidPaymentStatusException("Only MOCK payment method is supported");
         }
@@ -94,10 +93,9 @@ public class ReservationService {
             throw new InvalidPaymentStatusException("Invalid payment status");
         }
 
-        // 7. Increment attempt counter
-        reservation.setPaymentAttempts((reservation.getPaymentAttempts() != null ? reservation.getPaymentAttempts() : 0) + 1);
+        paymentAttempts = paymentAttempts + 1;
+        reservation.setPaymentAttempts(paymentAttempts);
 
-        // 8. Handle DECLINED status
         if (paymentRequest.status().equals("DECLINED")) {
             reservation.setStatus(ReservationStatus.PAYMENT_FAILED);
             reservationRepository.save(reservation);
@@ -112,7 +110,6 @@ public class ReservationService {
             throw new PaymentFailedException("Payment declined. Your reservation remains active for 10 minutes", reservation.getId().toString());
         }
 
-        // 9. Process APPROVED payment: decrement quota in ms-events
         try {
             msEventsIntegrationService.decrementTierQuota(
                 reservation.getEventId(),
@@ -125,24 +122,25 @@ public class ReservationService {
             throw ex;
         }
 
-        // 10. Create ticket
+        UUID buyerIdNonNull = Objects.requireNonNull(reservation.getBuyerId(), "Buyer ID must not be null");
+        UUID eventIdNonNull = Objects.requireNonNull(reservation.getEventId(), "Event ID must not be null");
+        UUID tierIdNonNull = Objects.requireNonNull(reservation.getTierId(), "Tier ID must not be null");
+        
         Ticket ticket = Ticket.builder()
             .reservationId(reservation.getId())
-            .buyerId(reservation.getBuyerId())
-            .eventId(reservation.getEventId())
-            .tierId(reservation.getTierId())
-            .tierType(TierType.valueOf(getTierTypeFromContext(reservation.getTierId())))
+            .buyerId(buyerIdNonNull)
+            .eventId(eventIdNonNull)
+            .tierId(tierIdNonNull)
+            .tierType(TierType.valueOf(getTierTypeFromContext(tierIdNonNull)))
             .price(paymentRequest.amount())
             .status(TicketStatus.VALID)
             .build();
 
         Ticket savedTicket = ticketRepository.save(ticket);
 
-        // 11. Update reservation to CONFIRMED
         reservation.setStatus(ReservationStatus.CONFIRMED);
         reservationRepository.save(reservation);
 
-        // 12. Publish ticket.paid event
         TicketPaidEvent paidEvent = new TicketPaidEvent(
             reservation.getId(),
             reservation.getEventId(),
@@ -161,10 +159,17 @@ public class ReservationService {
     public GetReservationResponse getReservation(UUID reservationId, UUID buyerId) {
         log.info("Fetching reservation: id={}, buyer={}", reservationId, buyerId);
 
-        Reservation reservation = reservationRepository.findById(reservationId)
-            .orElseThrow(() -> new ReservationNotFoundException("Reservation not found"));
+        Reservation reservation = Objects.requireNonNull(
+            reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ReservationNotFoundException("Reservation not found")),
+            "Reservation must not be null"
+        );
 
-        if (!reservation.getBuyerId().equals(buyerId)) {
+        UUID reservationBuyerId = Objects.requireNonNull(
+            reservation.getBuyerId(),
+            "Reservation buyer ID must not be null"
+        );
+        if (!reservationBuyerId.equals(buyerId)) {
             throw new ForbiddenAccessException("You can only view your own reservations");
         }
 
@@ -174,18 +179,27 @@ public class ReservationService {
     public TicketResponse getTicket(UUID ticketId, UUID buyerId) {
         log.info("Fetching ticket: id={}, buyer={}", ticketId, buyerId);
 
-        Ticket ticket = ticketRepository.findById(ticketId)
-            .orElseThrow(() -> new TicketNotFoundException("Ticket not found"));
+        Ticket ticket = Objects.requireNonNull(
+            ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new TicketNotFoundException("Ticket not found")),
+            "Ticket must not be null"
+        );
 
-        if (!ticket.getBuyerId().equals(buyerId)) {
+        UUID ticketBuyerId = Objects.requireNonNull(
+            ticket.getBuyerId(),
+            "Ticket buyer ID must not be null"
+        );
+        if (!ticketBuyerId.equals(buyerId)) {
             throw new ForbiddenAccessException("You can only view your own tickets");
         }
 
         return mapToTicketResponse(ticket);
     }
 
-    // Mapper methods
     private ReservationResponse mapToReservationResponse(Reservation reservation) {
+        if (reservation == null) {
+            throw new IllegalArgumentException("Reservation must not be null");
+        }
         return new ReservationResponse(
             reservation.getId(),
             reservation.getEventId(),
@@ -199,6 +213,9 @@ public class ReservationService {
     }
 
     private GetReservationResponse mapToGetReservationResponse(Reservation reservation) {
+        if (reservation == null) {
+            throw new IllegalArgumentException("Reservation must not be null");
+        }
         return new GetReservationResponse(
             reservation.getId(),
             reservation.getEventId(),
@@ -211,23 +228,30 @@ public class ReservationService {
     }
 
     private PaymentResponse mapToPaymentResponse(Reservation reservation, Ticket ticket, String message) {
+        if (reservation == null || ticket == null) {
+            throw new IllegalArgumentException("Reservation and ticket must not be null");
+        }
         return new PaymentResponse(
             reservation.getId(),
             reservation.getStatus(),
             ticket.getId(),
-            message,
+            message != null ? message : "Payment processed",
             mapToTicketResponse(ticket),
             LocalDateTime.now()
         );
     }
 
     private TicketResponse mapToTicketResponse(Ticket ticket) {
+        if (ticket == null) {
+            throw new IllegalArgumentException("Ticket must not be null");
+        }
+        String tierTypeName = ticket.getTierType() != null ? ticket.getTierType().toString() : "UNKNOWN";
         return new TicketResponse(
             ticket.getId(),
             ticket.getReservationId(),
             ticket.getEventId(),
             ticket.getTierId(),
-            ticket.getTierType().toString(),
+            tierTypeName,
             ticket.getPrice(),
             ticket.getStatus(),
             ticket.getCreatedAt()
@@ -235,8 +259,6 @@ public class ReservationService {
     }
 
     private String getTierTypeFromContext(UUID tierId) {
-        // TODO: In a real scenario, we'd integrate with ms-events to get tier details
-        // For now, default to GENERAL - this will be populated by the integration
         return "GENERAL";
     }
 }

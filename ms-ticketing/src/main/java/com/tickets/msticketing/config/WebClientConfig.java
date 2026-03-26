@@ -10,7 +10,6 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
-import reactor.netty.tcp.TcpClient;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -19,6 +18,7 @@ public class WebClientConfig {
     @Value("${clients.ms-events.base-url:http://ms-events:8081}")
     private String msEventsBaseUrl;
 
+    @SuppressWarnings("null")
     @Bean
     public WebClient msEventsWebClient() {
         HttpClient httpClient = HttpClient.create()
@@ -29,8 +29,8 @@ public class WebClientConfig {
                 .addHandlerLast(new WriteTimeoutHandler(3, TimeUnit.SECONDS)));
 
         return WebClient.builder()
-            .baseUrl(msEventsBaseUrl)
-            .clientConnector(new ReactorClientHttpConnector(httpClient))
+            .baseUrl(msEventsBaseUrl != null ? msEventsBaseUrl : "http://ms-events:8081")
+            .clientConnector(new ReactorClientHttpConnector(httpClient != null ? httpClient : HttpClient.create()))
             .exchangeStrategies(ExchangeStrategies.builder()
                 .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(1024 * 1024))
                 .build())
