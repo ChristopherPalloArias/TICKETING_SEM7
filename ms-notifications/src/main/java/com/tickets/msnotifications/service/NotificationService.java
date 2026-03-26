@@ -8,6 +8,7 @@ import com.tickets.msnotifications.model.NotificationType;
 import com.tickets.msnotifications.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -60,7 +61,14 @@ public class NotificationService {
             .createdAt(Instant.now())
             .build();
 
-        notificationRepository.save(notification);
+        try {
+            notificationRepository.save(notification);
+        } catch (DataIntegrityViolationException ex) {
+            // Concurrent duplicate — unique constraint (reservation_id, type) fired.
+            // Treat as already-existing: idempotent ACK, no retry.
+            log.debug("Concurrent duplicate suppressed by constraint: type={} reservationId={}", type, reservationId);
+            return false;
+        }
         log.info("Notification created: type={} reservationId={} buyerId={}", type, reservationId, buyerId);
         return true;
     }
@@ -74,7 +82,7 @@ public class NotificationService {
 
     public PagedNotificationResponse getByBuyerId(UUID buyerId, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Notification> result = notificationRepository.findByBuyerIdOrderByCreatedAtDesc(buyerId, pageable);
+        Page<Notification> result = notificationRepository.findByBuyerId(buyerId, pageable);
         List<NotificationResponse> content = result.getContent().stream()
             .map(this::toResponse)
             .collect(Collectors.toList());

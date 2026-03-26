@@ -2,7 +2,6 @@ package com.tickets.msnotifications.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -17,7 +16,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = lombok.AccessLevel.PRIVATE) // required by @Builder; private prevents direct use
 @Builder
 public class Notification {
 

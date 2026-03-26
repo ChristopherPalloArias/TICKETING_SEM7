@@ -1,16 +1,13 @@
-CREATE TYPE notification_type AS ENUM ('PAYMENT_SUCCESS', 'PAYMENT_FAILED', 'RESERVATION_EXPIRED');
-CREATE TYPE notification_status AS ENUM ('PROCESSED', 'FAILED');
-
 CREATE TABLE notification (
-    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    reservation_id UUID NOT NULL,
-    event_id       UUID NOT NULL,
-    tier_id        UUID NOT NULL,
-    buyer_id       UUID NOT NULL,
-    type           notification_type   NOT NULL,
-    motif          VARCHAR(255)        NOT NULL,
-    status         notification_status NOT NULL DEFAULT 'PROCESSED',
-    created_at     TIMESTAMPTZ         NOT NULL DEFAULT NOW()
+    id             UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    reservation_id UUID         NOT NULL,
+    event_id       UUID         NOT NULL,
+    tier_id        UUID         NOT NULL,
+    buyer_id       UUID         NOT NULL,
+    type           VARCHAR(50)  NOT NULL,
+    motif          VARCHAR(255) NOT NULL,
+    status         VARCHAR(20)  NOT NULL DEFAULT 'PROCESSED',
+    created_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
 CREATE UNIQUE INDEX uq_notification_reservation_type

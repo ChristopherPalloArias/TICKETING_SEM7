@@ -42,7 +42,7 @@ public class ReservationService {
         return mapToReservationResponse(Objects.requireNonNull(saved, "Saved reservation must not be null"));
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = {ReservationExpiredException.class, PaymentFailedException.class})
     public PaymentResponse processPayment(UUID reservationId, PaymentRequest paymentRequest, UUID buyerId) {
         log.info("Processing payment for reservation={}, buyer={}", reservationId, buyerId);
 

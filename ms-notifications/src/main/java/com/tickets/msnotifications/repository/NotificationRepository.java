@@ -15,7 +15,7 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
 
     List<Notification> findByReservationIdOrderByCreatedAtDesc(UUID reservationId);
 
-    Page<Notification> findByBuyerIdOrderByCreatedAtDesc(UUID buyerId, Pageable pageable);
+    Page<Notification> findByBuyerId(UUID buyerId, Pageable pageable);
 
     boolean existsByReservationIdAndType(UUID reservationId, NotificationType type);
 }

@@ -1,19 +1,13 @@
 package com.tickets.msnotifications.config;
 
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.retry.interceptor.RetryOperationsInterceptor;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 public class RabbitMQConfig {
@@ -142,16 +136,11 @@ public class RabbitMQConfig {
         return template;
     }
 
-    // ─── Listener container factory with MANUAL ACK + retry ──────────────────
-
-    @Bean
-    public RetryOperationsInterceptor retryInterceptor() {
-        return RetryInterceptorBuilder.stateless()
-            .maxAttempts(3)
-            .backOffOptions(1000, 2.0, 4000)
-            .recoverer(new RejectAndDontRequeueRecoverer())
-            .build();
-    }
+    // ─── Listener container factory with MANUAL ACK ───────────────────────────
+    // Note: RetryInterceptorBuilder is NOT used here because consumers handle ACK/NACK
+    // manually inside try/catch blocks. Spring's retry advice only fires on exceptions
+    // that escape the listener method, which never happens with MANUAL ACK. Instead,
+    // unrecoverable failures call basicNack(requeue=false) which routes to the DLQ.
 
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
@@ -160,7 +149,7 @@ public class RabbitMQConfig {
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(jackson2JsonMessageConverter());
         factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);
-        factory.setAdviceChain(retryInterceptor());
+        factory.setPrefetchCount(1);
         return factory;
     }
 }

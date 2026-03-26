@@ -55,7 +55,7 @@ public class TicketPaymentFailedConsumer {
             log.info("ticket.payment_failed processed: reservationId={} buyerId={}", event.reservationId(), event.buyerId());
         } catch (Exception ex) {
             log.error("Error processing ticket.payment_failed: reservationId={} error={}", event.reservationId(), ex.getMessage(), ex);
-            channel.basicNack(deliveryTag, false, true);
+            channel.basicNack(deliveryTag, false, false); // requeue=false → routes to DLQ after exhausted retries
         }
     }
 
