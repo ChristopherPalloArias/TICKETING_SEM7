@@ -4,6 +4,10 @@ import com.tickets.events.dto.EventCreateRequest;
 import com.tickets.events.dto.EventDetailResponse;
 import com.tickets.events.dto.EventResponse;
 import com.tickets.events.service.EventService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +21,23 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/events")
 @RequiredArgsConstructor
+@Tag(name = "Events", description = "API para gestionar eventos")
 public class EventController {
     
     private final EventService eventService;
     
     @PostMapping
+    @Operation(
+        summary = "Crear nuevo evento",
+        description = "Crear un evento en estado DRAFT. Solo usuarios con rol ADMIN pueden crear eventos."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Evento creado exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos o capacity excede maxCapacity"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado - se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "404", description = "Room no encontrada"),
+        @ApiResponse(responseCode = "409", description = "Evento con mismo título y fecha ya existe")
+    })
     public ResponseEntity<EventResponse> createEvent(
         @Valid @RequestBody EventCreateRequest request,
         @RequestHeader("X-Role") String role,
@@ -32,6 +48,14 @@ public class EventController {
     }
 
     @GetMapping
+    @Operation(
+        summary = "Obtener eventos publicados",
+        description = "Obtiene lista de todos los eventos con status PUBLISHED y su disponibilidad de tiers. No requiere autenticación."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista de eventos obtenida exitosamente"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     public ResponseEntity<Map<String, Object>> getPublishedEvents() {
         List<EventDetailResponse> events = eventService.getPublishedEvents();
         Map<String, Object> response = new HashMap<>();
@@ -41,6 +65,15 @@ public class EventController {
     }
 
     @GetMapping("/{eventId}")
+    @Operation(
+        summary = "Obtener detalle de evento",
+        description = "Obtiene información completa de un evento publicado con su disponibilidad de tiers. No requiere autenticación."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Evento obtenido exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Evento no encontrado o no está publicado"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     public ResponseEntity<EventDetailResponse> getEventDetail(@PathVariable UUID eventId) {
         EventDetailResponse event = eventService.getEventDetail(eventId);
         return ResponseEntity.ok(event);
