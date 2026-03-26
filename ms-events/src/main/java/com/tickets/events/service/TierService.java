@@ -1,5 +1,6 @@
 package com.tickets.events.service;
 
+import com.tickets.events.dto.AvailableTierResponse;
 import com.tickets.events.dto.TierConfigurationResponse;
 import com.tickets.events.dto.TierCreateRequest;
 import com.tickets.events.dto.TierResponse;
@@ -198,6 +199,66 @@ public class TierService {
             tier.getValidUntil(),
             tier.getCreatedAt(),
             tier.getUpdatedAt()
+        );
+    }
+
+    /**
+     * Determines if a tier is available based on:
+     * 1. quota > 0 (has available slots)
+     * 2. Within temporal validity window (validFrom <= now <= validUntil, handling nulls)
+     *
+     * @param tier The tier to check
+     * @return true if tier is available, false otherwise
+     */
+    public boolean isAvailable(Tier tier) {
+        if (tier.getQuota() <= 0) {
+            return false;
+        }
+        
+        LocalDateTime now = LocalDateTime.now();
+        
+        // Check validFrom: if null, no lower bound restriction
+        if (tier.getValidFrom() != null && now.isBefore(tier.getValidFrom())) {
+            return false;
+        }
+        
+        // Check validUntil: if null, no upper bound restriction
+        if (tier.getValidUntil() != null && now.isAfter(tier.getValidUntil())) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * Converts a Tier entity to AvailableTierResponse with availability status and reason
+     *
+     * @param tier The tier to convert
+     * @return AvailableTierResponse with isAvailable and reason set
+     */
+    public AvailableTierResponse toAvailableTierResponse(Tier tier) {
+        boolean available = isAvailable(tier);
+        String reason = null;
+        
+        if (!available) {
+            if (tier.getQuota() <= 0) {
+                reason = "SOLD_OUT";
+            } else if (tier.getValidUntil() != null && LocalDateTime.now().isAfter(tier.getValidUntil())) {
+                reason = "EXPIRED";
+            } else if (tier.getValidFrom() != null && LocalDateTime.now().isBefore(tier.getValidFrom())) {
+                reason = "NOT_YET_AVAILABLE";
+            }
+        }
+        
+        return new AvailableTierResponse(
+            tier.getId(),
+            tier.getTierType(),
+            tier.getPrice(),
+            tier.getQuota(),
+            tier.getValidFrom(),
+            tier.getValidUntil(),
+            available,
+            reason
         );
     }
 }
