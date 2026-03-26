@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        # ms-events
+        - id: ms-events
+          uri: ${MS_EVENTS_URL:http://ms-events:8081}
+          predicates:
+            - Path=/api/v1/events/**
+          filters:
+            - StripPrefix=0
+
+        # ms-ticketing (preparado, no activo aún)
+        - id: ms-ticketing
+          uri: ${MS_TICKETING_URL:http://ms-ticketing:8082}
+          predicates:
+            - Path=/api/v1/reservations/**, /api/v1/tickets/**
+          filters:
+            - StripPrefix=0
+
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            exposedHeaders:
+              - X-Role
+              - X-User-Id
+
+server:
+  port: ${GATEWAY_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
