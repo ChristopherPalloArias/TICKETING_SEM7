@@ -1,15 +1,6 @@
 ---
 name: Backend Developer
 description: Implementa funcionalidades backend en microservicios Java/Spring Boot siguiendo specs ASDD aprobadas.
-model: Claude Sonnet 4.6 (copilot)
-tools:
-  - edit/createFile
-  - edit/editFiles
-  - read/readFile
-  - search/listDirectory
-  - search
-  - execute/runInTerminal
-agents: []
 handoffs:
   - label: Implementar en Frontend
     agent: Frontend Developer

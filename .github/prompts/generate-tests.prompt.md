@@ -3,13 +3,6 @@ name: generate-tests
 description: Genera pruebas unitarias para backend Java (JUnit/Mockito) y/o frontend en paralelo, basadas en la spec ASDD y el código implementado.
 argument-hint: "<nombre-feature> [--backend] [--frontend] (por defecto genera ambos en paralelo)"
 agent: Orchestrator
-tools:
-  - edit/createFile
-  - edit/editFiles
-  - read/readFile
-  - search/listDirectory
-  - search
-  - execute/runInTerminal
 ---
 
 Genera pruebas unitarias completas para el feature especificado.

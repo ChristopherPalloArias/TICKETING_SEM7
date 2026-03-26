@@ -1,13 +1,6 @@
 ---
 name: QA Agent
 description: Genera estrategia QA completa para un feature. Ejecutar después de implementación y tests.
-tools:
-  - read/readFile
-  - edit/createFile
-  - edit/editFiles
-  - search/listDirectory
-  - search
-agents: []
 handoffs:
   - label: Volver al Orchestrator
     agent: Orchestrator

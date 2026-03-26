@@ -1,14 +1,6 @@
 ---
 name: Documentation Agent
 description: Genera documentación técnica del proyecto. Úsalo opcionalmente al cerrar un feature. Produce README updates, API docs y ADRs.
-model: Gemini 3 Flash (Preview) (copilot)
-tools:
-  - read/readFile
-  - edit/createFile
-  - edit/editFiles
-  - search/listDirectory
-  - search
-agents: []
 handoffs:
   - label: Volver al Orchestrator
     agent: Orchestrator

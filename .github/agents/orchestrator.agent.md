@@ -1,21 +1,6 @@
 ---
 name: Orchestrator
 description: Orquesta el flujo completo ASDD para nuevas funcionalidades con trabajo paralelo. Coordina Spec (secuencial) → [Backend ∥ Frontend] (paralelo) → [Tests BE ∥ Tests FE] (paralelo) → QA → Doc (opcional).
-tools:
-  - read/readFile
-  - search/listDirectory
-  - search
-  - web/fetch
-  - agent
-agents:
-  - Spec Generator
-  - Backend Developer
-  - Frontend Developer
-  - Test Engineer Backend
-  - Test Engineer Frontend
-  - QA Agent
-  - Documentation Agent
-  - Database Agent
 handoffs:
   - label: "[1] Generar Spec"
     agent: Spec Generator

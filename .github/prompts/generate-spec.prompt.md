@@ -3,11 +3,6 @@ name: generate-spec
 description: Genera una especificación técnica ASDD para un nuevo feature. Usa este comando con el nombre e descripción del feature.
 argument-hint: "<nombre-feature>: <descripción del requerimiento>"
 agent: Spec Generator
-tools:
-  - edit/createFile
-  - read/readFile
-  - search/listDirectory
-  - search
 ---
 
 Genera una especificación técnica completa en `.github/specs/` para el siguiente requerimiento.

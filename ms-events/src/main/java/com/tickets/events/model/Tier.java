@@ -53,6 +53,9 @@ public class Tier {
     @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")
     private LocalDateTime updatedAt;
 
+    @Version
+    private Long version;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

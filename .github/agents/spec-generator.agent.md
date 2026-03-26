@@ -1,14 +1,6 @@
 ---
 name: Spec Generator
 description: Genera especificaciones técnicas detalladas (ASDD) a partir de requerimientos de negocio. Úsalo antes de cualquier desarrollo.
-model: Claude Haiku 4.5 (copilot)
-tools:
-  - search
-  - web/fetch
-  - edit/createFile
-  - read/readFile
-  - search/listDirectory
-agents: []
 handoffs:
   - label: Implementar en Backend
     agent: Backend Developer

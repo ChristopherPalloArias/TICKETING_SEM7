@@ -3,13 +3,6 @@ name: backend-task
 description: Implementa una funcionalidad backend en microservicios Java/Spring Boot basada en una spec ASDD aprobada.
 argument-hint: "<nombre-feature> (debe existir .github/specs/<nombre-feature>.spec.md)"
 agent: Backend Developer
-tools:
-  - edit/createFile
-  - edit/editFiles
-  - read/readFile
-  - search/listDirectory
-  - search
-  - execute/runInTerminal
 ---
 
 Implementa el backend para el feature especificado, siguiendo la spec aprobada.

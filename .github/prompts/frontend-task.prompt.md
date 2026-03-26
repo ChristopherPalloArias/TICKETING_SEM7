@@ -3,13 +3,6 @@ name: frontend-task
 description: Implementa una funcionalidad en el frontend React/Vite basada en una spec ASDD aprobada.
 argument-hint: "<nombre-feature> (debe existir .github/specs/<nombre-feature>.spec.md)"
 agent: Frontend Developer
-tools:
-  - edit/createFile
-  - edit/editFiles
-  - read/readFile
-  - search/listDirectory
-  - search
-  - execute/runInTerminal
 ---
 
 Implementa el frontend para el feature especificado, siguiendo la spec aprobada.
