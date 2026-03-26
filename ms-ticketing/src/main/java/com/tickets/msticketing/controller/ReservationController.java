@@ -6,6 +6,10 @@ import com.tickets.msticketing.dto.PaymentRequest;
 import com.tickets.msticketing.dto.PaymentResponse;
 import com.tickets.msticketing.dto.ReservationResponse;
 import com.tickets.msticketing.service.ReservationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,11 +22,21 @@ import java.util.UUID;
 @RequestMapping("/api/v1/reservations")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Reservations", description = "Gestión de reservas de entradas")
 public class ReservationController {
 
     private final ReservationService reservationService;
 
     @PostMapping
+    @Operation(
+        summary = "Crear reserva",
+        description = "Bloquea entradas por 10 minutos en estado PENDING. Requiere header X-User-Id con el UUID del comprador."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Reserva creada en estado PENDING"),
+        @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+        @ApiResponse(responseCode = "404", description = "Evento o tier no encontrado")
+    })
     public ResponseEntity<ReservationResponse> createReservation(
             @Valid @RequestBody CreateReservationRequest request,
             @RequestHeader("X-User-Id") UUID buyerId) {
@@ -32,6 +46,19 @@ public class ReservationController {
     }
 
     @PostMapping("/{reservationId}/payments")
+    @Operation(
+        summary = "Procesar mock payment",
+        description = "Procesa el pago simulado de una reserva PENDING o PAYMENT_FAILED. " +
+            "Enviar `status: APPROVED` para confirmar el ticket o `status: DECLINED` para fallar el pago. " +
+            "Máximo 3 intentos. paymentMethod siempre debe ser `MOCK`."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Pago aprobado — ticket generado"),
+        @ApiResponse(responseCode = "400", description = "Reserva expirada, método de pago inválido, o status inválido"),
+        @ApiResponse(responseCode = "403", description = "X-User-Id no es el propietario de la reserva"),
+        @ApiResponse(responseCode = "404", description = "Reserva no encontrada"),
+        @ApiResponse(responseCode = "409", description = "Cupo agotado o máximo de intentos de pago superado")
+    })
     public ResponseEntity<PaymentResponse> processPayment(
             @PathVariable UUID reservationId,
             @Valid @RequestBody PaymentRequest request,
@@ -42,6 +69,15 @@ public class ReservationController {
     }
 
     @GetMapping("/{reservationId}")
+    @Operation(
+        summary = "Consultar reserva",
+        description = "Retorna el estado actual de una reserva. Solo el propietario puede consultarla (X-User-Id)."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Reserva encontrada"),
+        @ApiResponse(responseCode = "403", description = "X-User-Id no es el propietario"),
+        @ApiResponse(responseCode = "404", description = "Reserva no encontrada")
+    })
     public ResponseEntity<GetReservationResponse> getReservation(
             @PathVariable UUID reservationId,
             @RequestHeader("X-User-Id") UUID buyerId) {
