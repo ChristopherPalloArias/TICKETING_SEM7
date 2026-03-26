@@ -146,6 +146,24 @@ services:
       - tickets-network
     restart: unless-stopped
 
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+    container_name: api-gateway
+    depends_on:
+      ms-events:
+        condition: service_started
+    environment:
+      GATEWAY_PORT: ${GATEWAY_PORT}
+      MS_EVENTS_URL: http://ms-events:8081
+      MS_TICKETING_URL: http://ms-ticketing:8082
+    ports:
+      - "${GATEWAY_PORT}:8080"
+    networks:
+      - tickets-network
+    restart: unless-stopped
+
 networks:
   tickets-network:
     driver: bridge

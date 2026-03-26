@@ -12,7 +12,7 @@ group = 'com.tickets'
 version = '1.0-SNAPSHOT'
 
 ext {
-    set('springCloudVersion', '2024.0.0')
+    set('springCloudVersion', '2023.0.3')
 }
 
 repositories {
