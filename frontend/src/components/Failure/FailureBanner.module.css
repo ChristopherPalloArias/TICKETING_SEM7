@@ -1,0 +1,49 @@
+.banner {
+  display: flex;
+  background-color: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.leftBorder {
+  width: 4px;
+  background-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.content {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.message {
+  font-size: 0.9rem;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.highlight {
+  color: var(--color-primary);
+  font-weight: 700;
+}

@@ -6,6 +6,14 @@
   flex-direction: column;
 }
 
+/* Wrapper for animated screen transitions — fills remaining space */
+.screenWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-top: 5rem; /* below fixed NavBar */
+}
+
 .main {
   flex: 1;
   padding: 2rem 1.25rem 5rem;

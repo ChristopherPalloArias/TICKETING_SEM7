@@ -1,0 +1,74 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem 1.5rem;
+  border-radius: 0.75rem;
+  border: 2px solid var(--color-outline-variant);
+  background-color: var(--color-surface-container);
+  cursor: pointer;
+  transition: border-color 200ms ease, transform 200ms ease;
+  text-align: center;
+}
+
+.card:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cardSuccess:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+.cardFailure:hover:not(:disabled) {
+  border-color: #ef4444;
+}
+
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  transition: transform 200ms ease;
+}
+
+.card:hover:not(:disabled) .iconWrap {
+  transform: scale(1.1);
+}
+
+.iconWrapSuccess {
+  background-color: rgba(255, 107, 71, 0.1);
+}
+
+.iconWrapFailure {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.iconSuccess {
+  color: var(--color-primary);
+}
+
+.iconFailure {
+  color: #ef4444;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.desc {
+  font-size: 0.85rem;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+  line-height: 1.5;
+}

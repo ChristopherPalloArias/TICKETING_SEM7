@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, ShoppingCart } from 'lucide-react';
+import { Bell, ShoppingCart, Timer } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import styles from './NavBar.module.css';
 
 interface NavBarProps {
   activeLink?: 'eventos' | 'venues' | 'tickets';
   isTransactional?: boolean;
+  timeLeft?: string;
 }
 
-export default function NavBar({ activeLink = 'eventos', isTransactional = false }: NavBarProps) {
+export default function NavBar({ activeLink = 'eventos', isTransactional = false, timeLeft }: NavBarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -32,6 +33,12 @@ export default function NavBar({ activeLink = 'eventos', isTransactional = false
         </div>
 
         <div className={styles.right}>
+          {isTransactional && timeLeft && (
+            <div className={styles.timerPill}>
+              <Timer size={14} />
+              <span>{timeLeft}</span>
+            </div>
+          )}
           {!isTransactional && (
             <>
               <button className={styles.iconBtn} aria-label="Notificaciones">

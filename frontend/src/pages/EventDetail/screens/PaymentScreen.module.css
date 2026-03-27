@@ -1,0 +1,110 @@
+.page {
+  flex: 1;
+  padding: 2rem 1.25rem 5rem;
+}
+
+.container {
+  max-width: 42rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.totalSection {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 1rem;
+}
+
+.totalAmount {
+  font-size: clamp(3rem, 8vw, 4.5rem);
+  font-weight: 900;
+  color: var(--color-on-surface);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.totalDesc {
+  font-size: 0.9rem;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+}
+
+.optionsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .optionsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.orderSummary {
+  background-color: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.referenceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.referenceLabel {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+}
+
+.referenceValue {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.eventPreview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.eventThumb {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 0.375rem;
+  object-fit: cover;
+  filter: grayscale(100%);
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.eventInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.eventName {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.eventAccess {
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+}
