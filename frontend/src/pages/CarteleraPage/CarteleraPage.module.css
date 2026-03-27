@@ -1,0 +1,108 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface-lowest);
+}
+
+.main {
+  flex: 1;
+  padding-top: 8rem;
+  padding-bottom: 5rem;
+  padding-left: 3rem;
+  padding-right: 3rem;
+  max-width: 90rem;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.hero {
+  margin-bottom: 4rem;
+}
+
+.heroTitle {
+  font-size: clamp(4rem, 10vw, 8rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: var(--color-on-surface);
+  line-height: 0.85;
+  margin-bottom: 1.5rem;
+}
+
+.heroSubtitle {
+  font-size: 1.125rem;
+  font-weight: 300;
+  color: var(--color-on-surface-variant);
+  max-width: 40rem;
+  line-height: 1.6;
+}
+
+.filters {
+  margin-bottom: 4rem;
+}
+
+/* Footer */
+.footer {
+  border-top: 1px solid var(--color-outline-variant);
+  padding: 3rem;
+  background-color: var(--color-surface-lowest);
+}
+
+.footerInner {
+  max-width: 90rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.footerLogo {
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--color-on-surface);
+  opacity: 0.5;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 2rem;
+}
+
+.footerLink {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  opacity: 0.5;
+  transition: color 150ms ease, opacity 150ms ease;
+}
+
+.footerLink:hover {
+  color: var(--color-primary);
+  opacity: 1;
+}
+
+.footerCopy {
+  font-size: 0.65rem;
+  color: var(--color-on-surface-variant);
+  opacity: 0.3;
+  font-family: monospace;
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-top: 7rem;
+  }
+
+  .footerInner {
+    flex-direction: column;
+    text-align: center;
+  }
+}

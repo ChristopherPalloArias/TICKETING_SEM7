@@ -1,0 +1,19 @@
+.badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+}
+
+.disponible {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.agotado {
+  background-color: var(--color-surface-highest);
+  color: var(--color-on-surface-variant);
+}
