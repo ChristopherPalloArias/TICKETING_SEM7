@@ -1,6 +1,6 @@
 ---
 id: SPEC-FE-01
-status: DRAFT
+status: IN_PROGRESS
 feature: cartelera-frontend
 created: 2026-03-27
 updated: 2026-03-27
