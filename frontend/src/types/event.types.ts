@@ -29,11 +29,16 @@ export interface EventResponse {
   availableTiers: TierResponse[];
   imageUrl?: string;
   created_at: string;
+  tag?: string;
+  isLimited?: boolean;
 }
 
 export interface EventsListResponse {
   total: number;
   events: EventResponse[];
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
 }
 
 export interface EventViewModel extends EventResponse {

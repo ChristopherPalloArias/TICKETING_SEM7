@@ -1,3 +1,4 @@
+/* ── Regular card ────────────────────────────────────────────── */
 .card {
   display: flex;
   flex-direction: column;
@@ -39,6 +40,18 @@
 .badgeWrapper {
   position: absolute;
   top: 1rem;
+  left: 1rem;
+}
+
+.tagBadgeWrapper {
+  position: absolute;
+  bottom: 3.5rem;
+  left: 1rem;
+}
+
+.limitedBadgeWrapper {
+  position: absolute;
+  bottom: 1rem;
   left: 1rem;
 }
 
@@ -108,3 +121,130 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* ── Bento card (featured / tall) ────────────────────────────── */
+.bentoCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  background-color: var(--color-surface-container);
+  cursor: pointer;
+}
+
+.bentoFeatured {
+  height: 500px;
+}
+
+.bentoTall {
+  height: 500px;
+}
+
+.bentoImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 700ms ease;
+}
+
+.bentoCard:hover .bentoImage {
+  transform: scale(1.05);
+}
+
+.bentoGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, var(--color-surface) 0%, transparent 55%);
+}
+
+.bentoContent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.bentoBadges {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.25rem;
+}
+
+.bentoDate {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+}
+
+.bentoTitle {
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--color-on-surface);
+  line-height: 1.1;
+}
+
+.bentoFeatured .bentoTitle {
+  font-size: 2rem;
+}
+
+.bentoVenue {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+}
+
+.bentoPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.bentoPriceLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+}
+
+.bentoPriceValue {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--color-primary);
+}
+
+.bentoBadgeStatus {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+/* ── Limited badge (shared across variants) ──────────────────── */
+.limitedBadge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.25rem;
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+  white-space: nowrap;
+}
+

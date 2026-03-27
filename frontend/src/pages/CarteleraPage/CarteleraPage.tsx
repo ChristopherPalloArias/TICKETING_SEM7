@@ -1,4 +1,5 @@
 import NavBar from '../../components/NavBar/NavBar';
+import BottomNav from '../../components/NavBar/BottomNav';
 import FilterBar from '../../components/FilterBar/FilterBar';
 import EventGrid from '../../components/EventGrid/EventGrid';
 import { useEvents } from '../../hooks/useEvents';
@@ -6,7 +7,7 @@ import { useEventFilters } from '../../hooks/useEventFilters';
 import styles from './CarteleraPage.module.css';
 
 export default function CarteleraPage() {
-  const { events, loading, error } = useEvents();
+  const { events, loading, loadingMore, error, hasMore, loadMore } = useEvents();
   const {
     filteredEvents,
     searchQuery,
@@ -19,7 +20,7 @@ export default function CarteleraPage() {
 
   return (
     <div className={styles.page}>
-      <NavBar activeLink="eventos" />
+      <NavBar activeLink="eventos" isTransactional={false} />
 
       <main className={styles.main}>
         <header className={styles.hero}>
@@ -41,7 +42,14 @@ export default function CarteleraPage() {
           />
         </section>
 
-        <EventGrid events={filteredEvents} loading={loading} error={error} />
+        <EventGrid
+          events={filteredEvents}
+          loading={loading}
+          loadingMore={loadingMore}
+          error={error}
+          hasMore={hasMore}
+          onLoadMore={loadMore}
+        />
       </main>
 
       <footer className={styles.footer}>
@@ -55,6 +63,8 @@ export default function CarteleraPage() {
           <span className={styles.footerCopy}>© 2026 SEM7 ENTERTAINMENT</span>
         </div>
       </footer>
+
+      <BottomNav />
     </div>
   );
 }

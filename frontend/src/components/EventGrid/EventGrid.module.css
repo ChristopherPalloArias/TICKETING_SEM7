@@ -1,7 +1,51 @@
+/* ── Bento grid (featured + tall) ────────────────────────────── */
+.bentoGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .bentoGrid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.colFeatured {
+  min-width: 0;
+}
+
+.colTall {
+  min-width: 0;
+}
+
+/* ── Regular grid ────────────────────────────────────────────── */
+.regularGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 640px) {
+  .regularGrid {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 4rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .regularGrid {
+    grid-template-columns: repeat(3, 1fr);
+    row-gap: 4rem;
+  }
+}
+
+/* ── Fallback grid (kept for legacy / error/empty states) ────── */
 .grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem 2rem;
+  gap: 2rem;
 }
 
 @media (min-width: 640px) {
@@ -76,3 +120,4 @@
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.4; }
 }
+

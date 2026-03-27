@@ -30,5 +30,8 @@ requirements/<feature>.md  →  /generate-spec  →  specs/<feature>.spec.md
 | Feature | Archivo | Estado |
 |---------|---------|--------|
 | Backlog Ticketing (HU-01..HU-07) | `ticketing-historias.md` | LISTO PARA SPEC |
+| Cartelera Frontend (HU-FE-01..HU-FE-07) | `cartelera-frontend.md` | EN SPEC |
+| Detalle de Evento Frontend (HU-FE-08..HU-FE-12) | `detalle-evento-frontend.md` | LISTO PARA SPEC |
+| Checkout y Pago Frontend (HU-FE-13..HU-FE-18) | `checkout-pago-frontend.md` | LISTO PARA SPEC |
 
 > Actualiza esta tabla al agregar o procesar requerimientos.

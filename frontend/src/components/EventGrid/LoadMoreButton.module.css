@@ -1,0 +1,45 @@
+.wrapper {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0 1rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.875rem 2.5rem;
+  border-radius: 0.75rem;
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: background-color 150ms ease;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn:not(:disabled):hover {
+  background-color: #e85a38;
+}
+
+.spinner {
+  display: inline-block;
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid var(--color-on-primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

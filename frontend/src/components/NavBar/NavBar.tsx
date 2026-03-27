@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Bell, ShoppingCart } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import styles from './NavBar.module.css';
 
 interface NavBarProps {
   activeLink?: 'eventos' | 'venues' | 'tickets';
+  isTransactional?: boolean;
 }
 
-export default function NavBar({ activeLink = 'eventos' }: NavBarProps) {
+export default function NavBar({ activeLink = 'eventos', isTransactional = false }: NavBarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -15,29 +17,44 @@ export default function NavBar({ activeLink = 'eventos' }: NavBarProps) {
       <nav className={styles.nav}>
         <div className={styles.left}>
           <Link to="/eventos" className={styles.logo}>SEM7</Link>
-          <div className={styles.links}>
-            <Link
-              to="/eventos"
-              className={`${styles.link} ${activeLink === 'eventos' ? styles.linkActive : ''}`}
-            >
-              EVENTOS
-            </Link>
-            <a href="#" className={styles.link}>VENUES</a>
-            <a href="#" className={styles.link}>MY TICKETS</a>
-          </div>
+          {!isTransactional && (
+            <div className={styles.links}>
+              <Link
+                to="/eventos"
+                className={`${styles.link} ${activeLink === 'eventos' ? styles.linkActive : ''}`}
+              >
+                EVENTOS
+              </Link>
+              <a href="#" className={styles.link}>VENUES</a>
+              <a href="#" className={styles.link}>MY TICKETS</a>
+            </div>
+          )}
         </div>
 
         <div className={styles.right}>
-          <button className={styles.iconBtn} aria-label="Notificaciones">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-          </button>
-          <button className={styles.iconBtn} aria-label="Perfil">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
-            </svg>
-          </button>
+          {!isTransactional && (
+            <>
+              <button className={styles.iconBtn} aria-label="Notificaciones">
+                <Bell size={20} />
+              </button>
+              <button className={styles.iconBtn} aria-label="Carrito">
+                <ShoppingCart size={20} />
+              </button>
+              <div className={styles.avatar}>
+                <img
+                  src="https://ui-avatars.com/api/?name=User&background=3A3A3A&color=E5E2E1&size=32"
+                  alt="Perfil"
+                  width={32}
+                  height={32}
+                  referrerPolicy="no-referrer"
+                  className={styles.avatarImg}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </div>
+            </>
+          )}
           <button
             className={styles.iconBtn}
             aria-label={mobileOpen ? 'Cerrar menú' : 'Abrir menú'}

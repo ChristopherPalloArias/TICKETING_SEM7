@@ -16,6 +16,12 @@
   width: 100%;
 }
 
+@media (max-width: 767px) {
+  .main {
+    padding-bottom: 8rem; /* extra space for BottomNav */
+  }
+}
+
 .hero {
   margin-bottom: 4rem;
 }
