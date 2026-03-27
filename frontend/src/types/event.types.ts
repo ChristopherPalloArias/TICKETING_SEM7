@@ -31,6 +31,16 @@ export interface EventResponse {
   created_at: string;
   tag?: string;
   isLimited?: boolean;
+  director?: string;
+  cast?: string;
+  duration?: number;
+  author?: string;
+}
+
+export interface UseEventDetailResult {
+  event: EventResponse | null;
+  loading: boolean;
+  error: string | null;
 }
 
 export interface EventsListResponse {

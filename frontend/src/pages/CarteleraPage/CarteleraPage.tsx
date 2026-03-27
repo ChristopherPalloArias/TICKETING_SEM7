@@ -64,7 +64,7 @@ export default function CarteleraPage() {
         </div>
       </footer>
 
-      <BottomNav />
+      <BottomNav activeTab="catalog" />
     </div>
   );
 }

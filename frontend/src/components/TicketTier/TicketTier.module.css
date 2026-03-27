@@ -1,0 +1,106 @@
+.card {
+  position: relative;
+  padding: 1.1rem 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-outline-variant);
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
+  outline: none;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.available {
+  background-color: #2a2a2a;
+  border-color: var(--color-outline-variant);
+}
+
+.available:hover {
+  background-color: #303030;
+  border-color: #555;
+}
+
+.selected {
+  background-color: var(--color-surface-container);
+  border-color: #FF6B47;
+  border-width: 2px;
+}
+
+.disabled {
+  background-color: #1a1a1a;
+  border-color: rgba(58, 58, 58, 0.3);
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.tierName {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  letter-spacing: 0.02em;
+}
+
+.tierBadge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  background-color: rgba(255, 107, 71, 0.15);
+  color: #FF6B47;
+}
+
+.checkIcon {
+  color: #FF6B47;
+  flex-shrink: 0;
+}
+
+.soldOut {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+}
+
+.description {
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.price {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin-top: 0.2rem;
+  display: inline-block;
+}
+
+.priceStrike {
+  text-decoration: line-through;
+  color: var(--color-on-surface-variant);
+}
+
+.priceSelected {
+  color: #FF6B47;
+}

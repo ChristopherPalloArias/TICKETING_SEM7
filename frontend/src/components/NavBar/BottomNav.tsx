@@ -1,17 +1,36 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Search, MapPin, Ticket } from 'lucide-react';
+import { Search, MapPin, CreditCard, User } from 'lucide-react';
 import styles from './BottomNav.module.css';
 
-export default function BottomNav() {
-  const { pathname } = useLocation();
+type ActiveTab = 'catalog' | 'venues' | 'checkout' | 'payment' | 'failure' | 'success' | string;
 
-  const isActive = (path: string) => pathname.startsWith(path);
+interface BottomNavProps {
+  activeTab?: ActiveTab;
+}
+
+function resolveActiveItem(
+  pathname: string,
+  activeTab?: ActiveTab,
+): 'explore' | 'venues' | 'payment' | 'profile' {
+  if (activeTab === 'checkout' || activeTab === 'payment' || activeTab === 'failure') {
+    return 'payment';
+  }
+  if (activeTab === 'success') {
+    return 'profile';
+  }
+  if (pathname.startsWith('/venues')) return 'venues';
+  return 'explore';
+}
+
+export default function BottomNav({ activeTab }: BottomNavProps) {
+  const { pathname } = useLocation();
+  const active = resolveActiveItem(pathname, activeTab);
 
   return (
     <nav className={styles.nav} aria-label="Navegación inferior">
       <Link
         to="/eventos"
-        className={`${styles.item} ${isActive('/eventos') ? styles.itemActive : ''}`}
+        className={`${styles.item} ${active === 'explore' ? styles.itemActive : ''}`}
         aria-label="Explorar"
       >
         <Search size={22} className={styles.icon} />
@@ -20,7 +39,7 @@ export default function BottomNav() {
 
       <Link
         to="/venues"
-        className={`${styles.item} ${isActive('/venues') ? styles.itemActive : ''}`}
+        className={`${styles.item} ${active === 'venues' ? styles.itemActive : ''}`}
         aria-label="Venues"
       >
         <MapPin size={22} className={styles.icon} />
@@ -28,12 +47,21 @@ export default function BottomNav() {
       </Link>
 
       <Link
-        to="/tickets"
-        className={`${styles.item} ${isActive('/tickets') ? styles.itemActive : ''}`}
-        aria-label="Mis tickets"
+        to="/payment"
+        className={`${styles.item} ${active === 'payment' ? styles.itemActive : ''}`}
+        aria-label="Payment"
       >
-        <Ticket size={22} className={styles.icon} />
-        <span className={styles.label}>Tickets</span>
+        <CreditCard size={22} className={styles.icon} />
+        <span className={styles.label}>Payment</span>
+      </Link>
+
+      <Link
+        to="/profile"
+        className={`${styles.item} ${active === 'profile' ? styles.itemActive : ''}`}
+        aria-label="Perfil"
+      >
+        <User size={22} className={styles.icon} />
+        <span className={styles.label}>Profile</span>
       </Link>
     </nav>
   );
