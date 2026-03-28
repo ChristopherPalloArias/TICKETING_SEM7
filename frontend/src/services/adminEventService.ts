@@ -1,5 +1,13 @@
 import axios from 'axios';
-import type { AdminEventsListResponse, EventCreateFormData, RoomOption } from '../types/admin.types';
+import type {
+  AdminEventsListResponse,
+  EventCreateFormData,
+  RoomOption,
+  AdminEventResponse,
+  TierFormData,
+  AdminTierResponse,
+  TierConfigurationResponse,
+} from '../types/admin.types';
 
 const API_BASE = import.meta.env.VITE_API_URL as string;
 
@@ -17,10 +25,20 @@ export async function getAllEvents(userId: string): Promise<AdminEventsListRespo
   return res.data;
 }
 
-export async function publishEvent(eventId: string, userId: string): Promise<void> {
-  await axios.patch(`${API_BASE}/api/v1/events/${eventId}/publish`, null, {
+export async function getAdminEventById(eventId: string, userId: string): Promise<AdminEventResponse> {
+  const res = await axios.get<AdminEventResponse>(`${API_BASE}/api/v1/events/${eventId}`, {
     headers: adminHeaders(userId),
   });
+  return res.data;
+}
+
+export async function publishEvent(eventId: string, userId: string): Promise<AdminEventResponse> {
+  const res = await axios.patch<AdminEventResponse>(
+    `${API_BASE}/api/v1/events/${eventId}/publish`,
+    null,
+    { headers: adminHeaders(userId) },
+  );
+  return res.data;
 }
 
 export async function getAllRooms(userId: string): Promise<RoomOption[]> {
@@ -35,4 +53,36 @@ export async function createEvent(data: EventCreateFormData, userId: string) {
     headers: adminHeaders(userId),
   });
   return res.data;
+}
+
+// SPEC-016 — Tier management
+
+export async function getEventTiers(eventId: string): Promise<TierConfigurationResponse> {
+  const res = await axios.get<TierConfigurationResponse>(
+    `${API_BASE}/api/v1/events/${eventId}/tiers`,
+  );
+  return res.data;
+}
+
+export async function addTier(
+  eventId: string,
+  data: TierFormData,
+  userId: string,
+): Promise<AdminTierResponse> {
+  const res = await axios.post<AdminTierResponse>(
+    `${API_BASE}/api/v1/events/${eventId}/tiers/add`,
+    data,
+    { headers: adminHeaders(userId) },
+  );
+  return res.data;
+}
+
+export async function deleteTier(
+  eventId: string,
+  tierId: string,
+  userId: string,
+): Promise<void> {
+  await axios.delete(`${API_BASE}/api/v1/events/${eventId}/tiers/${tierId}`, {
+    headers: adminHeaders(userId),
+  });
 }

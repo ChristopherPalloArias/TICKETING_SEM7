@@ -4,8 +4,9 @@ import EventDetail from './pages/EventDetail/EventDetail';
 import LoginPage from './pages/admin/LoginPage/LoginPage';
 import EventsDashboard from './pages/admin/EventsDashboard/EventsDashboard';
 import CreateEventPage from './pages/admin/CreateEventPage/CreateEventPage';
+import EventDetailAdmin from './pages/admin/EventDetailAdmin/EventDetailAdmin';
 import AdminGuard from './components/admin/AdminGuard/AdminGuard';
-import AdminNavBar from './components/admin/AdminNavBar/AdminNavBar';
+import AdminLayout from './components/admin/AdminLayout/AdminLayout';
 import './styles/global.css';
 
 export default function App() {
@@ -22,18 +23,11 @@ export default function App() {
 
         {/* Rutas admin — protegidas */}
         <Route path="/admin" element={<AdminGuard />}>
-          <Route path="events" element={
-            <>
-              <AdminNavBar />
-              <EventsDashboard />
-            </>
-          } />
-          <Route path="events/new" element={
-            <>
-              <AdminNavBar />
-              <CreateEventPage />
-            </>
-          } />
+          <Route element={<AdminLayout />}>
+            <Route path="events" element={<EventsDashboard />} />
+            <Route path="events/new" element={<CreateEventPage />} />
+            <Route path="events/:id" element={<EventDetailAdmin />} />
+          </Route>
           <Route index element={<Navigate to="events" replace />} />
         </Route>
       </Routes>

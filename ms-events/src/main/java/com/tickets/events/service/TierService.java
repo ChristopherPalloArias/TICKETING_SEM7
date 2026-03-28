@@ -80,6 +80,48 @@ public class TierService {
         tierRepository.deleteByEventId(safeEventId);
     }
 
+    @Transactional
+    public TierResponse addSingleTier(UUID eventId, TierCreateRequest request, String role, String userId) {
+        UUID safeEventId = Objects.requireNonNull(eventId, "eventId must not be null");
+        validateAdminRole(role);
+        Event event = retrieveEvent(safeEventId);
+        validateDraftState(event);
+
+        validatePrice(request.price());
+        validateQuota(request.quota());
+        validateTierValidity(request);
+
+        int currentTotalQuota = calculateCurrentTotalQuota(safeEventId);
+        int newTotalQuota = currentTotalQuota + request.quota();
+
+        if (newTotalQuota > event.getCapacity()) {
+            throw new QuotaExceedsCapacityException(
+                "Total quota (" + newTotalQuota + ") exceeds event capacity (" + event.getCapacity() + ")",
+                newTotalQuota,
+                event.getCapacity()
+            );
+        }
+
+        Tier tier = toEntity(event, request);
+        Tier savedTier = tierRepository.save(tier);
+        return toTierResponse(savedTier);
+    }
+
+    @Transactional
+    public void deleteSingleTier(UUID eventId, UUID tierId, String role, String userId) {
+        UUID safeEventId = Objects.requireNonNull(eventId, "eventId must not be null");
+        UUID safeTierId = Objects.requireNonNull(tierId, "tierId must not be null");
+        validateAdminRole(role);
+        Event event = retrieveEvent(safeEventId);
+        validateDraftState(event);
+
+        Tier tier = tierRepository.findByIdAndEventId(safeTierId, safeEventId)
+            .orElseThrow(() -> new TierNotFoundException(
+                "Tier '" + safeTierId + "' not found for event '" + safeEventId + "'"));
+
+        tierRepository.delete(tier);
+    }
+
     private void validateAdminRole(String role) {
         if (role == null || !role.equalsIgnoreCase("ADMIN")) {
             throw new ForbiddenAccessException("Only users with X-Role: ADMIN can configure tiers");
@@ -99,6 +141,12 @@ public class TierService {
                 event.getStatus().name()
             );
         }
+    }
+
+    private int calculateCurrentTotalQuota(UUID eventId) {
+        return tierRepository.findByEventId(eventId).stream()
+            .mapToInt(Tier::getQuota)
+            .sum();
     }
 
     private void validateTierRequests(List<TierCreateRequest> tierRequests, Integer eventCapacity) {

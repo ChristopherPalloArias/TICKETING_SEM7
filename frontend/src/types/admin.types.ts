@@ -9,6 +9,68 @@ export interface RoomOption {
   maxCapacity: number;
 }
 
+// SPEC-016 — Tier management & publish flow
+
+export interface TierFormData {
+  tierType: 'VIP' | 'GENERAL' | 'EARLY_BIRD';
+  price: number;
+  quota: number;
+  validFrom?: string;
+  validUntil?: string;
+}
+
+export interface AdminTierResponse {
+  id: string;
+  tierType: 'VIP' | 'GENERAL' | 'EARLY_BIRD';
+  price: number;
+  quota: number;
+  validFrom: string | null;
+  validUntil: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TierConfigurationResponse {
+  eventId: string;
+  tiers: AdminTierResponse[];
+}
+
+export interface BreadcrumbSegment {
+  label: string;
+  path: string;
+}
+
+export interface TierFormProps {
+  eventId: string;
+  eventCapacity: number;
+  currentTotalQuota: number;
+  onTierAdded: (tier: AdminTierResponse) => void;
+  onCancel: () => void;
+}
+
+export interface TierCardProps {
+  tier: AdminTierResponse;
+  isDraft: boolean;
+  onDelete: (tierId: string) => void;
+}
+
+export interface CapacityBarProps {
+  assignedQuota: number;
+  totalCapacity: number;
+}
+
+export interface BreadcrumbsProps {
+  segments: BreadcrumbSegment[];
+}
+
+export interface PublishModalProps {
+  isOpen: boolean;
+  eventTitle: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  loading: boolean;
+}
+
 export interface AdminEventResponse {
   id: string;
   title: string;

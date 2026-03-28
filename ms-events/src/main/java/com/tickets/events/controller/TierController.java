@@ -89,6 +89,49 @@ public class TierController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{eventId}/tiers/add")
+    @Operation(
+        summary = "Agregar un tier individual a un evento",
+        description = "Agrega un tier individual a un evento en estado DRAFT. Es aditivo: acepta agregar aunque ya haya tiers. Solo usuarios con rol ADMIN pueden agregar tiers."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Tier agregado exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos o cupo excede aforo del evento"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado - se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "404", description = "Evento no encontrado"),
+        @ApiResponse(responseCode = "409", description = "El evento no está en estado DRAFT")
+    })
+    public ResponseEntity<TierResponse> addSingleTier(
+        @PathVariable UUID eventId,
+        @Valid @RequestBody TierCreateRequest request,
+        @RequestHeader("X-Role") String role,
+        @RequestHeader(value = "X-User-Id", required = false) String userId
+    ) {
+        TierResponse response = tierService.addSingleTier(eventId, request, role, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @DeleteMapping("/{eventId}/tiers/{tierId}")
+    @Operation(
+        summary = "Eliminar un tier individual de un evento",
+        description = "Elimina un tier individual de un evento en estado DRAFT. Solo usuarios con rol ADMIN pueden eliminar tiers."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Tier eliminado exitosamente"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado - se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "404", description = "Tier o evento no encontrado"),
+        @ApiResponse(responseCode = "409", description = "El evento no está en estado DRAFT")
+    })
+    public ResponseEntity<Void> deleteSingleTier(
+        @PathVariable UUID eventId,
+        @PathVariable UUID tierId,
+        @RequestHeader("X-Role") String role,
+        @RequestHeader(value = "X-User-Id", required = false) String userId
+    ) {
+        tierService.deleteSingleTier(eventId, tierId, role, userId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/{eventId}/tiers/{tierId}/quota")
     @Operation(
         summary = "Decrementar quota de un tier",
