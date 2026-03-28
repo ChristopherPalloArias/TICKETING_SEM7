@@ -13,8 +13,8 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         <Link to="/eventos" className={styles.link} onClick={onClose}>
           EVENTOS
         </Link>
-        <a href="#" className={styles.link} onClick={onClose}>VENUES</a>
-        <a href="#" className={styles.link} onClick={onClose}>MY TICKETS</a>
+        <Link to="/venues" className={styles.link} onClick={onClose}>VENUES</Link>
+        <Link to="/mis-tickets" className={styles.link} onClick={onClose}>MY TICKETS</Link>
       </div>
     </div>
   );

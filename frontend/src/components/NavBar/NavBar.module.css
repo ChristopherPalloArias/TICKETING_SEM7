@@ -93,6 +93,32 @@
   display: block;
 }
 
+/* Bell wrapper — needed for positioning the dropdown panel */
+.bellWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Unread badge on Bell */
+.badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 1rem;
+  height: 1rem;
+  padding: 0 0.2rem;
+  border-radius: 9999px;
+  background-color: var(--color-error, #cf6679);
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
 /* hamburger only visible on mobile */
 .iconBtn:last-child {
   display: none;

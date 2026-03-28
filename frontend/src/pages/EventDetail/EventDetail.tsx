@@ -12,6 +12,8 @@ import SuccessScreen from './screens/SuccessScreen';
 import FailureScreen from './screens/FailureScreen';
 import { useEventDetail } from '../../hooks/useEventDetail';
 import { createReservation, processPayment } from '../../services/reservationService';
+import { useNotifications } from '../../contexts/NotificationsContext';
+import { saveTicket } from '../../services/ticketsStorage';
 import type { Screen, Order, TicketInfo } from '../../types/flow.types';
 import styles from './EventDetail.module.css';
 
@@ -33,12 +35,14 @@ const screenTransition = { duration: 0.4, ease: [0.22, 1, 0.36, 1] as [number, n
 
 export default function EventDetail() {
   const { event, loading, error } = useEventDetail();
+  const { addNotification } = useNotifications();
   const [selectedTierId, setSelectedTierId] = useState<string | null>(null);
   const [screen, setScreen] = useState<Screen>('details');
   const [order, setOrder] = useState<Order | null>(null);
   const [ticket, setTicket] = useState<TicketInfo | null>(null);
   const [timeLeft, setTimeLeft] = useState(TIMER_INIT);
   const [retryCount, setRetryCount] = useState(0);
+  const timerNotifiedRef = useRef(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Timer: runs only during transactional screens (checkout/payment/failure)
@@ -59,6 +63,15 @@ export default function EventDetail() {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [screen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Notify when timer hits zero
+  useEffect(() => {
+    const transactional = screen === 'checkout' || screen === 'payment' || screen === 'failure';
+    if (transactional && timeLeft === 0 && !timerNotifiedRef.current && event) {
+      timerNotifiedRef.current = true;
+      addNotification('timer_expired', event.title);
+    }
+  }, [timeLeft, screen, event, addNotification]);
 
   const isTransactional = screen === 'checkout' || screen === 'payment' || screen === 'success' || screen === 'failure';
   const showTimer = isTransactional && screen !== 'success';
@@ -95,7 +108,7 @@ export default function EventDetail() {
     );
     if (result.status === 'CONFIRMED' && result.ticket) {
       if (intervalRef.current) clearInterval(intervalRef.current);
-      setTicket({
+      const ticketInfo: TicketInfo = {
         ticketId: result.ticket.id,
         reservationId: result.ticket.reservationId,
         eventId: result.ticket.eventId,
@@ -104,10 +117,25 @@ export default function EventDetail() {
         price: result.ticket.price,
         status: result.ticket.status,
         createdAt: result.ticket.createdAt,
-      });
+      };
+      setTicket(ticketInfo);
+      // Persist to localStorage for My Tickets page
+      if (event && order) {
+        saveTicket({
+          ticket: ticketInfo,
+          event: { id: event.id, title: event.title, date: event.date, room: event.room, imageUrl: event.imageUrl },
+          tierType: order.tierType,
+          quantity: order.quantity,
+          total: order.total,
+          email: order.email,
+          reference: order.reference,
+          purchasedAt: new Date().toISOString(),
+        });
+      }
       setScreen('success');
     } else {
       setRetryCount((c) => c + 1);
+      if (event) addNotification('payment_rejected', event.title);
       setScreen('failure');
     }
   };

@@ -1,0 +1,267 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface-lowest);
+}
+
+.main {
+  flex: 1;
+  padding-top: 8rem;
+  padding-bottom: 5rem;
+  padding-left: 3rem;
+  padding-right: 3rem;
+  max-width: 90rem;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    padding-bottom: 8rem;
+  }
+}
+
+/* ── Hero ─────────────────────────────────────────────────────── */
+.hero {
+  margin-bottom: 4rem;
+}
+
+.heroTitle {
+  font-size: clamp(4rem, 10vw, 8rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: var(--color-on-surface);
+  line-height: 0.85;
+  margin-bottom: 1.5rem;
+}
+
+.heroSubtitle {
+  font-size: 1.125rem;
+  font-weight: 300;
+  color: var(--color-on-surface-variant);
+  max-width: 40rem;
+  line-height: 1.6;
+}
+
+/* ── Grid ─────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
+  }
+}
+
+/* ── Card ─────────────────────────────────────────────────────── */
+.card {
+  border-radius: 1rem;
+  overflow: hidden;
+  background-color: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  transition: border-color 200ms ease, transform 200ms ease;
+}
+
+.card:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+}
+
+/* ── Visual (colored strip) ──────────────────────────────────── */
+.cardVisual {
+  position: relative;
+  height: 200px;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--hue), 40%, 20%) 0%,
+    hsl(var(--hue), 30%, 10%) 100%
+  );
+}
+
+.cardGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 50%, var(--color-surface-container) 100%);
+}
+
+.cardCapacityBadge {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 0.3rem 0.65rem;
+  border-radius: 2rem;
+  backdrop-filter: blur(8px);
+}
+
+/* ── Body ─────────────────────────────────────────────────────── */
+.cardBody {
+  padding: 1.5rem;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.4rem;
+}
+
+.pin {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.cardCity {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.cardName {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--color-on-surface);
+  line-height: 1.1;
+  margin-bottom: 0.75rem;
+}
+
+.cardDesc {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 1.5rem;
+}
+
+/* ── Upcoming events ──────────────────────────────────────────── */
+.upcoming {
+  border-top: 1px solid var(--color-outline-variant);
+  padding-top: 1rem;
+}
+
+.upcomingLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 0.75rem;
+}
+
+.eventList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.eventLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--color-surface-lowest);
+  transition: background-color 150ms, color 150ms;
+}
+
+.eventLink:hover {
+  background-color: var(--color-surface);
+}
+
+.eventLink:hover .eventArrow {
+  color: var(--color-primary);
+  transform: translateX(2px);
+}
+
+.eventTitle {
+  flex: 1;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eventDate {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  white-space: nowrap;
+}
+
+.eventArrow {
+  color: var(--color-on-surface-variant);
+  flex-shrink: 0;
+  transition: color 150ms, transform 150ms;
+}
+
+.noEvents {
+  font-size: 0.75rem;
+  color: var(--color-on-surface-variant);
+  font-style: italic;
+  border-top: 1px solid var(--color-outline-variant);
+  padding-top: 1rem;
+}
+
+/* ── Skeleton ─────────────────────────────────────────────────── */
+.skeletonGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+.skeleton {
+  height: 420px;
+  border-radius: 1rem;
+  background: linear-gradient(90deg, var(--color-surface-container) 25%, var(--color-surface) 50%, var(--color-surface-container) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Error ────────────────────────────────────────────────────── */
+.errorState {
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.errorMsg {
+  font-size: 1rem;
+  color: var(--color-on-surface-variant);
+}

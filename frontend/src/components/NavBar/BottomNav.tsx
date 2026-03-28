@@ -47,12 +47,12 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
       </Link>
 
       <Link
-        to="/payment"
+        to="/mis-tickets"
         className={`${styles.item} ${active === 'payment' ? styles.itemActive : ''}`}
-        aria-label="Payment"
+        aria-label="Mis tickets"
       >
         <CreditCard size={22} className={styles.icon} />
-        <span className={styles.label}>Payment</span>
+        <span className={styles.label}>My Tickets</span>
       </Link>
 
       <Link

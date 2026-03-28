@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell, ShoppingCart, Timer } from 'lucide-react';
 import MobileMenu from './MobileMenu';
+import NotificationsPanel from './NotificationsPanel';
+import { useNotifications } from '../../contexts/NotificationsContext';
 import styles from './NavBar.module.css';
 
 interface NavBarProps {
@@ -12,6 +14,9 @@ interface NavBarProps {
 
 export default function NavBar({ activeLink = 'eventos', isTransactional = false, timeLeft }: NavBarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const bellWrapRef = useRef<HTMLDivElement>(null);
+  const { unreadCount } = useNotifications();
 
   return (
     <>
@@ -26,8 +31,18 @@ export default function NavBar({ activeLink = 'eventos', isTransactional = false
               >
                 EVENTOS
               </Link>
-              <a href="#" className={styles.link}>VENUES</a>
-              <a href="#" className={styles.link}>MY TICKETS</a>
+              <Link
+                to="/venues"
+                className={`${styles.link} ${activeLink === 'venues' ? styles.linkActive : ''}`}
+              >
+                VENUES
+              </Link>
+              <Link
+                to="/mis-tickets"
+                className={`${styles.link} ${activeLink === 'tickets' ? styles.linkActive : ''}`}
+              >
+                MY TICKETS
+              </Link>
             </div>
           )}
         </div>
@@ -41,12 +56,22 @@ export default function NavBar({ activeLink = 'eventos', isTransactional = false
           )}
           {!isTransactional && (
             <>
-              <button className={styles.iconBtn} aria-label="Notificaciones">
-                <Bell size={20} />
-              </button>
-              <button className={styles.iconBtn} aria-label="Carrito">
+              <div ref={bellWrapRef} className={styles.bellWrap}>
+                <button
+                  className={styles.iconBtn}
+                  aria-label="Notificaciones"
+                  onClick={() => setNotifOpen((o) => !o)}
+                >
+                  <Bell size={20} />
+                  {unreadCount > 0 && (
+                    <span className={styles.badge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+                  )}
+                </button>
+                <NotificationsPanel isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
+              </div>
+              <Link to="/mis-tickets" className={styles.iconBtn} aria-label="Mis tickets">
                 <ShoppingCart size={20} />
-              </button>
+              </Link>
               <div className={styles.avatar}>
                 <img
                   src="https://ui-avatars.com/api/?name=User&background=3A3A3A&color=E5E2E1&size=32"
