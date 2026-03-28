@@ -41,6 +41,11 @@ export default function EventCard({ event, onReservar, variant = 'regular', inde
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4, delay: index * 0.1 }}
         whileHover={{ scale: 1.02 }}
+        onClick={() => !isSoldOut && onReservar(event.id)}
+        role="button"
+        tabIndex={isSoldOut ? -1 : 0}
+        onKeyDown={(e) => e.key === 'Enter' && !isSoldOut && onReservar(event.id)}
+        aria-label={isSoldOut ? `${event.title} - Agotado` : `Ver ${event.title}`}
       >
         <img
           src={event.imageUrl ?? PLACEHOLDER_IMAGE}
@@ -70,6 +75,13 @@ export default function EventCard({ event, onReservar, variant = 'regular', inde
               <span className={styles.bentoPriceValue}>${event.minPrice}</span>
             </p>
           )}
+          <button
+            disabled={isSoldOut}
+            className={`${styles.btn} ${isSoldOut ? styles.btnSoldOut : styles.btnAvailable}`}
+            onClick={(e) => { e.stopPropagation(); !isSoldOut && onReservar(event.id); }}
+          >
+            {isSoldOut ? 'Sold Out' : 'Reservar'}
+          </button>
         </div>
 
         <div className={styles.bentoBadgeStatus}>

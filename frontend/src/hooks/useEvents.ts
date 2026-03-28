@@ -63,7 +63,7 @@ export function useEvents(): UseEventsResult {
       setHasMore(data.hasMore ?? false);
       setPage(nextPage);
     } catch {
-      // error in load-more does not clear existing events
+      setError('No se pudieron cargar más eventos. Intenta de nuevo más tarde.');
     } finally {
       setLoadingMore(false);
     }
