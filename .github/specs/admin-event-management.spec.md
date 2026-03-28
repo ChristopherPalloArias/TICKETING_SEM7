@@ -1,6 +1,6 @@
 ---
 id: SPEC-015
-status: DRAFT
+status: APPROVED
 feature: admin-event-management
 created: 2026-03-27
 updated: 2026-03-27

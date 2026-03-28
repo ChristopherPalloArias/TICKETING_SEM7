@@ -1,4 +1,4 @@
-# Ticketing System — Semillero 7
+# Ticketing System — Sem 7
 
 Sistema de ticketing para eventos de artes escénicas. Arquitectura de microservicios con Java 17, Spring Boot 3.2, PostgreSQL, RabbitMQ y frontend React 19.
 

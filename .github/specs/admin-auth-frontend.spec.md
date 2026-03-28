@@ -1,9 +1,9 @@
 ---
 id: SPEC-014
-status: DRAFT
+status: IMPLEMENTED
 feature: admin-auth-frontend
 created: 2026-03-27
-updated: 2026-03-27
+updated: 2026-03-28
 author: spec-generator
 version: "1.0"
 related-specs: [SPEC-008]
