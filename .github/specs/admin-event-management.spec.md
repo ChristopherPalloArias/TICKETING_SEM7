@@ -1,9 +1,9 @@
 ---
 id: SPEC-015
-status: APPROVED
+status: IMPLEMENTED
 feature: admin-event-management
 created: 2026-03-27
-updated: 2026-03-27
+updated: 2026-03-28
 author: spec-generator
 version: "1.0"
 related-specs: [SPEC-011, SPEC-014]

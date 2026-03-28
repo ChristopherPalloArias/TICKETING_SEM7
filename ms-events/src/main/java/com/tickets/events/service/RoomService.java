@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -38,6 +39,12 @@ public class RoomService {
             .orElseThrow(() -> new RoomNotFoundException("Room with ID " + roomId + " not found"));
 
         return mapToResponse(room);
+    }
+
+    public List<RoomResponse> getAllRooms() {
+        return roomRepository.findAll().stream()
+            .map(this::mapToResponse)
+            .toList();
     }
 
     private RoomResponse mapToResponse(Room room) {

@@ -1,5 +1,6 @@
 package com.tickets.events.service;
 
+import com.tickets.events.dto.AdminEventDetailResponse;
 import com.tickets.events.dto.AvailableTierResponse;
 import com.tickets.events.dto.EventCreateRequest;
 import com.tickets.events.dto.EventDetailResponse;
@@ -16,6 +17,7 @@ import com.tickets.events.repository.TierRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -241,5 +243,50 @@ public class EventService {
         Event saved = eventRepository.save(event);
 
         return convertToResponse(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminEventDetailResponse> getAllEvents() {
+        List<Event> allEvents = eventRepository.findAll();
+        return allEvents.stream()
+            .map(this::convertToAdminEventDetailResponse)
+            .toList();
+    }
+
+    private AdminEventDetailResponse convertToAdminEventDetailResponse(Event event) {
+        Room room = event.getRoom();
+        if (room == null) {
+            room = retrieveRoom(event.getRoomId());
+        }
+        RoomResponse roomResponse = convertRoomToResponse(room);
+
+        List<Tier> tiers = tierRepository.findByEventId(event.getId());
+        List<AvailableTierResponse> availableTiers = tiers.stream()
+            .map(tierService::toAvailableTierResponse)
+            .toList();
+
+        return new AdminEventDetailResponse(
+            event.getId(),
+            event.getTitle(),
+            event.getDescription(),
+            event.getDate(),
+            event.getCapacity(),
+            event.getStatus(),
+            roomResponse,
+            availableTiers,
+            event.getImageUrl(),
+            event.getSubtitle(),
+            event.getLocation(),
+            event.getDirector(),
+            event.getCastMembers(),
+            event.getDuration(),
+            event.getTag(),
+            event.getIsLimited(),
+            event.getIsFeatured(),
+            event.getAuthor(),
+            event.getCreatedBy(),
+            event.getCreatedAt(),
+            event.getUpdatedAt()
+        );
     }
 }

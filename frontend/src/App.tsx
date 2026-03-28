@@ -3,6 +3,7 @@ import CarteleraPage from './pages/CarteleraPage/CarteleraPage';
 import EventDetail from './pages/EventDetail/EventDetail';
 import LoginPage from './pages/admin/LoginPage/LoginPage';
 import EventsDashboard from './pages/admin/EventsDashboard/EventsDashboard';
+import CreateEventPage from './pages/admin/CreateEventPage/CreateEventPage';
 import AdminGuard from './components/admin/AdminGuard/AdminGuard';
 import AdminNavBar from './components/admin/AdminNavBar/AdminNavBar';
 import './styles/global.css';
@@ -25,6 +26,12 @@ export default function App() {
             <>
               <AdminNavBar />
               <EventsDashboard />
+            </>
+          } />
+          <Route path="events/new" element={
+            <>
+              <AdminNavBar />
+              <CreateEventPage />
             </>
           } />
           <Route index element={<Navigate to="events" replace />} />

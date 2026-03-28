@@ -1,8 +1,10 @@
 package com.tickets.events.controller;
 
+import com.tickets.events.dto.AdminEventDetailResponse;
 import com.tickets.events.dto.EventCreateRequest;
 import com.tickets.events.dto.EventDetailResponse;
 import com.tickets.events.dto.EventResponse;
+import com.tickets.events.exception.ForbiddenAccessException;
 import com.tickets.events.service.EventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -95,5 +98,25 @@ public class EventController {
     ) {
         EventResponse response = eventService.publishEvent(eventId, role);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/admin")
+    @Operation(
+        summary = "Listar todos los eventos (admin)",
+        description = "Devuelve todos los eventos sin filtrar por estado (DRAFT, PUBLISHED, CANCELLED). Solo usuarios con rol ADMIN."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista de todos los eventos obtenida exitosamente"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado - se requiere rol ADMIN")
+    })
+    public ResponseEntity<Map<String, Object>> getAllEventsAdmin(
+        @RequestHeader(value = "X-Role", required = false) String role,
+        @RequestHeader(value = "X-User-Id", required = false) String userId
+    ) {
+        if (!"ADMIN".equals(role)) {
+            throw new ForbiddenAccessException("Only users with X-Role: ADMIN can access admin endpoints");
+        }
+        List<AdminEventDetailResponse> events = eventService.getAllEvents();
+        return ResponseEntity.ok(Map.of("total", events.size(), "events", events));
     }
 }

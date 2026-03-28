@@ -1,0 +1,24 @@
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.draft {
+  background-color: #7a6000;
+  color: #FFE082;
+}
+
+.published {
+  background-color: #1b5e20;
+  color: #A5D6A7;
+}
+
+.cancelled {
+  background-color: #7f1d1d;
+  color: #FFCDD2;
+}

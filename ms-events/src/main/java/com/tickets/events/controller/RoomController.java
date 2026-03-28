@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -42,6 +43,24 @@ public class RoomController {
         }
         RoomResponse response = roomService.createRoom(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping
+    @Operation(
+        summary = "Listar todas las salas",
+        description = "Devuelve todas las salas registradas. Usado por el selector de sala del formulario de administración."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista de salas obtenida exitosamente"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado - se requiere rol ADMIN")
+    })
+    public ResponseEntity<List<RoomResponse>> getAllRooms(
+            @RequestHeader(value = "X-Role", required = false) String role) {
+        if (!"ADMIN".equals(role)) {
+            throw new ForbiddenAccessException("Only users with X-Role: ADMIN can list rooms");
+        }
+        List<RoomResponse> rooms = roomService.getAllRooms();
+        return ResponseEntity.ok(rooms);
     }
 
     @GetMapping("/{roomId}")
