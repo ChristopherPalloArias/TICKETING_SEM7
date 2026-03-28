@@ -14,12 +14,17 @@ import com.tickets.events.repository.EventRepository;
 import com.tickets.events.repository.RoomRepository;
 import com.tickets.events.repository.TierRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -53,7 +58,17 @@ public class EventService {
         event.setCapacity(request.capacity());
         event.setStatus(EventStatus.DRAFT);
         event.setCreatedBy(userId);
-        
+        event.setImageUrl(request.imageUrl());
+        event.setSubtitle(request.subtitle());
+        event.setLocation(request.location());
+        event.setDirector(request.director());
+        event.setCastMembers(request.castMembers());
+        event.setDuration(request.duration());
+        event.setTag(request.tag());
+        event.setIsLimited(request.isLimited() != null ? request.isLimited() : false);
+        event.setIsFeatured(request.isFeatured() != null ? request.isFeatured() : false);
+        event.setAuthor(request.author());
+
         Event savedEvent = eventRepository.save(event);
         
         return convertToResponse(savedEvent);
@@ -111,17 +126,36 @@ public class EventService {
             event.getStatus(),
             event.getCreatedAt(),
             event.getUpdatedAt(),
-            event.getCreatedBy()
+            event.getCreatedBy(),
+            event.getImageUrl(),
+            event.getSubtitle(),
+            event.getLocation(),
+            event.getDirector(),
+            event.getCastMembers(),
+            event.getDuration(),
+            event.getTag(),
+            event.getIsLimited(),
+            event.getIsFeatured(),
+            event.getAuthor()
         );
     }
 
     @Transactional(readOnly = true)
-    public List<EventDetailResponse> getPublishedEvents() {
-        List<Event> publishedEvents = eventRepository.findByStatus(EventStatus.PUBLISHED);
-        
-        return publishedEvents.stream()
+    public Map<String, Object> getPublishedEvents(int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Event> publishedPage = eventRepository.findByStatus(EventStatus.PUBLISHED, pageable);
+
+        List<EventDetailResponse> events = publishedPage.getContent().stream()
             .map(this::convertToEventDetailResponse)
             .toList();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("total", publishedPage.getTotalElements());
+        response.put("events", events);
+        response.put("page", page);
+        response.put("pageSize", pageSize);
+        response.put("hasMore", page < publishedPage.getTotalPages());
+        return response;
     }
 
     @Transactional(readOnly = true)
@@ -160,7 +194,17 @@ public class EventService {
             event.getCapacity(),
             roomResponse,
             availableTiers,
-            event.getCreatedAt()
+            event.getCreatedAt(),
+            event.getImageUrl(),
+            event.getSubtitle(),
+            event.getLocation(),
+            event.getDirector(),
+            event.getCastMembers(),
+            event.getDuration(),
+            event.getTag(),
+            event.getIsLimited(),
+            event.getIsFeatured(),
+            event.getAuthor()
         );
     }
 

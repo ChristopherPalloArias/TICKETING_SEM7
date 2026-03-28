@@ -53,7 +53,37 @@ public class Event {
     
     @Column(name = "created_by", nullable = false, length = 100)
     private String createdBy;
-    
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
+    @Column(name = "subtitle", length = 300)
+    private String subtitle;
+
+    @Column(name = "location", length = 300)
+    private String location;
+
+    @Column(name = "director", length = 200)
+    private String director;
+
+    @Column(name = "cast_members", length = 500)
+    private String castMembers;
+
+    @Column(name = "duration")
+    private Integer duration;
+
+    @Column(name = "tag", length = 100)
+    private String tag;
+
+    @Column(name = "is_limited", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isLimited = false;
+
+    @Column(name = "is_featured", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isFeatured = false;
+
+    @Column(name = "author", length = 200)
+    private String author;
+
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")
     private LocalDateTime createdAt;
     

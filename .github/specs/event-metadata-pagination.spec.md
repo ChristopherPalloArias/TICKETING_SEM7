@@ -1,6 +1,6 @@
 ---
 id: SPEC-011
-status: DRAFT
+status: APPROVED
 feature: event-metadata-pagination
 created: 2026-03-27
 updated: 2026-03-27

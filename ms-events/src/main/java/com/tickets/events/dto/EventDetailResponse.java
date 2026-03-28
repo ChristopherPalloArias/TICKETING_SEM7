@@ -12,5 +12,16 @@ public record EventDetailResponse(
     Integer capacity,
     RoomResponse room,
     List<AvailableTierResponse> availableTiers,
-    LocalDateTime created_at
+    LocalDateTime created_at,
+    // --- metadata fields ---
+    String imageUrl,
+    String subtitle,
+    String location,
+    String director,
+    String castMembers,
+    Integer duration,
+    String tag,
+    Boolean isLimited,
+    Boolean isFeatured,
+    String author
 ) {}

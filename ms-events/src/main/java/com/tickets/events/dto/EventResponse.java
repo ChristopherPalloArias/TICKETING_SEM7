@@ -14,5 +14,16 @@ public record EventResponse(
     EventStatus status,
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
-    String createdBy
+    String createdBy,
+    // --- metadata fields ---
+    String imageUrl,
+    String subtitle,
+    String location,
+    String director,
+    String castMembers,
+    Integer duration,
+    String tag,
+    Boolean isLimited,
+    Boolean isFeatured,
+    String author
 ) {}

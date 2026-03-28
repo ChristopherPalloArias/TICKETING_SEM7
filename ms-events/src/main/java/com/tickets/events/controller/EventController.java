@@ -13,8 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -50,17 +48,17 @@ public class EventController {
     @GetMapping
     @Operation(
         summary = "Obtener eventos publicados",
-        description = "Obtiene lista de todos los eventos con status PUBLISHED y su disponibilidad de tiers. No requiere autenticación."
+        description = "Obtiene lista paginada de todos los eventos con status PUBLISHED y su disponibilidad de tiers. No requiere autenticación."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de eventos obtenida exitosamente"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public ResponseEntity<Map<String, Object>> getPublishedEvents() {
-        List<EventDetailResponse> events = eventService.getPublishedEvents();
-        Map<String, Object> response = new HashMap<>();
-        response.put("total", events.size());
-        response.put("events", events);
+    public ResponseEntity<Map<String, Object>> getPublishedEvents(
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int pageSize
+    ) {
+        Map<String, Object> response = eventService.getPublishedEvents(page, pageSize);
         return ResponseEntity.ok(response);
     }
 

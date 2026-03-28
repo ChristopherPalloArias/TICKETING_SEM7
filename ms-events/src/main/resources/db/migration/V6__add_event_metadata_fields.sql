@@ -1,0 +1,13 @@
+ALTER TABLE event ADD COLUMN image_url VARCHAR(500);
+ALTER TABLE event ADD COLUMN subtitle VARCHAR(300);
+ALTER TABLE event ADD COLUMN location VARCHAR(300);
+ALTER TABLE event ADD COLUMN director VARCHAR(200);
+ALTER TABLE event ADD COLUMN cast_members VARCHAR(500);
+ALTER TABLE event ADD COLUMN duration INTEGER;
+ALTER TABLE event ADD COLUMN tag VARCHAR(100);
+ALTER TABLE event ADD COLUMN is_limited BOOLEAN DEFAULT FALSE;
+ALTER TABLE event ADD COLUMN is_featured BOOLEAN DEFAULT FALSE;
+ALTER TABLE event ADD COLUMN author VARCHAR(200);
+
+-- Constraint: duration must be >= 1 when not null
+ALTER TABLE event ADD CONSTRAINT chk_event_duration CHECK (duration IS NULL OR duration >= 1);

@@ -22,5 +22,24 @@ public record EventCreateRequest(
     
     @NotNull(message = "capacity: must not be null")
     @Min(value = 1, message = "capacity: must be at least 1")
-    Integer capacity
+    Integer capacity,
+    // --- metadata fields (all optional) ---
+    @Size(max = 500, message = "imageUrl: size must be between 0 and 500")
+    String imageUrl,
+    @Size(max = 300, message = "subtitle: size must be between 0 and 300")
+    String subtitle,
+    @Size(max = 300, message = "location: size must be between 0 and 300")
+    String location,
+    @Size(max = 200, message = "director: size must be between 0 and 200")
+    String director,
+    @Size(max = 500, message = "castMembers: size must be between 0 and 500")
+    String castMembers,
+    @Min(value = 1, message = "duration: must be greater than or equal to 1")
+    Integer duration,
+    @Size(max = 100, message = "tag: size must be between 0 and 100")
+    String tag,
+    Boolean isLimited,
+    Boolean isFeatured,
+    @Size(max = 200, message = "author: size must be between 0 and 200")
+    String author
 ) {}
