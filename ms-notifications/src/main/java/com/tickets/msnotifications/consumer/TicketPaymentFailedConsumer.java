@@ -41,6 +41,7 @@ public class TicketPaymentFailedConsumer {
         }
 
         String motif = event.motif() != null ? event.motif() : NotificationType.PAYMENT_FAILED.name();
+        String eventName = event.eventName();
 
         try {
             notificationService.createIfNotExists(
@@ -49,7 +50,8 @@ public class TicketPaymentFailedConsumer {
                 event.tierId(),
                 event.buyerId(),
                 NotificationType.PAYMENT_FAILED,
-                motif
+                motif,
+                eventName
             );
             channel.basicAck(deliveryTag, false);
             log.info("ticket.payment_failed processed: reservationId={} buyerId={}", event.reservationId(), event.buyerId());

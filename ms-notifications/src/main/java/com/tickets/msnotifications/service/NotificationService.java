@@ -27,24 +27,16 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
 
-    /**
-     * Creates a notification if one does not already exist for (reservationId, type).
-     * Applies priority rule: if PAYMENT_SUCCESS already exists for a reservationId,
-     * RESERVATION_EXPIRED is silently skipped.
-     *
-     * @return true if created, false if skipped (idempotency or priority rule)
-     */
     @Transactional
     public boolean createIfNotExists(UUID reservationId, UUID eventId, UUID tierId,
-                                     UUID buyerId, NotificationType type, String motif) {
-        // Priority rule: skip RESERVATION_EXPIRED if PAYMENT_SUCCESS already exists
+                                     UUID buyerId, NotificationType type, String motif,
+                                     String eventName) {
         if (type == NotificationType.RESERVATION_EXPIRED
                 && notificationRepository.existsByReservationIdAndType(reservationId, NotificationType.PAYMENT_SUCCESS)) {
             log.info("Skipping RESERVATION_EXPIRED: PAYMENT_SUCCESS already exists for reservationId={}", reservationId);
             return false;
         }
 
-        // Idempotency: skip if same (reservationId, type) already persisted
         if (notificationRepository.existsByReservationIdAndType(reservationId, type)) {
             log.debug("Skipping duplicate notification type={} for reservationId={}", type, reservationId);
             return false;
@@ -57,6 +49,7 @@ public class NotificationService {
             .buyerId(buyerId)
             .type(type)
             .motif(motif)
+            .eventName(eventName)
             .status(NotificationStatus.PROCESSED)
             .createdAt(Instant.now())
             .build();
@@ -64,12 +57,10 @@ public class NotificationService {
         try {
             notificationRepository.save(notification);
         } catch (DataIntegrityViolationException ex) {
-            // Concurrent duplicate — unique constraint (reservation_id, type) fired.
-            // Treat as already-existing: idempotent ACK, no retry.
             log.debug("Concurrent duplicate suppressed by constraint: type={} reservationId={}", type, reservationId);
             return false;
         }
-        log.info("Notification created: type={} reservationId={} buyerId={}", type, reservationId, buyerId);
+        log.info("Notification created: type={} reservationId={} buyerId={} eventName={}", type, reservationId, buyerId, eventName);
         return true;
     }
 
@@ -82,7 +73,7 @@ public class NotificationService {
 
     public PagedNotificationResponse getByBuyerId(UUID buyerId, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Notification> result = notificationRepository.findByBuyerId(buyerId, pageable);
+        Page<Notification> result = notificationRepository.findByBuyerIdAndArchivedFalse(buyerId, pageable);
         List<NotificationResponse> content = result.getContent().stream()
             .map(this::toResponse)
             .collect(Collectors.toList());
@@ -95,6 +86,25 @@ public class NotificationService {
         );
     }
 
+    @Transactional
+    public int markAllReadByBuyerId(UUID buyerId) {
+        int count = notificationRepository.markAllReadByBuyerId(buyerId);
+        log.info("Marked {} notifications as read for buyerId={}", count, buyerId);
+        return count;
+    }
+
+    @Transactional(readOnly = true)
+    public long countUnreadByBuyerId(UUID buyerId) {
+        return notificationRepository.countByBuyerIdAndArchivedFalseAndReadFalse(buyerId);
+    }
+
+    @Transactional
+    public int archiveAllByBuyerId(UUID buyerId) {
+        int count = notificationRepository.archiveAllByBuyerId(buyerId);
+        log.info("Archived {} notifications for buyerId={}", count, buyerId);
+        return count;
+    }
+
     private NotificationResponse toResponse(Notification n) {
         return new NotificationResponse(
             n.getId(),
@@ -105,6 +115,9 @@ public class NotificationService {
             n.getType().name(),
             n.getMotif(),
             n.getStatus().name(),
+            Boolean.TRUE.equals(n.getRead()),
+            Boolean.TRUE.equals(n.getArchived()),
+            n.getEventName(),
             n.getCreatedAt()
         );
     }

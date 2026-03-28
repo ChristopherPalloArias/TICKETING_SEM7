@@ -35,7 +35,7 @@ const screenTransition = { duration: 0.4, ease: [0.22, 1, 0.36, 1] as [number, n
 
 export default function EventDetail() {
   const { event, loading, error } = useEventDetail();
-  const { addNotification } = useNotifications();
+  const { addNotification, setPollingEnabled } = useNotifications();
   const [selectedTierId, setSelectedTierId] = useState<string | null>(null);
   const [screen, setScreen] = useState<Screen>('details');
   const [order, setOrder] = useState<Order | null>(null);
@@ -69,9 +69,15 @@ export default function EventDetail() {
     const transactional = screen === 'checkout' || screen === 'payment' || screen === 'failure';
     if (transactional && timeLeft === 0 && !timerNotifiedRef.current && event) {
       timerNotifiedRef.current = true;
-      addNotification('timer_expired', event.title);
+      addNotification('timer_expired', event.title, order?.reservationId);
     }
-  }, [timeLeft, screen, event, addNotification]);
+  }, [timeLeft, screen, event, addNotification, order]);
+
+  // Pause notification polling during transactional screens (RN-NTF-05)
+  useEffect(() => {
+    const shouldPause = screen === 'checkout' || screen === 'payment' || screen === 'failure';
+    setPollingEnabled(!shouldPause);
+  }, [screen, setPollingEnabled]);
 
   const isTransactional = screen === 'checkout' || screen === 'payment' || screen === 'success' || screen === 'failure';
   const showTimer = isTransactional && screen !== 'success';
@@ -135,7 +141,7 @@ export default function EventDetail() {
       setScreen('success');
     } else {
       setRetryCount((c) => c + 1);
-      if (event) addNotification('payment_rejected', event.title);
+      if (event) addNotification('payment_rejected', event.title, order.reservationId);
       setScreen('failure');
     }
   };

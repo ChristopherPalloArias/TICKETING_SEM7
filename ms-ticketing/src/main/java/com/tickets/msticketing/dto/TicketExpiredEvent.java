@@ -24,10 +24,18 @@ public record TicketExpiredEvent(
     String version,
 
     @JsonProperty("motif")
-    String motif
+    String motif,
+
+    @JsonProperty("eventName")
+    String eventName
 ) {
     public TicketExpiredEvent(UUID reservationId, UUID eventId, UUID tierId, UUID buyerId,
                                LocalDateTime timestamp, String version) {
-        this(reservationId, eventId, tierId, buyerId, timestamp, version, null);
+        this(reservationId, eventId, tierId, buyerId, timestamp, version, null, null);
+    }
+
+    public TicketExpiredEvent(UUID reservationId, UUID eventId, UUID tierId, UUID buyerId,
+                               LocalDateTime timestamp, String version, String motif) {
+        this(reservationId, eventId, tierId, buyerId, timestamp, version, motif, null);
     }
 }

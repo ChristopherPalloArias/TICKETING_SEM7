@@ -28,6 +28,14 @@ spring:
           filters:
             - StripPrefix=0
 
+        # ms-notifications
+        - id: ms-notifications
+          uri: ${MS_NOTIFICATIONS_URL:http://ms-notifications:8083}
+          predicates:
+            - Path=/api/v1/notifications/**
+          filters:
+            - StripPrefix=0
+
       globalcors:
         cors-configurations:
           '[/**]':

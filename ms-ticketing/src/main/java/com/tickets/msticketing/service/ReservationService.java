@@ -93,6 +93,17 @@ public class ReservationService {
             throw new ForbiddenAccessException("You can only pay for your own reservations");
         }
 
+        // Fetch eventName for notification enrichment (graceful degradation)
+        String eventName = null;
+        try {
+            EventDetailResponse eventDetail = msEventsIntegrationService.getEventDetail(reservation.getEventId());
+            if (eventDetail != null) {
+                eventName = eventDetail.title();
+            }
+        } catch (Exception ex) {
+            log.warn("Could not fetch eventName for reservation={}: {}", reservationId, ex.getMessage());
+        }
+
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         LocalDateTime validUntil = reservation.getValidUntilAt();
         if (validUntil != null && now.isAfter(validUntil)) {
@@ -116,7 +127,9 @@ public class ReservationService {
                 reservation.getTierId(),
                 reservation.getBuyerId(),
                 now,
-                "1.0"
+                "1.0",
+                null,
+                eventName
             );
             rabbitMQPublisherService.publishTicketExpiredEvent(expiredEvent);
 
@@ -152,7 +165,8 @@ public class ReservationService {
                 reservation.getBuyerId(),
                 now,
                 "1.0",
-                "Maximum payment attempts exceeded"
+                "Maximum payment attempts exceeded",
+                eventName
             );
             rabbitMQPublisherService.publishTicketExpiredEvent(maxAttemptsEvent);
 
@@ -180,7 +194,8 @@ public class ReservationService {
                 reservation.getBuyerId(),
                 "Payment declined by mock service",
                 now,
-                "1.0"
+                "1.0",
+                eventName
             );
             rabbitMQPublisherService.publishTicketPaymentFailedEvent(failedEvent);
 
@@ -215,7 +230,8 @@ public class ReservationService {
             reservation.getBuyerId(),
             paymentRequest.amount(),
             now,
-            "1.0"
+            "1.0",
+            eventName
         );
         rabbitMQPublisherService.publishTicketPaidEvent(paidEvent);
 

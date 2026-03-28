@@ -29,7 +29,7 @@ export default function NotificationsPanel({ isOpen, onClose }: Props) {
   const { notifications, markAllRead, clearAll } = useNotifications();
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Mark all as read when panel opens
+  // Mark all as read on server when panel opens
   useEffect(() => {
     if (isOpen) markAllRead();
   }, [isOpen, markAllRead]);
@@ -95,6 +95,7 @@ export default function NotificationsPanel({ isOpen, onClose }: Props) {
                   </div>
                   <div className={styles.itemBody}>
                     <p className={styles.itemTitle}>{n.title}</p>
+                    <p className={styles.itemEvent}>{n.eventTitle}</p>
                     <p className={styles.itemMessage}>{n.message}</p>
                     <p className={styles.itemTime}>{formatRelative(n.timestamp)}</p>
                   </div>

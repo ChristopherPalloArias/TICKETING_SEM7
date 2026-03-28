@@ -52,13 +52,26 @@ public class ReservationExpirationProcessor {
                     reservation.getId(), ex.getMessage());
             }
 
+            // Fetch eventName for notification enrichment (graceful degradation)
+            String eventName = null;
+            try {
+                var eventDetail = msEventsIntegrationService.getEventDetail(reservation.getEventId());
+                if (eventDetail != null) {
+                    eventName = eventDetail.title();
+                }
+            } catch (Exception ex) {
+                log.warn("ExpirationService: could not fetch eventName for reservation={}: {}", reservation.getId(), ex.getMessage());
+            }
+
             TicketExpiredEvent event = new TicketExpiredEvent(
                 reservation.getId(),
                 reservation.getEventId(),
                 reservation.getTierId(),
                 reservation.getBuyerId(),
                 now,
-                "1.0"
+                "1.0",
+                null,
+                eventName
             );
             rabbitMQPublisherService.publishTicketExpiredEvent(event);
 

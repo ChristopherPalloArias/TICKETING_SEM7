@@ -47,7 +47,8 @@ public class TicketPaidConsumer {
                 event.tierId(),
                 event.buyerId(),
                 NotificationType.PAYMENT_SUCCESS,
-                NotificationType.PAYMENT_SUCCESS.name()
+                NotificationType.PAYMENT_SUCCESS.name(),
+                event.eventName()
             );
             channel.basicAck(deliveryTag, false);
             log.info("ticket.paid processed: reservationId={} buyerId={}", event.reservationId(), event.buyerId());

@@ -24,5 +24,13 @@ public record TicketPaymentFailedEvent(
     LocalDateTime timestamp,
 
     @JsonProperty("version")
-    String version
-) {}
+    String version,
+
+    @JsonProperty("eventName")
+    String eventName
+) {
+    public TicketPaymentFailedEvent(UUID reservationId, UUID eventId, UUID tierId, UUID buyerId,
+                                     String motif, LocalDateTime timestamp, String version) {
+        this(reservationId, eventId, tierId, buyerId, motif, timestamp, version, null);
+    }
+}

@@ -22,5 +22,8 @@ public record TicketExpiredEvent(
     LocalDateTime timestamp,
 
     @JsonProperty("version")
-    String version
+    String version,
+
+    @JsonProperty("eventName")
+    String eventName
 ) {}

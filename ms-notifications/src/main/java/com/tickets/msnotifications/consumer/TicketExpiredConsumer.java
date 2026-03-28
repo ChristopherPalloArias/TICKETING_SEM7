@@ -47,7 +47,8 @@ public class TicketExpiredConsumer {
                 event.tierId(),
                 event.buyerId(),
                 NotificationType.RESERVATION_EXPIRED,
-                NotificationType.RESERVATION_EXPIRED.name()
+                NotificationType.RESERVATION_EXPIRED.name(),
+                event.eventName()
             );
             if (!created) {
                 log.info("ticket.expired skipped (priority or duplicate) for reservationId={}", event.reservationId());

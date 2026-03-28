@@ -25,5 +25,8 @@ public record TicketPaymentFailedEvent(
     LocalDateTime timestamp,
 
     @JsonProperty("version")
-    String version
+    String version,
+
+    @JsonProperty("eventName")
+    String eventName
 ) {}

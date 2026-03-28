@@ -30,6 +30,15 @@ public record NotificationResponse(
     @JsonProperty("status")
     String status,
 
+    @JsonProperty("read")
+    boolean read,
+
+    @JsonProperty("archived")
+    boolean archived,
+
+    @JsonProperty("eventName")
+    String eventName,
+
     @JsonProperty("createdAt")
     Instant createdAt
 ) {}

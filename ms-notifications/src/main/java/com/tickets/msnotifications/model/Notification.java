@@ -49,6 +49,17 @@ public class Notification {
     @Builder.Default
     private NotificationStatus status = NotificationStatus.PROCESSED;
 
+    @Column(name = "is_read", nullable = false)
+    @Builder.Default
+    private Boolean read = false;
+
+    @Column(name = "is_archived", nullable = false)
+    @Builder.Default
+    private Boolean archived = false;
+
+    @Column(name = "event_name", length = 255)
+    private String eventName;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private Instant createdAt = Instant.now();

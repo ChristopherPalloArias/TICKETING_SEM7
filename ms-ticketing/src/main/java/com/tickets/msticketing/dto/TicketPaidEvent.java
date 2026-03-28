@@ -25,5 +25,13 @@ public record TicketPaidEvent(
     LocalDateTime timestamp,
 
     @JsonProperty("version")
-    String version
-) {}
+    String version,
+
+    @JsonProperty("eventName")
+    String eventName
+) {
+    public TicketPaidEvent(UUID reservationId, UUID eventId, UUID tierId, UUID buyerId,
+                            BigDecimal amount, LocalDateTime timestamp, String version) {
+        this(reservationId, eventId, tierId, buyerId, amount, timestamp, version, null);
+    }
+}

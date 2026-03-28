@@ -1,6 +1,6 @@
 ---
 id: SPEC-017
-status: APPROVED
+status: IMPLEMENTED
 feature: notificaciones-in-app
 created: 2026-03-28
 updated: 2026-03-28
@@ -602,108 +602,108 @@ Ninguna.
 ### Backend
 
 #### API Gateway (HU-NTF-01)
-- [ ] Agregar ruta `/api/v1/notifications/**` en `api-gateway/src/main/resources/application.yml` apuntando a `ms-notifications`
-- [ ] Verificar propagación de headers `X-User-Id` y `Content-Type`
-- [ ] Validar que CORS permite `PATCH` method (ya listado en config global)
-- [ ] Agregar variable `MS_NOTIFICATIONS_URL` en `docker-compose.yml` para el servicio `api-gateway` si no existe
+- [x] Agregar ruta `/api/v1/notifications/**` en `api-gateway/src/main/resources/application.yml` apuntando a `ms-notifications`
+- [x] Verificar propagación de headers `X-User-Id` y `Content-Type`
+- [x] Validar que CORS permite `PATCH` method (ya listado en config global)
+- [x] Agregar variable `MS_NOTIFICATIONS_URL` en `docker-compose.yml` para el servicio `api-gateway` si no existe
 
 #### ms-notifications — Modelo y esquema (HU-NTF-02)
-- [ ] Agregar campo `read` (Boolean, default false, column `is_read`) a entidad `Notification`
-- [ ] Agregar campo `archived` (Boolean, default false, column `is_archived`) a entidad `Notification`
-- [ ] Agregar campo `eventName` (String, nullable, column `event_name`) a entidad `Notification`
-- [ ] Crear migración Flyway `V2__add_read_archived_eventname.sql` con columnas `is_read`, `is_archived`, `event_name` e índice compuesto
-- [ ] Agregar índice `idx_notification_buyer_archived_read` sobre `(buyer_id, is_archived, is_read)`
-- [ ] Actualizar `NotificationResponse` DTO: agregar campos `read`, `archived` y `eventName`
-- [ ] Actualizar método `toResponse()` en `NotificationService` para incluir `read`, `archived` y `eventName`
+- [x] Agregar campo `read` (Boolean, default false, column `is_read`) a entidad `Notification`
+- [x] Agregar campo `archived` (Boolean, default false, column `is_archived`) a entidad `Notification`
+- [x] Agregar campo `eventName` (String, nullable, column `event_name`) a entidad `Notification`
+- [x] Crear migración Flyway `V2__add_read_archived_eventname.sql` con columnas `is_read`, `is_archived`, `event_name` e índice compuesto
+- [x] Agregar índice `idx_notification_buyer_archived_read` sobre `(buyer_id, is_archived, is_read)`
+- [x] Actualizar `NotificationResponse` DTO: agregar campos `read`, `archived` y `eventName`
+- [x] Actualizar método `toResponse()` en `NotificationService` para incluir `read`, `archived` y `eventName`
 
 #### ms-notifications — Endpoints nuevos (HU-NTF-02)
-- [ ] Implementar `PATCH /api/v1/notifications/buyer/{buyerId}/read-all` en `NotificationController`
-- [ ] Implementar `GET /api/v1/notifications/buyer/{buyerId}/unread-count` en `NotificationController`
-- [ ] Agregar método `markAllReadByBuyerId(UUID buyerId)` en `NotificationService` — retorna `int`
-- [ ] Agregar método `countUnreadByBuyerId(UUID buyerId)` en `NotificationService` — retorna `long`
-- [ ] Agregar query `@Modifying UPDATE ... SET read=true WHERE buyerId=:buyerId AND read=false` en `NotificationRepository`
-- [ ] Agregar query `countByBuyerIdAndArchivedFalseAndReadFalse(UUID buyerId)` en `NotificationRepository`
-- [ ] Crear DTO `MarkAllReadResponse(int updatedCount)` y `UnreadCountResponse(long unreadCount)`
+- [x] Implementar `PATCH /api/v1/notifications/buyer/{buyerId}/read-all` en `NotificationController`
+- [x] Implementar `GET /api/v1/notifications/buyer/{buyerId}/unread-count` en `NotificationController`
+- [x] Agregar método `markAllReadByBuyerId(UUID buyerId)` en `NotificationService` — retorna `int`
+- [x] Agregar método `countUnreadByBuyerId(UUID buyerId)` en `NotificationService` — retorna `long`
+- [x] Agregar query `@Modifying UPDATE ... SET read=true WHERE buyerId=:buyerId AND read=false` en `NotificationRepository`
+- [x] Agregar query `countByBuyerIdAndArchivedFalseAndReadFalse(UUID buyerId)` en `NotificationRepository`
+- [x] Crear DTO `MarkAllReadResponse(int updatedCount)` y `UnreadCountResponse(long unreadCount)`
 
 #### ms-notifications — Endpoint archive-all (HU-NTF-02)
-- [ ] Implementar `PATCH /api/v1/notifications/buyer/{buyerId}/archive-all` en `NotificationController`
-- [ ] Agregar método `archiveAllByBuyerId(UUID buyerId)` en `NotificationService` — retorna `int`
-- [ ] Agregar query `@Modifying UPDATE ... SET archived=true WHERE buyerId=:buyerId AND archived=false` en `NotificationRepository`
-- [ ] Crear DTO `ArchiveAllResponse(int archivedCount)`
-- [ ] Actualizar `findByBuyerId` en `NotificationRepository` para filtrar `archived = false`
-- [ ] Actualizar `countUnreadByBuyerId` para filtrar `archived = false`
-- [ ] Actualizar `markAllReadByBuyerId` para filtrar `archived = false`
+- [x] Implementar `PATCH /api/v1/notifications/buyer/{buyerId}/archive-all` en `NotificationController`
+- [x] Agregar método `archiveAllByBuyerId(UUID buyerId)` en `NotificationService` — retorna `int`
+- [x] Agregar query `@Modifying UPDATE ... SET archived=true WHERE buyerId=:buyerId AND archived=false` en `NotificationRepository`
+- [x] Crear DTO `ArchiveAllResponse(int archivedCount)`
+- [x] Actualizar `findByBuyerId` en `NotificationRepository` para filtrar `archived = false`
+- [x] Actualizar `countUnreadByBuyerId` para filtrar `archived = false`
+- [x] Actualizar `markAllReadByBuyerId` para filtrar `archived = false`
 
 #### ms-notifications — Consumers (HU-NTF-05)
-- [ ] Agregar campo `eventName` al DTO `TicketPaymentFailedEvent` en ms-notifications
-- [ ] Agregar campo `eventName` al DTO `TicketExpiredEvent` en ms-notifications
-- [ ] Agregar campo `eventName` al DTO `TicketPaidEvent` en ms-notifications (consistencia)
-- [ ] Actualizar `TicketPaymentFailedConsumer` para persistir `eventName`
-- [ ] Actualizar `TicketExpiredConsumer` para persistir `eventName`
-- [ ] Actualizar `TicketPaidConsumer` para persistir `eventName`
-- [ ] Actualizar `NotificationService.createIfNotExists()` para recibir y persistir `eventName`
+- [x] Agregar campo `eventName` al DTO `TicketPaymentFailedEvent` en ms-notifications
+- [x] Agregar campo `eventName` al DTO `TicketExpiredEvent` en ms-notifications
+- [x] Agregar campo `eventName` al DTO `TicketPaidEvent` en ms-notifications (consistencia)
+- [x] Actualizar `TicketPaymentFailedConsumer` para persistir `eventName`
+- [x] Actualizar `TicketExpiredConsumer` para persistir `eventName`
+- [x] Actualizar `TicketPaidConsumer` para persistir `eventName`
+- [x] Actualizar `NotificationService.createIfNotExists()` para recibir y persistir `eventName`
 
 #### ms-ticketing — Publishers (HU-NTF-05)
-- [ ] Agregar campo `eventName` al DTO `TicketPaymentFailedEvent` en ms-ticketing
-- [ ] Agregar campo `eventName` al DTO `TicketExpiredEvent` en ms-ticketing
-- [ ] Agregar campo `eventName` al DTO `TicketPaidEvent` en ms-ticketing (consistencia)
-- [ ] Agregar método `getEventName(UUID eventId)` en `MsEventsIntegrationService` (o reutilizar existente)
-- [ ] Actualizar `ReservationExpirationProcessor.expireSingle()` para obtener eventName y pasarlo al evento
-- [ ] Actualizar publishers de `TicketPaymentFailedEvent` para incluir eventName
-- [ ] Actualizar publisher de `TicketPaidEvent` para incluir eventName
+- [x] Agregar campo `eventName` al DTO `TicketPaymentFailedEvent` en ms-ticketing
+- [x] Agregar campo `eventName` al DTO `TicketExpiredEvent` en ms-ticketing
+- [x] Agregar campo `eventName` al DTO `TicketPaidEvent` en ms-ticketing (consistencia)
+- [x] Agregar método `getEventName(UUID eventId)` en `MsEventsIntegrationService` (o reutilizar existente)
+- [x] Actualizar `ReservationExpirationProcessor.expireSingle()` para obtener eventName y pasarlo al evento
+- [x] Actualizar publishers de `TicketPaymentFailedEvent` para incluir eventName
+- [x] Actualizar publisher de `TicketPaidEvent` para incluir eventName
 
 #### Tests Backend
-- [ ] `test_notification_created_with_read_false` — campo read default
-- [ ] `test_mark_all_read_updates_only_buyer_notifications` — scope correcto
-- [ ] `test_mark_all_read_returns_updated_count` — conteo correcto
-- [ ] `test_mark_all_read_idempotent` — sin error si ya leídas
-- [ ] `test_unread_count_returns_correct_value` — conteo de no leídas
-- [ ] `test_unread_count_zero_when_no_notifications` — edge case vacío
-- [ ] `test_notification_response_includes_read_and_eventName` — DTO actualizado
-- [ ] `test_consumer_persists_eventName` — campo eventName del evento RabbitMQ
-- [ ] `test_consumer_handles_null_eventName` — backward compatibility
-- [ ] `test_notification_created_with_archived_false` — campo archived default
-- [ ] `test_archive_all_updates_only_buyer_notifications` — scope correcto
-- [ ] `test_archive_all_returns_archived_count` — conteo correcto
-- [ ] `test_archive_all_idempotent` — sin error si ya archivadas
-- [ ] `test_find_by_buyer_excludes_archived` — listado filtra archived=false
-- [ ] `test_unread_count_excludes_archived` — conteo excluye archivadas
-- [ ] `test_mark_all_read_excludes_archived` — read-all no afecta archivadas
-- [ ] `test_gateway_proxies_notifications_route` — ruta en gateway
-- [ ] `test_patch_read_all_through_gateway` — PATCH a través del gateway
-- [ ] `test_patch_archive_all_through_gateway` — PATCH archive-all a través del gateway
+- [x] `test_notification_created_with_read_false` — campo read default
+- [x] `test_mark_all_read_updates_only_buyer_notifications` — scope correcto
+- [x] `test_mark_all_read_returns_updated_count` — conteo correcto
+- [x] `test_mark_all_read_idempotent` — sin error si ya leídas
+- [x] `test_unread_count_returns_correct_value` — conteo de no leídas
+- [x] `test_unread_count_zero_when_no_notifications` — edge case vacío
+- [x] `test_notification_response_includes_read_and_eventName` — DTO actualizado
+- [x] `test_consumer_persists_eventName` — campo eventName del evento RabbitMQ
+- [x] `test_consumer_handles_null_eventName` — backward compatibility
+- [x] `test_notification_created_with_archived_false` — campo archived default
+- [x] `test_archive_all_updates_only_buyer_notifications` — scope correcto
+- [x] `test_archive_all_returns_archived_count` — conteo correcto
+- [x] `test_archive_all_idempotent` — sin error si ya archivadas
+- [x] `test_find_by_buyer_excludes_archived` — listado filtra archived=false
+- [x] `test_unread_count_excludes_archived` — conteo excluye archivadas
+- [x] `test_mark_all_read_excludes_archived` — read-all no afecta archivadas
+- [x] `test_gateway_proxies_notifications_route` — ruta en gateway
+- [x] `test_patch_read_all_through_gateway` — PATCH a través del gateway
+- [x] `test_patch_archive_all_through_gateway` — PATCH archive-all a través del gateway
 
 ### Frontend
 
 #### Implementación
-- [ ] Crear `services/notificationService.ts` — funciones `fetchNotifications`, `markAllRead`, `fetchUnreadCount`, `archiveAll`
-- [ ] Crear `types/notification.ts` — tipos `BackendNotification`, `PagedNotificationResponse`
-- [ ] Crear `hooks/useNotificationPolling.ts` — hook con `setInterval` 30s, flag `enabled`
-- [ ] Refactorizar `NotificationsContext.tsx` — agregar `localNotifications` + `backendNotifications`, merge, deduplicación
-- [ ] Integrar `useNotificationPolling` en `NotificationsProvider`
-- [ ] Implementar mapeo de tipos: `PAYMENT_FAILED` → `payment_rejected`, `RESERVATION_EXPIRED` → `timer_expired`
-- [ ] Implementar función de deduplicación por `reservationId + type`
-- [ ] Actualizar `markAllRead()` en contexto para llamar a `PATCH /read-all` del backend
-- [ ] Actualizar `clearAll()` en contexto para llamar a `PATCH /archive-all` del backend con optimistic update
-- [ ] Actualizar `NotificationsPanel.tsx` para mostrar `eventName` (de backend) o fallback "Evento"
-- [ ] Conectar botón `Trash2` existente en `NotificationsPanel` a `archiveAll()` del backend
-- [ ] Controlar pausa de polling en pantallas transaccionales (`checkout`, `payment`, `failure`)
+- [x] Crear `services/notificationService.ts` — funciones `fetchNotifications`, `markAllRead`, `fetchUnreadCount`, `archiveAll`
+- [x] Crear `types/notification.ts` — tipos `BackendNotification`, `PagedNotificationResponse`
+- [x] Crear `hooks/useNotificationPolling.ts` — hook con `setInterval` 30s, flag `enabled`
+- [x] Refactorizar `NotificationsContext.tsx` — agregar `localNotifications` + `backendNotifications`, merge, deduplicación
+- [x] Integrar `useNotificationPolling` en `NotificationsProvider`
+- [x] Implementar mapeo de tipos: `PAYMENT_FAILED` → `payment_rejected`, `RESERVATION_EXPIRED` → `timer_expired`
+- [x] Implementar función de deduplicación por `reservationId + type`
+- [x] Actualizar `markAllRead()` en contexto para llamar a `PATCH /read-all` del backend
+- [x] Actualizar `clearAll()` en contexto para llamar a `PATCH /archive-all` del backend con optimistic update
+- [x] Actualizar `NotificationsPanel.tsx` para mostrar `eventName` (de backend) o fallback "Evento"
+- [x] Conectar botón `Trash2` existente en `NotificationsPanel` a `archiveAll()` del backend
+- [x] Controlar pausa de polling en pantallas transaccionales (`checkout`, `payment`, `failure`)
 
 #### Tests Frontend
-- [ ] `notificationService fetchNotifications calls correct endpoint`
-- [ ] `notificationService markAllRead sends PATCH request`
-- [ ] `notificationService fetchUnreadCount calls correct endpoint`
-- [ ] `notificationService archiveAll sends PATCH request`
-- [ ] `useNotificationPolling polls every 30 seconds`
-- [ ] `useNotificationPolling stops when disabled`
-- [ ] `NotificationsContext deduplicates local and backend notifications`
-- [ ] `NotificationsContext merges and sorts by timestamp desc`
-- [ ] `NotificationsPanel renders backend notifications with eventName`
-- [ ] `NotificationsPanel calls markAllRead on open`
-- [ ] `NotificationsPanel shows fallback when eventName is null`
-- [ ] `NotificationsPanel clearAll calls archiveAll on backend`
-- [ ] `NotificationsPanel archived notifications do not reappear after polling`
-- [ ] `NotificationsContext restores state on archiveAll failure (optimistic rollback)`
+- [x] `notificationService fetchNotifications calls correct endpoint`
+- [x] `notificationService markAllRead sends PATCH request`
+- [x] `notificationService fetchUnreadCount calls correct endpoint`
+- [x] `notificationService archiveAll sends PATCH request`
+- [x] `useNotificationPolling polls every 30 seconds`
+- [x] `useNotificationPolling stops when disabled`
+- [x] `NotificationsContext deduplicates local and backend notifications`
+- [x] `NotificationsContext merges and sorts by timestamp desc`
+- [x] `NotificationsPanel renders backend notifications with eventName`
+- [x] `NotificationsPanel calls markAllRead on open`
+- [x] `NotificationsPanel shows fallback when eventName is null`
+- [x] `NotificationsPanel clearAll calls archiveAll on backend`
+- [x] `NotificationsPanel archived notifications do not reappear after polling`
+- [x] `NotificationsContext restores state on archiveAll failure (optimistic rollback)`
 
 ### QA
 - [ ] Ejecutar skill `/gherkin-case-generator` → criterios CRITERIO-NTF-1.1 a NTF-5.5
