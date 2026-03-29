@@ -5,6 +5,8 @@ import com.tickets.msticketing.model.OutboxEvent;
 import com.tickets.msticketing.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
@@ -12,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
@@ -39,10 +42,22 @@ public class OutboxPublisherScheduler {
 
         for (OutboxEvent event : pending) {
             try {
-                rabbitTemplate.convertAndSend(
+                // The payload is already a serialized JSON String stored in the outbox.
+                // Passing it through Jackson2JsonMessageConverter via convertAndSend()
+                // would double-serialize it (the String itself becomes a JSON string literal).
+                // Instead, we build a raw AMQP Message from the UTF-8 bytes with the
+                // correct content-type so the consumer's Jackson2JsonMessageConverter
+                // can deserialize it directly into the target DTO record.
+                byte[] body = event.getPayload().getBytes(StandardCharsets.UTF_8);
+                MessageProperties props = new MessageProperties();
+                props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
+                props.setContentEncoding("UTF-8");
+                Message amqpMessage = new Message(body, props);
+
+                rabbitTemplate.send(
                     RabbitMQConfig.TICKETS_EXCHANGE,
                     event.getRoutingKey(),
-                    event.getPayload()
+                    amqpMessage
                 );
                 event.setPublished(true);
                 outboxEventRepository.save(event);

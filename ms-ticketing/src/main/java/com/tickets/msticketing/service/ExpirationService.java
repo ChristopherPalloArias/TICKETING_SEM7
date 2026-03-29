@@ -3,8 +3,9 @@ package com.tickets.msticketing.service;
 import com.tickets.msticketing.model.Reservation;
 import com.tickets.msticketing.model.ReservationStatus;
 import com.tickets.msticketing.repository.ReservationRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,6 @@ import java.time.ZoneOffset;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class ExpirationService {
 
@@ -26,16 +26,33 @@ public class ExpirationService {
     private final ReservationRepository reservationRepository;
     private final ReservationExpirationProcessor expirationProcessor;
 
+    /**
+     * Self-injection via @Lazy breaks the circular dependency and ensures
+     * @Transactional on processExpiredBatch() is intercepted by the AOP proxy.
+     * Without this, calling this.processExpiredBatch() from @Scheduled methods
+     * bypasses the proxy and the transaction never opens.
+     */
+    @Lazy
+    @Autowired
+    private ExpirationService self;
+
+    @Autowired
+    public ExpirationService(ReservationRepository reservationRepository,
+                             ReservationExpirationProcessor expirationProcessor) {
+        this.reservationRepository = reservationRepository;
+        this.expirationProcessor = expirationProcessor;
+    }
+
     @Scheduled(fixedDelay = 60000)
     public void expireReservations() {
         log.info("ExpirationService [primary]: scanning for expired reservations");
-        processExpiredBatch();
+        self.processExpiredBatch();
     }
 
     @Scheduled(fixedDelay = 120000)
     public void recoverUnprocessedReservations() {
         log.info("ExpirationService [backup]: scanning for unprocessed expired reservations");
-        processExpiredBatch();
+        self.processExpiredBatch();
     }
 
     /**
