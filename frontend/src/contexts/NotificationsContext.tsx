@@ -17,12 +17,13 @@ export interface AppNotification {
   timestamp: Date;
   read: boolean;
   reservationId?: string;
+  eventId?: string;
 }
 
 interface NotificationsContextValue {
   notifications: AppNotification[];
   unreadCount: number;
-  addNotification: (type: NotificationType, eventTitle: string, reservationId?: string) => void;
+  addNotification: (type: NotificationType, eventTitle: string, reservationId?: string, eventId?: string) => void;
   markAllRead: () => void;
   clearAll: () => void;
   setPollingEnabled: (enabled: boolean) => void;
@@ -67,6 +68,7 @@ function mapBackendToApp(bn: BackendNotification): AppNotification {
     timestamp: new Date(bn.createdAt),
     read: bn.read,
     reservationId: bn.reservationId,
+    eventId: bn.eventId,
   };
 }
 
@@ -110,7 +112,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     [localNotifications, backendNotifications],
   );
 
-  const addNotification = useCallback((type: NotificationType, eventTitle: string, reservationId?: string) => {
+  const addNotification = useCallback((type: NotificationType, eventTitle: string, reservationId?: string, eventId?: string) => {
     const def = MESSAGES[type];
     const id = `notif-${Date.now()}-${counterRef.current++}`;
     const notif: AppNotification = {
@@ -122,6 +124,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
       timestamp: new Date(),
       read: false,
       reservationId,
+      eventId,
     };
     setLocalNotifications((prev) => [notif, ...prev]);
   }, []);

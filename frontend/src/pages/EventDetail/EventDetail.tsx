@@ -14,6 +14,7 @@ import { useEventDetail } from '../../hooks/useEventDetail';
 import { createReservation, processPayment } from '../../services/reservationService';
 import { useNotifications } from '../../contexts/NotificationsContext';
 import { saveTicket } from '../../services/ticketsStorage';
+import QuantitySelector from '../../components/QuantitySelector/QuantitySelector';
 import type { Screen, Order, TicketInfo } from '../../types/flow.types';
 import styles from './EventDetail.module.css';
 
@@ -37,6 +38,7 @@ export default function EventDetail() {
   const { event, loading, error } = useEventDetail();
   const { addNotification, setPollingEnabled } = useNotifications();
   const [selectedTierId, setSelectedTierId] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState(1);
   const [screen, setScreen] = useState<Screen>('details');
   const [order, setOrder] = useState<Order | null>(null);
   const [ticket, setTicket] = useState<TicketInfo | null>(null);
@@ -69,7 +71,7 @@ export default function EventDetail() {
     const transactional = screen === 'checkout' || screen === 'payment' || screen === 'failure';
     if (transactional && timeLeft === 0 && !timerNotifiedRef.current && event) {
       timerNotifiedRef.current = true;
-      addNotification('timer_expired', event.title, order?.reservationId);
+      addNotification('timer_expired', event.title, order?.reservationId, event.id);
     }
   }, [timeLeft, screen, event, addNotification, order]);
 
@@ -93,7 +95,6 @@ export default function EventDetail() {
     const reservation = await createReservation(event.id, selectedTierId);
     const tier = event.availableTiers.find((t) => t.id === selectedTierId)!;
     const tierPrice = parseFloat(tier.price);
-    const quantity = 2;
     const total = tierPrice * quantity + 10;
     const reference = `#NE-${Math.floor(100000 + Math.random() * 900000)}`;
     setOrder({
@@ -122,7 +123,7 @@ export default function EventDetail() {
     } catch {
       // Backend throws 400 on DECLINED — treat as payment failure
       setRetryCount((c) => c + 1);
-      if (event) addNotification('payment_rejected', event.title, order.reservationId);
+      if (event) addNotification('payment_rejected', event.title, order.reservationId, event.id);
       setScreen('failure');
       return;
     }
@@ -155,7 +156,7 @@ export default function EventDetail() {
       setScreen('success');
     } else {
       setRetryCount((c) => c + 1);
-      if (event) addNotification('payment_rejected', event.title, order.reservationId);
+      if (event) addNotification('payment_rejected', event.title, order.reservationId, event.id);
       setScreen('failure');
     }
   };
@@ -217,6 +218,7 @@ export default function EventDetail() {
             <CheckoutScreen
               event={event}
               tier={selectedTier}
+              quantity={quantity}
               onBack={() => setScreen('details')}
               onContinue={handleContinueToPayment}
             />
@@ -335,8 +337,21 @@ export default function EventDetail() {
                     <TicketPanel
                       tiers={event.availableTiers}
                       selectedTierId={selectedTierId}
-                      onSelect={setSelectedTierId}
+                      onSelect={(tierId) => {
+                        setSelectedTierId(tierId);
+                        setQuantity(1);
+                      }}
                       onReservar={() => setScreen('checkout')}
+                      quantitySelector={
+                        selectedTier && (
+                          <QuantitySelector
+                            value={quantity}
+                            min={1}
+                            max={selectedTier.quota}
+                            onChange={setQuantity}
+                          />
+                        )
+                      }
                     />
                   </div>
                 </div>

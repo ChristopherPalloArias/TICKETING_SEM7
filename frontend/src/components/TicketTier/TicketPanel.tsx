@@ -10,6 +10,7 @@ interface TicketPanelProps {
   selectedTierId: string | null;
   onSelect: (tierId: string) => void;
   onReservar: () => void;
+  quantitySelector?: React.ReactNode;
 }
 
 export default function TicketPanel({
@@ -17,6 +18,7 @@ export default function TicketPanel({
   selectedTierId,
   onSelect,
   onReservar,
+  quantitySelector,
 }: TicketPanelProps) {
   const hasAvailable = tiers.some((t) => t.isAvailable);
 
@@ -47,6 +49,8 @@ export default function TicketPanel({
       ) : (
         <p className={styles.noAvailability}>Sin disponibilidad para este evento.</p>
       )}
+
+      {quantitySelector}
 
       <motion.button
         className={`${styles.cta} ${!selectedTierId ? styles.ctaDisabled : ''}`}

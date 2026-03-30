@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { MapPin, Users, Calendar, ArrowRight } from 'lucide-react';
 import NavBar from '../../components/NavBar/NavBar';
 import BottomNav from '../../components/NavBar/BottomNav';
+import { getPublicRooms } from '../../services/venueService';
+import { getEvents } from '../../services/eventService';
 import type { RoomResponse, EventResponse } from '../../types/event.types';
 import styles from './VenuesPage.module.css';
 
@@ -39,13 +41,10 @@ interface VenueWithEvents extends RoomResponse {
 }
 
 async function fetchVenuesWithEvents(): Promise<VenueWithEvents[]> {
-  const base = import.meta.env.VITE_API_URL as string;
-  const [roomsRes, eventsRes] = await Promise.all([
-    fetch(`${base}/api/v1/rooms`),
-    fetch(`${base}/api/v1/events?pageSize=50`),
+  const [rooms, eventsData] = await Promise.all([
+    getPublicRooms(),
+    getEvents({ pageSize: 50 }),
   ]);
-  const rooms: RoomResponse[] = await roomsRes.json();
-  const eventsData: { events: EventResponse[] } = await eventsRes.json();
 
   return rooms.map((room) => ({
     ...room,

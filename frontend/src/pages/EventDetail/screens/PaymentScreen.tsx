@@ -31,7 +31,7 @@ export default function PaymentScreen({ event, order, onSimulate }: PaymentScree
             ${order.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
           </span>
           <p className={styles.totalDesc}>
-            Total de la reserva por 2 entradas {order.tierType}
+            Total de la reserva por {order.quantity} {order.quantity === 1 ? 'entrada' : 'entradas'} {order.tierType}
           </p>
         </div>
 

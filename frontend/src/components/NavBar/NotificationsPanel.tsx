@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bell, Timer, XCircle, CheckCircle2, Trash2 } from 'lucide-react';
 import { useNotifications } from '../../contexts/NotificationsContext';
@@ -28,6 +29,7 @@ function NotifIcon({ type }: { type: AppNotification['type'] }) {
 
 export default function NotificationsPanel({ isOpen, onClose }: Props) {
   const { notifications, markAllRead, clearAll } = useNotifications();
+  const navigate = useNavigate();
   const panelRef = useRef<HTMLDivElement>(null);
 
 
@@ -99,6 +101,18 @@ export default function NotificationsPanel({ isOpen, onClose }: Props) {
                     <p className={styles.itemEvent}>{n.eventTitle}</p>
                     <p className={styles.itemMessage}>{n.message}</p>
                     <p className={styles.itemTime}>{formatRelative(n.timestamp)}</p>
+                    {n.type === 'payment_rejected' && n.eventId && (
+                      <button
+                        className={styles.retryBtn}
+                        onClick={() => {
+                          navigate(`/eventos/${n.eventId}`);
+                          onClose();
+                        }}
+                        type="button"
+                      >
+                        Reintentar pago
+                      </button>
+                    )}
                   </div>
                 </div>
               ))

@@ -8,11 +8,12 @@ import styles from './CheckoutScreen.module.css';
 interface CheckoutScreenProps {
   event: EventResponse;
   tier: TierResponse;
+  quantity: number;
   onBack: () => void;
   onContinue: (email: string) => Promise<void>;
 }
 
-export default function CheckoutScreen({ event, tier, onBack, onContinue }: CheckoutScreenProps) {
+export default function CheckoutScreen({ event, tier, quantity, onBack, onContinue }: CheckoutScreenProps) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +60,7 @@ export default function CheckoutScreen({ event, tier, onBack, onContinue }: Chec
         <div className={styles.layout}>
           {/* Left column */}
           <div className={styles.leftCol}>
-            <OrderSummary event={event} tier={tier} quantity={2} />
+            <OrderSummary event={event} tier={tier} quantity={quantity} />
 
             {/* Email section */}
             <div className={styles.emailSection}>
@@ -87,7 +88,7 @@ export default function CheckoutScreen({ event, tier, onBack, onContinue }: Chec
             <PaymentPanel
               tierName={tier.tierType}
               tierPrice={tierPrice}
-              quantity={2}
+              quantity={quantity}
               email={email}
               onContinue={handleContinue}
               loading={loading}

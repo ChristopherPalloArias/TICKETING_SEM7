@@ -68,4 +68,39 @@ class RoomControllerTest {
             .andExpect(jsonPath("$").isArray())
             .andExpect(jsonPath("$.length()").value(0));
     }
+
+    // --- HU-AUD-01: Endpoint público de rooms ---
+
+    @Test
+    void test_rooms_public_endpoint_returns_200_without_auth() throws Exception {
+        // GIVEN — servicio retorna lista vacía (lo relevante es el status 200)
+        when(roomService.getAllRooms()).thenReturn(List.of());
+
+        // WHEN + THEN — GET /api/v1/rooms/public sin headers devuelve 200
+        mockMvc.perform(get("/api/v1/rooms/public"))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void test_rooms_public_endpoint_returns_room_list() throws Exception {
+        // GIVEN — dos rooms con id, name y maxCapacity
+        UUID roomId1 = UUID.randomUUID();
+        UUID roomId2 = UUID.randomUUID();
+        when(roomService.getAllRooms()).thenReturn(List.of(
+            new RoomResponse(roomId1, "Teatro Real", 300, LocalDateTime.now(), LocalDateTime.now()),
+            new RoomResponse(roomId2, "Grand Opera House", 500, LocalDateTime.now(), LocalDateTime.now())
+        ));
+
+        // WHEN + THEN — respuesta contiene array de rooms con id, name, maxCapacity
+        mockMvc.perform(get("/api/v1/rooms/public"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].id").value(roomId1.toString()))
+            .andExpect(jsonPath("$[0].name").value("Teatro Real"))
+            .andExpect(jsonPath("$[0].maxCapacity").value(300))
+            .andExpect(jsonPath("$[1].id").value(roomId2.toString()))
+            .andExpect(jsonPath("$[1].name").value("Grand Opera House"))
+            .andExpect(jsonPath("$[1].maxCapacity").value(500));
+    }
 }

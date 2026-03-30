@@ -63,6 +63,19 @@ public class RoomController {
         return ResponseEntity.ok(rooms);
     }
 
+    @GetMapping("/public")
+    @Operation(
+        summary = "Listar salas (público)",
+        description = "Devuelve todas las salas registradas sin requerir autenticación. Usado por la vista pública de venues."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista de salas obtenida exitosamente")
+    })
+    public ResponseEntity<List<RoomResponse>> getAllRoomsPublic() {
+        List<RoomResponse> rooms = roomService.getAllRooms();
+        return ResponseEntity.ok(rooms);
+    }
+
     @GetMapping("/{roomId}")
     @Operation(
         summary = "Obtener sala por ID",
