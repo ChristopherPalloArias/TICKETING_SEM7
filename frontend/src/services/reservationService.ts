@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_BASE = import.meta.env.VITE_API_URL as string;
 
-// TODO: replace with auth context when authentication is integrated
+
 const DEMO_BUYER_ID = '11111111-1111-1111-1111-111111111111';
 
 export interface ReservationResponse {
@@ -42,7 +42,7 @@ export async function createReservation(
   const res = await axios.post<ReservationResponse>(
     `${API_BASE}/api/v1/reservations`,
     { eventId, tierId },
-    { headers: { 'X-User-Id': buyerId } }, // TODO: replace with auth context
+    { headers: { 'X-User-Id': buyerId } }, 
   );
   return res.data;
 }
@@ -56,7 +56,7 @@ export async function processPayment(
   const res = await axios.post<PaymentResponse>(
     `${API_BASE}/api/v1/reservations/${reservationId}/payments`,
     { amount, paymentMethod: 'MOCK', status },
-    { headers: { 'X-User-Id': buyerId } }, // TODO: replace with auth context
+    { headers: { 'X-User-Id': buyerId } }, 
   );
   return res.data;
 }

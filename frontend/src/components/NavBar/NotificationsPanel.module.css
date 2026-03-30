@@ -107,6 +107,10 @@
   border-left: 3px solid var(--color-error, #cf6679);
 }
 
+.itemSuccess {
+  border-left: 3px solid #34d399;
+}
+
 .itemIcon {
   padding-top: 0.1rem;
   flex-shrink: 0;
@@ -118,6 +122,10 @@
 
 .iconRejected {
   color: var(--color-error, #cf6679);
+}
+
+.iconSuccess {
+  color: #34d399;
 }
 
 .itemBody {

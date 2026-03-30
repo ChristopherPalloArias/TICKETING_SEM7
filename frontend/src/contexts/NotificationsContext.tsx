@@ -6,7 +6,7 @@ import {
 } from '../services/notificationService';
 import type { BackendNotification } from '../types/notification';
 
-export type NotificationType = 'timer_expired' | 'payment_rejected';
+export type NotificationType = 'timer_expired' | 'payment_rejected' | 'payment_success';
 
 export interface AppNotification {
   id: string;
@@ -41,11 +41,16 @@ const MESSAGES: Record<NotificationType, { title: string; message: (event: strin
     title: 'Pago rechazado',
     message: (event) => `Tu pago para "${event}" fue rechazado. Puedes intentarlo de nuevo o elegir otro método.`,
   },
+  payment_success: {
+    title: '¡Compra confirmada!',
+    message: (event) => `Tu ticket para "${event}" está listo. Revisa Mis Tickets para ver tu entrada.`,
+  },
 };
 
 const BACKEND_TYPE_MAP: Record<string, NotificationType> = {
   PAYMENT_FAILED: 'payment_rejected',
   RESERVATION_EXPIRED: 'timer_expired',
+  PAYMENT_SUCCESS: 'payment_success',
 };
 
 function mapBackendToApp(bn: BackendNotification): AppNotification {

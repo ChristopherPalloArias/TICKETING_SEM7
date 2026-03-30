@@ -120,7 +120,7 @@
 }
 
 /* hamburger only visible on mobile */
-.iconBtn:last-child {
+.right > .iconBtn:last-child {
   display: none;
 }
 
@@ -149,7 +149,7 @@
     display: none;
   }
 
-  .iconBtn:last-child {
+  .right > .iconBtn:last-child {
     display: flex;
   }
 }

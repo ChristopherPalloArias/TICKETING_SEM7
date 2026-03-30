@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, Timer, XCircle, Trash2 } from 'lucide-react';
+import { Bell, Timer, XCircle, CheckCircle2, Trash2 } from 'lucide-react';
 import { useNotifications } from '../../contexts/NotificationsContext';
 import type { AppNotification } from '../../contexts/NotificationsContext';
 import styles from './NotificationsPanel.module.css';
@@ -22,6 +22,7 @@ function formatRelative(date: Date): string {
 
 function NotifIcon({ type }: { type: AppNotification['type'] }) {
   if (type === 'timer_expired') return <Timer size={16} className={styles.iconTimer} />;
+  if (type === 'payment_success') return <CheckCircle2 size={16} className={styles.iconSuccess} />;
   return <XCircle size={16} className={styles.iconRejected} />;
 }
 
@@ -29,12 +30,12 @@ export default function NotificationsPanel({ isOpen, onClose }: Props) {
   const { notifications, markAllRead, clearAll } = useNotifications();
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Mark all as read on server when panel opens
+
   useEffect(() => {
     if (isOpen) markAllRead();
   }, [isOpen, markAllRead]);
 
-  // Close on outside click
+
   useEffect(() => {
     if (!isOpen) return;
     function handleClick(e: MouseEvent) {
@@ -88,7 +89,7 @@ export default function NotificationsPanel({ isOpen, onClose }: Props) {
               notifications.map((n) => (
                 <div
                   key={n.id}
-                  className={`${styles.item} ${n.type === 'payment_rejected' ? styles.itemRejected : styles.itemTimer}`}
+                  className={`${styles.item} ${n.type === 'payment_rejected' ? styles.itemRejected : n.type === 'payment_success' ? styles.itemSuccess : styles.itemTimer}`}
                 >
                   <div className={styles.itemIcon}>
                     <NotifIcon type={n.type} />

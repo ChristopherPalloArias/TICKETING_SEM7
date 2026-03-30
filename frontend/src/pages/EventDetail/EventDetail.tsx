@@ -62,7 +62,7 @@ export default function EventDetail() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [screen]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [screen]); 
 
   // Notify when timer hits zero
   useEffect(() => {
@@ -78,6 +78,11 @@ export default function EventDetail() {
     const shouldPause = screen === 'checkout' || screen === 'payment' || screen === 'failure';
     setPollingEnabled(!shouldPause);
   }, [screen, setPollingEnabled]);
+
+  // Re-enable polling when component unmounts (leaving the transactional flow)
+  useEffect(() => {
+    return () => setPollingEnabled(true);
+  }, [setPollingEnabled]);
 
   const isTransactional = screen === 'checkout' || screen === 'payment' || screen === 'success' || screen === 'failure';
   const showTimer = isTransactional && screen !== 'success';
@@ -107,11 +112,20 @@ export default function EventDetail() {
 
   const handleSimulatePayment = async (type: 'success' | 'failure') => {
     if (!order) return;
-    const result = await processPayment(
-      order.reservationId,
-      order.total,
-      type === 'success' ? 'APPROVED' : 'DECLINED',
-    );
+    let result;
+    try {
+      result = await processPayment(
+        order.reservationId,
+        order.total,
+        type === 'success' ? 'APPROVED' : 'DECLINED',
+      );
+    } catch {
+      // Backend throws 400 on DECLINED — treat as payment failure
+      setRetryCount((c) => c + 1);
+      if (event) addNotification('payment_rejected', event.title, order.reservationId);
+      setScreen('failure');
+      return;
+    }
     if (result.status === 'CONFIRMED' && result.ticket) {
       if (intervalRef.current) clearInterval(intervalRef.current);
       const ticketInfo: TicketInfo = {
