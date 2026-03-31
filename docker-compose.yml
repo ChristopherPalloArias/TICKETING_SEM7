@@ -146,6 +146,26 @@ services:
       - tickets-network
     restart: unless-stopped
 
+  postgres-gateway:
+    image: postgres:16-alpine
+    container_name: postgres-gateway
+    environment:
+      POSTGRES_DB: ${GATEWAY_DB_NAME:-gateway_db}
+      POSTGRES_USER: ${GATEWAY_DB_USER:-gateway_user}
+      POSTGRES_PASSWORD: ${GATEWAY_DB_PASS:-changeme}
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres-gateway-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${GATEWAY_DB_USER:-gateway_user} -d ${GATEWAY_DB_NAME:-gateway_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tickets-network
+    restart: unless-stopped
+
   api-gateway:
     build:
       context: .
@@ -154,6 +174,8 @@ services:
     depends_on:
       ms-events:
         condition: service_started
+      postgres-gateway:
+        condition: service_healthy
     environment:
       GATEWAY_PORT: ${GATEWAY_PORT}
       MS_EVENTS_URL: http://ms-events:8081
@@ -174,3 +196,4 @@ volumes:
   db-ticketing-data:
   db-notifications-data:
   rabbitmq-data:
+  postgres-gateway-data:

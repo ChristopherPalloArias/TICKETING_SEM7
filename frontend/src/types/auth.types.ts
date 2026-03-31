@@ -7,10 +7,12 @@ export interface AdminSession {
 }
 
 export interface AuthContextValue {
+  token: string | null;
   role: AdminRole | null;
   userId: string | null;
   email: string | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => boolean;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }

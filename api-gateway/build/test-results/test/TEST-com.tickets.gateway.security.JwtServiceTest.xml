@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.tickets.gateway.security.JwtServiceTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-03-31T21:48:17.180Z" hostname="NITRO" time="0.236">
+  <properties/>
+  <testcase name="testIsTokenValid_withTokenSignedWithDifferentSecret()" classname="com.tickets.gateway.security.JwtServiceTest" time="0.152"/>
+  <testcase name="testIsTokenValid_withExpiredToken()" classname="com.tickets.gateway.security.JwtServiceTest" time="0.037"/>
+  <testcase name="testIsTokenValid_withEmptyToken()" classname="com.tickets.gateway.security.JwtServiceTest" time="0.004"/>
+  <testcase name="testIsTokenValid_withMalformedToken()" classname="com.tickets.gateway.security.JwtServiceTest" time="0.005"/>
+  <testcase name="testGenerateToken_hasCorrectClaims()" classname="com.tickets.gateway.security.JwtServiceTest" time="0.015"/>
+  <testcase name="testValidateAndExtractClaims_withValidToken()" classname="com.tickets.gateway.security.JwtServiceTest" time="0.003"/>
+  <testcase name="testIsTokenValid_withValidToken()" classname="com.tickets.gateway.security.JwtServiceTest" time="0.011"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
