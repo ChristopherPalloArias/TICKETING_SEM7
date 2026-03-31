@@ -49,6 +49,7 @@ Implementar seguridad real en todo el stack, añadir login opcional para comprad
 2. **Frontend**: Login real contra API, almacenamiento seguro de tokens, interceptores Axios centralizados.
 3. **Compra sin registro**: Mantener flujo anónimo con `buyerId` generado. Opcionalmente, el comprador puede registrarse para ver historial.
 4. **Admin panel**: CRUD completo de eventos, gestión de salas, dashboard con métricas, navegación mejorada.
+5. **Tickets y perfil**: Vista real de tickets del comprador autenticado, asociación de compras anónimas al registrarse, descarga de tickets en PDF, y perfil básico con cambio de contraseña.
 
 ### Restricciones
 
@@ -59,7 +60,7 @@ Implementar seguridad real en todo el stack, añadir login opcional para comprad
 - **Compatibilidad**: las APIs existentes mantienen compatibilidad backward. Los endpoints públicos (cartelera, detalle de evento) permanecen abiertos.
 
 **Capas afectadas:** `api-gateway`, `ms-events`, `ms-ticketing`, `ms-notifications`, `frontend`
-**Stack:** Java 17+, Spring Boot 3.x, Spring Security, JWT (jjwt), PostgreSQL, React, TypeScript, Axios
+**Stack:** Java 17+, Spring Boot 3.x, Spring Security, JWT (jjwt), PostgreSQL, iText/PDFBox (PDF), React, TypeScript, Axios
 
 ---
 
@@ -485,6 +486,7 @@ Escenario: Acceso a historial de tickets
   Entonces ve los tickets asociados a su cuenta
   Y están ordenados por fecha de compra descendente
 ```
+> **Nota:** La implementación detallada de la vista de tickets se especifica en HU-TKT-01.
 
 #### Subtasks
 
@@ -945,6 +947,286 @@ Escenario: Error 500 sin información interna
 
 ---
 
+## Épica 5: Funcionalidades de Tickets y Perfil de Usuario
+
+### HU-TKT-01: Vista real de tickets del usuario autenticado — SP: 5
+
+Como **Comprador autenticado**
+Quiero ver mis tickets confirmados en una sección dedicada
+Para tener acceso a todas mis compras desde mi cuenta
+
+**Microservicios:** `ms-ticketing`, `api-gateway`, `frontend`
+**Prioridad:** Alta
+**Dependencia:** HU-SEC-01, HU-SEC-02, HU-04
+**Justificación SP:** Requiere endpoint backend con enriquecimiento cross-service (ms-ticketing → ms-events), protección por JWT, reemplazo de lógica mock/localStorage en frontend, y paginación.
+
+> **Relación con HU-SEC-06:** La HU-SEC-06 introduce la ruta `/mis-tickets` como parte del login de compradores. Esta HU detalla la implementación completa de esa vista con datos reales.
+
+#### Criterios de Aceptación
+
+**CA-01. Lista real de tickets del usuario autenticado**
+```gherkin
+Escenario: Comprador autenticado consulta sus tickets
+  Dado que el comprador está autenticado con JWT válido (role BUYER)
+  Cuando navega a "/mis-tickets"
+  Entonces el sistema consulta GET /api/v1/tickets?buyerId={userId}
+  Y muestra los tickets reales confirmados asociados a su cuenta
+  Y NO usa localStorage ni datos mock
+  Y cada ticket muestra: evento, fecha, tier, precio pagado y estado
+  Y están ordenados por fecha de compra descendente
+```
+
+**CA-02. Estado vacío cuando no hay tickets**
+```gherkin
+Escenario: Comprador sin tickets aún
+  Dado que el comprador está autenticado pero no ha comprado entradas
+  Cuando navega a "/mis-tickets"
+  Entonces ve un mensaje "Aún no tienes tickets"
+  Y un botón "Ver cartelera" que lo lleva a /events
+```
+
+**CA-03. Ticket muestra información completa del evento**
+```gherkin
+Escenario: Detalle de ticket en la lista
+  Dado que el comprador tiene tickets confirmados
+  Cuando ve la lista de sus tickets
+  Entonces cada ticket muestra:
+    | Campo         | Descripción                  |
+    | Evento        | Título del evento            |
+    | Fecha         | Fecha y hora del evento      |
+    | Tier          | Tipo de entrada (VIP, etc.)  |
+    | Precio        | Precio pagado                |
+    | Estado        | VALID o CANCELLED            |
+    | Fecha compra  | Cuándo se compró             |
+```
+
+#### Subtasks
+
+**DEV Backend**
+- [ ] Implementar `GET /api/v1/tickets?buyerId={userId}` en ms-ticketing
+- [ ] Proteger endpoint — solo el propio usuario o ADMIN puede consultar
+- [ ] Enriquecer response con datos del evento (nombre, fecha) vía llamada a ms-events o cache
+- [ ] Agregar paginación: `?page=0&size=10`
+
+**DEV Frontend**
+- [ ] Reemplazar lógica de localStorage en vista de tickets por llamada real a la API
+- [ ] Crear hook `useMyTickets` que consuma el endpoint real
+- [ ] Mostrar estado vacío si no hay tickets
+- [ ] Limpiar cualquier código mock o datos hardcodeados de la vista
+
+**QA**
+- [ ] Verificar que la vista muestra tickets reales del usuario
+- [ ] Verificar que no hay datos mock ni localStorage en el flujo
+- [ ] Verificar que un usuario no puede ver tickets de otro usuario
+- [ ] Verificar estado vacío se muestra correctamente
+
+---
+
+### HU-TKT-02: Asociación de tickets anónimos al registrarse — SP: 5
+
+Como **Comprador**
+Quiero que al crear mi cuenta con el mismo email con el que compré tickets de forma anónima, esos tickets queden asociados a mi nueva cuenta
+Para no perder el historial de compras realizadas antes de registrarme
+
+**Microservicios:** `api-gateway`, `ms-ticketing`
+**Prioridad:** Media
+**Dependencia:** HU-SEC-03, HU-TKT-01
+**Justificación SP:** Requiere coordinación entre api-gateway (registro) y ms-ticketing (asociación), migración condicional de campo `buyer_email`, y lógica idempotente para evitar duplicación.
+
+#### Criterios de Aceptación
+
+**CA-01. Tickets anónimos asociados al registrarse**
+```gherkin
+Escenario: Registro con email que tiene compras previas
+  Dado que existe un ticket confirmado con buyer_email "juan@email.com"
+    Y el ticket fue comprado de forma anónima (sin cuenta)
+  Cuando Juan se registra con el email "juan@email.com"
+  Entonces el sistema busca tickets con buyer_email = "juan@email.com"
+  Y asocia esos tickets al nuevo userId de Juan
+  Y los tickets aparecen en su sección "/mis-tickets"
+```
+
+**CA-02. Registro sin compras previas no falla**
+```gherkin
+Escenario: Registro con email sin compras previas
+  Dado que no existe ningún ticket con el email de registro
+  Cuando el usuario se registra
+  Entonces el registro es exitoso sin errores
+  Y la sección "/mis-tickets" aparece vacía
+```
+
+**CA-03. La asociación no duplica tickets**
+```gherkin
+Escenario: Registro cuando ya existe asociación parcial
+  Dado que el usuario ya tiene algunos tickets asociados a su cuenta
+    Y tiene otros tickets anónimos con el mismo email
+  Cuando el sistema ejecuta la asociación
+  Entonces solo asocia los tickets que aún no tienen userId asignado
+  Y no duplica tickets ya asociados
+```
+
+#### Subtasks
+
+**DEV Backend**
+- [ ] Asegurar que `buyer_email` se guarda en la tabla `ticket` al crear compra anónima (verificar existencia o agregar campo con migración Flyway)
+- [ ] Implementar método en `TicketService`: `associateAnonymousTickets(userId, email)`
+- [ ] Llamar este método desde el flujo de registro de comprador en api-gateway (post-registro vía evento RabbitMQ `user.registered` o llamada síncrona)
+- [ ] Hacer la asociación idempotente: solo actualizar tickets donde `user_id IS NULL AND buyer_email = :email`
+
+**QA**
+- [ ] Verificar asociación correcta de tickets anónimos al registrarse
+- [ ] Verificar que registro sin compras previas no lanza errores
+- [ ] Verificar que no se duplican tickets ya asociados
+- [ ] Verificar que los tickets asociados aparecen en "/mis-tickets"
+
+---
+
+### HU-TKT-03: Descarga de ticket en PDF — SP: 3
+
+Como **Comprador**
+Quiero descargar mi ticket confirmado como archivo PDF
+Para tener una copia física o digital de mi entrada al evento
+
+**Microservicios:** `ms-ticketing`, `frontend`
+**Prioridad:** Alta
+**Dependencia:** HU-04, HU-TKT-01
+**Justificación SP:** Generación de PDF es self-contained con iText/PDFBox, el endpoint es simple y la descarga en frontend es estándar con Blob.
+
+#### Criterios de Aceptación
+
+**CA-01. Botón de descarga funcional en vista de detalle**
+```gherkin
+Escenario: Descarga desde detalle del ticket
+  Dado que el comprador tiene un ticket confirmado
+  Cuando hace clic en el botón "Descargar Ticket"
+  Entonces el sistema genera un PDF con la información del ticket
+  Y el archivo se descarga automáticamente con nombre:
+    "ticket-{ticketId}.pdf"
+```
+
+**CA-02. Descarga desde la lista de tickets**
+```gherkin
+Escenario: Descarga desde la lista de mis tickets
+  Dado que el comprador está en "/mis-tickets"
+  Cuando hace clic en el ícono de descarga de un ticket
+  Entonces descarga el PDF de ese ticket específico
+```
+
+**CA-03. Contenido del PDF**
+```gherkin
+Escenario: Información completa en el PDF
+  Dado que se descarga un ticket
+  Cuando el comprador abre el archivo PDF
+  Entonces contiene:
+    | Campo         | Descripción                        |
+    | Título        | Nombre del evento                  |
+    | Fecha         | Fecha y hora del evento            |
+    | Sala          | Nombre de la sala                  |
+    | Tier          | Tipo de entrada                    |
+    | Precio        | Precio pagado                      |
+    | ID del ticket | UUID del ticket como referencia    |
+    | Nombre        | Email/nombre del comprador         |
+```
+
+**CA-04. Solo tickets VALID pueden descargarse**
+```gherkin
+Escenario: Ticket cancelado no se puede descargar
+  Dado que un ticket tiene estado CANCELLED
+  Cuando el comprador intenta descargarlo
+  Entonces el botón de descarga está deshabilitado
+  Y muestra el mensaje "Este ticket fue cancelado"
+```
+
+#### Subtasks
+
+**DEV Backend**
+- [ ] Agregar dependencia `itext-core` o `pdfbox` en `ms-ticketing/build.gradle`
+- [ ] Implementar `GET /api/v1/tickets/{ticketId}/pdf` en ms-ticketing
+- [ ] Generar PDF con datos del ticket + datos del evento (vía llamada a ms-events)
+- [ ] Retornar con headers `Content-Type: application/pdf` y `Content-Disposition: attachment; filename="ticket-{id}.pdf"`
+- [ ] Proteger endpoint — solo el propietario del ticket o ADMIN puede descargar
+- [ ] Validar que el ticket esté en estado VALID antes de generar
+
+**DEV Frontend**
+- [ ] Hacer funcional el botón "Descargar Ticket" existente en la vista de detalle
+- [ ] Agregar ícono de descarga en cada ticket de la lista "/mis-tickets"
+- [ ] Deshabilitar botón de descarga para tickets CANCELLED
+- [ ] Manejar el blob de respuesta del PDF correctamente para forzar descarga en el navegador
+
+**QA**
+- [ ] Verificar que el PDF se genera y descarga correctamente
+- [ ] Verificar que el PDF contiene toda la información del ticket
+- [ ] Verificar que ticket CANCELLED no puede descargarse
+- [ ] Verificar que solo el propietario puede descargar su ticket
+
+---
+
+### HU-USR-01: Perfil básico del usuario — SP: 2
+
+Como **Usuario autenticado (ADMIN o BUYER)**
+Quiero acceder a una página de perfil mínima
+Para actualizar mi contraseña y verificar el email de mi cuenta
+
+**Microservicio:** `api-gateway`, `frontend`
+**Prioridad:** Baja
+**Dependencia:** HU-SEC-01
+**Justificación SP:** El endpoint `GET /api/v1/auth/me` ya está previsto en HU-SEC-03. Solo requiere el endpoint de cambio de contraseña y una página frontend simple.
+
+#### Criterios de Aceptación
+
+**CA-01. Vista de perfil con datos básicos**
+```gherkin
+Escenario: Usuario ve su perfil
+  Dado que el usuario está autenticado
+  Cuando navega a "/perfil"
+  Entonces ve su email (no editable)
+  Y ve su rol (ADMIN o BUYER, no editable)
+  Y un formulario para cambiar contraseña
+```
+
+**CA-02. Cambio de contraseña exitoso**
+```gherkin
+Escenario: Cambio de contraseña
+  Dado que el usuario está en "/perfil"
+  Cuando ingresa su contraseña actual, la nueva contraseña
+    y la confirmación de la nueva contraseña
+  Y la nueva contraseña cumple: mínimo 8 caracteres, una mayúscula, un número
+  Entonces el sistema actualiza la contraseña con BCrypt
+  Y muestra un mensaje "Contraseña actualizada exitosamente"
+  Y cierra la sesión para que el usuario vuelva a autenticarse
+```
+
+**CA-03. Contraseña actual incorrecta es rechazada**
+```gherkin
+Escenario: Contraseña actual incorrecta
+  Dado que el usuario está en "/perfil"
+  Cuando ingresa una contraseña actual incorrecta
+  Entonces el sistema retorna 400 Bad Request
+  Y muestra "La contraseña actual es incorrecta"
+  Y no actualiza la contraseña
+```
+
+#### Subtasks
+
+**DEV Backend**
+- [ ] Verificar que `GET /api/v1/auth/me` (previsto en HU-SEC-03) retorna email y role del usuario autenticado
+- [ ] Implementar `PATCH /api/v1/auth/me/password` — cambia contraseña validando la contraseña actual antes de actualizar
+- [ ] Validar requisitos de complejidad de la nueva contraseña (min 8, 1 mayúscula, 1 número)
+- [ ] Invalidar token actual tras cambio de contraseña (o retornar nuevo token)
+
+**DEV Frontend**
+- [ ] Crear página `/perfil` con email (solo lectura), rol (solo lectura) y formulario de cambio de contraseña
+- [ ] Agregar link "Mi Perfil" en el menú desplegable del usuario (tanto en navbar de comprador como en sidebar de admin)
+- [ ] Al cambiar contraseña exitosamente, cerrar sesión y redirigir a login
+
+**QA**
+- [ ] Verificar que email y rol no son editables
+- [ ] Verificar cambio de contraseña exitoso y cierre de sesión
+- [ ] Verificar rechazo de contraseña actual incorrecta
+- [ ] Verificar que la nueva contraseña cumple los requisitos mínimos
+
+---
+
 ## Resumen de Historias
 
 | ID | Historia | SP | Épica | Prioridad | Dependencia |
@@ -962,8 +1244,12 @@ Escenario: Error 500 sin información interna
 | HU-ADM-04 | Gestión de salas (CRUD) | 5 | Admin Panel | Media | — |
 | HU-ADM-05 | Navegación mejorada del panel admin | 3 | Admin Panel | Media | — |
 | HU-SEC-08 | Headers de seguridad y hardening | 3 | Hardening | Alta | — |
+| HU-TKT-01 | Vista real de tickets del usuario autenticado | 5 | Tickets y Perfil | Alta | HU-SEC-01, HU-SEC-02, HU-04 |
+| HU-TKT-02 | Asociación de tickets anónimos al registrarse | 5 | Tickets y Perfil | Media | HU-SEC-03, HU-TKT-01 |
+| HU-TKT-03 | Descarga de ticket en PDF | 3 | Tickets y Perfil | Alta | HU-04, HU-TKT-01 |
+| HU-USR-01 | Perfil básico del usuario | 2 | Tickets y Perfil | Baja | HU-SEC-01 |
 
-**Total Story Points:** 61 SP
+**Total Story Points:** 76 SP
 
 ## Orden de Desarrollo Sugerido
 
@@ -980,11 +1266,15 @@ Escenario: Error 500 sin información interna
 8. **HU-SEC-03** (5 SP) — Login opcional backend compradores
 9. **HU-SEC-06** (5 SP) — Login/registro frontend compradores
 
-### Sprint 3 — Panel Completo + Hardening (16 SP)
-10. **HU-ADM-03** (5 SP) — Dashboard con métricas
-11. **HU-ADM-04** (5 SP) — CRUD de salas
-12. **HU-ADM-05** (3 SP) — Navegación mejorada
-13. **HU-SEC-08** (3 SP) — Headers de seguridad y hardening
+### Sprint 3 — Tickets, Panel Completo + Hardening (31 SP)
+10. **HU-TKT-01** (5 SP) — Vista real de tickets del comprador (requiere SEC-01, SEC-02)
+11. **HU-TKT-03** (3 SP) — Descarga de ticket en PDF
+12. **HU-TKT-02** (5 SP) — Asociación de tickets anónimos al registrarse (requiere SEC-03)
+13. **HU-ADM-03** (5 SP) — Dashboard con métricas
+14. **HU-ADM-04** (5 SP) — CRUD de salas
+15. **HU-ADM-05** (3 SP) — Navegación mejorada
+16. **HU-SEC-08** (3 SP) — Headers de seguridad y hardening
+17. **HU-USR-01** (2 SP) — Perfil básico del usuario
 
 ---
 
@@ -1006,3 +1296,276 @@ Escenario: Error 500 sin información interna
 | 10 | Stack traces en respuestas de error | `GlobalExceptionHandler` | HU-SEC-08 |
 | 11 | Logging en nivel DEBUG con SQL | `application.properties` | HU-SEC-04 |
 | 12 | Sin CSRF protection | Frontend completo | HU-SEC-07 |
+
+---
+
+## Anexo: Guía de Diseño UI — Login y Dashboard
+
+Referencia visual para la implementación del frontend. Este código es una **guía de diseño**, no código de producción. Los implementadores deben adaptar los componentes al stack real del proyecto (CSS Modules, servicios reales, contextos de autenticación).
+
+**Historias relacionadas:** HU-SEC-05 (Login admin), HU-SEC-06 (Login/registro comprador), HU-ADM-05 (Navegación mejorada con sidebar)
+
+### Decisiones de diseño extraídas
+
+| Elemento | Decisión | Aplica a |
+|----------|----------|----------|
+| **Login Screen** | Card centrada con glassmorphism (`noir-glass`), fondo con imagen de teatro, animación de entrada con `framer-motion` | HU-SEC-05, HU-SEC-06 |
+| **Campos de formulario** | Label uppercase 10px con tracking, ícono a la izquierda, border-bottom animado al focus | HU-SEC-05, HU-SEC-06 |
+| **Botones** | Variantes `primary` (gradiente noir), `secondary` (borde sutil), `ghost`. Uppercase, tracking-widest, scale en hover/active | Global |
+| **Sidebar** | Fijo a la izquierda, 80px colapsado / 264px expandido, logo + nav + logout al fondo. Responsive | HU-ADM-05 |
+| **Header Dashboard** | Sticky top con blur, barra de búsqueda pill, campana de notificaciones con badge, avatar circular | HU-ADM-05, HU-ADM-03 |
+| **Event Cards** | 500px alto, imagen cover con grayscale→color en hover, gradiente inferior, botón CTA reveal en hover | Cartelera existente |
+| **Transiciones** | `AnimatePresence` con fade entre login↔dashboard. Cards con `whileHover={{ y: -10 }}` | Global |
+| **Tipografía** | `font-black` para títulos, `tracking-tighter` para marca, `uppercase tracking-widest` para labels/nav | Global |
+| **Color tokens** | `surface`, `surface-container-low`, `on-surface`, `on-surface-variant`, `primary`, `outline-variant` (Material Design 3) | Global |
+
+### Componentes de referencia
+
+#### LoginScreen — Pantalla de autenticación
+
+```tsx
+/**
+ * GUÍA DE DISEÑO — No es código de producción.
+ * Adaptar a: CSS Modules, authService real, AuthContext, validación de formulario.
+ * Eliminar: Login social (Google/Apple) si no está en scope.
+ * Agregar: Mensajes de error, loading state, validación client-side.
+ */
+
+const LoginScreen = ({ onLogin }: { onLogin: () => void }) => {
+  return (
+    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Background: imagen de teatro con opacidad baja + efecto spotlight */}
+      <div className="absolute inset-0 spotlight pointer-events-none" />
+      <div className="absolute inset-0 opacity-10 pointer-events-none">
+        <img
+          src="https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&q=80&w=2000"
+          alt="Theater Background"
+          className="w-full h-full object-cover grayscale"
+        />
+      </div>
+
+      <motion.main
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative z-10 w-full max-w-[440px]"
+      >
+        <div className="noir-glass rounded-2xl px-8 py-12 shadow-2xl">
+          {/* Logo: marca SEM7 en bold italic */}
+          <div className="flex flex-col items-center mb-10">
+            <span className="text-4xl font-black tracking-tighter text-on-surface uppercase italic">
+              SEM7
+            </span>
+            <h1 className="text-3xl font-bold text-on-surface tracking-tight">Inicia Sesión</h1>
+            <p className="text-on-surface-variant text-sm mt-2 font-medium">
+              Bienvenido a Teatro Noir
+            </p>
+          </div>
+
+          {/* Formulario: email + contraseña con íconos */}
+          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); onLogin(); }}>
+            <InputField
+              label="Correo Electrónico"
+              type="email"
+              placeholder="tu@correo.com"
+              icon={Mail}
+            />
+            <InputField
+              label="Contraseña"
+              type="password"
+              placeholder="••••••••"
+              icon={Lock}
+              rightElement={
+                <a href="#" className="text-[10px] uppercase tracking-wider text-primary hover:underline font-bold">
+                  Olvidé mi contraseña
+                </a>
+              }
+            />
+            <Button type="submit" className="w-full mt-4">Entrar</Button>
+          </form>
+
+          {/* Separador + login social (opcional / futuro) */}
+          <div className="relative my-10 flex items-center">
+            <div className="flex-grow border-t border-outline-variant/10"></div>
+            <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-on-surface-variant/30">
+              O entrar con
+            </span>
+            <div className="flex-grow border-t border-outline-variant/10"></div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Button variant="secondary">Google</Button>
+            <Button variant="secondary">Apple</Button>
+          </div>
+
+          {/* Link a registro */}
+          <div className="mt-12 text-center">
+            <p className="text-on-surface-variant text-xs font-medium">
+              ¿No tienes cuenta?
+              <a href="#" className="text-on-surface font-black hover:text-primary ml-2 uppercase tracking-tighter">
+                Regístrate
+              </a>
+            </p>
+          </div>
+        </div>
+      </motion.main>
+    </div>
+  );
+};
+```
+
+#### DashboardScreen — Layout con sidebar y header
+
+```tsx
+/**
+ * GUÍA DE DISEÑO — No es código de producción.
+ * Adaptar a: AdminSidebar component, rutas reales, datos de API.
+ * El sidebar, header y layout de contenido aplican a todo el panel admin.
+ */
+
+const DashboardScreen = ({ onLogout }: { onLogout: () => void }) => {
+  return (
+    <div className="min-h-screen bg-surface-container-lowest">
+      {/* Sidebar: fijo izquierda, colapsable en mobile */}
+      <aside className="fixed left-0 top-0 h-full w-20 md:w-64 bg-surface border-r border-outline-variant/10 flex flex-col z-30">
+        {/* Logo */}
+        <div className="p-8 flex items-center gap-3">
+          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white font-black italic">
+            S7
+          </div>
+          <span className="hidden md:block text-xl font-black tracking-tighter uppercase italic">
+            Teatro Noir
+          </span>
+        </div>
+
+        {/* Navegación: ícono + label, item activo con bg-primary/10 */}
+        <nav className="flex-grow px-4 space-y-2 mt-8">
+          {[
+            { icon: Ticket, label: 'Funciones', active: true },
+            { icon: Calendar, label: 'Calendario' },
+            { icon: User, label: 'Mi Perfil' },
+          ].map((item) => (
+            <button
+              key={item.label}
+              className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all ${
+                item.active
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-on-surface-variant hover:bg-surface-container'
+              }`}
+            >
+              <item.icon size={20} />
+              <span className="hidden md:block font-bold text-sm uppercase tracking-widest">
+                {item.label}
+              </span>
+            </button>
+          ))}
+        </nav>
+
+        {/* Logout al fondo del sidebar */}
+        <div className="p-4 mt-auto">
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center gap-4 p-4 rounded-xl text-on-surface-variant hover:bg-red-500/10 hover:text-red-500 transition-all"
+          >
+            <LogOut size={20} />
+            <span className="hidden md:block font-bold text-sm uppercase tracking-widest">
+              Cerrar Sesión
+            </span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Contenido principal con offset del sidebar */}
+      <main className="pl-20 md:pl-64 min-h-screen">
+        {/* Header sticky: búsqueda + notificaciones + avatar */}
+        <header className="h-24 border-b border-outline-variant/10 flex items-center justify-between px-8 sticky top-0 bg-surface-container-lowest/80 backdrop-blur-md z-20">
+          <div className="flex items-center gap-4 bg-surface-container rounded-full px-6 py-2 w-full max-w-md">
+            <Search size={18} className="text-on-surface-variant/40" />
+            <input type="text" placeholder="Buscar funciones..." className="bg-transparent border-none outline-none text-sm w-full" />
+          </div>
+          <div className="flex items-center gap-6">
+            <button className="relative text-on-surface-variant hover:text-on-surface">
+              <Bell size={20} />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
+            </button>
+            <div className="w-10 h-10 rounded-full bg-surface-container-highest border overflow-hidden">
+              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Noir" alt="Avatar" />
+            </div>
+          </div>
+        </header>
+
+        {/* Área de contenido: título + grid de cards */}
+        <div className="p-8 md:p-12 max-w-7xl mx-auto">
+          <h2 className="text-4xl font-black tracking-tight mb-2">Cartelera</h2>
+          <p className="text-on-surface-variant">Explora las próximas funciones exclusivas.</p>
+          {/* ... Event cards grid ... */}
+        </div>
+      </main>
+    </div>
+  );
+};
+```
+
+#### Componentes reutilizables
+
+```tsx
+/** InputField: campo con label superior, ícono izquierdo, elemento derecho opcional */
+const InputField = ({ label, type, placeholder, icon: Icon, rightElement }: {
+  label: string;
+  type: string;
+  placeholder: string;
+  icon?: React.ComponentType<{ size: number }>;
+  rightElement?: React.ReactNode;
+}) => (
+  <div className="space-y-2">
+    <div className="flex justify-between items-center px-1">
+      <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-on-surface-variant/70">
+        {label}
+      </label>
+      {rightElement}
+    </div>
+    <div className="relative group">
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/30 group-focus-within:text-primary transition-colors">
+        {Icon && <Icon size={18} />}
+      </div>
+      <input
+        type={type}
+        placeholder={placeholder}
+        className={`w-full bg-surface-container-low border-b-2 border-transparent focus:border-primary text-on-surface rounded-t-lg p-4 ${Icon ? 'pl-12' : ''} transition-all outline-none placeholder:text-on-surface-variant/20`}
+      />
+    </div>
+  </div>
+);
+
+/** Button: 3 variantes (primary, secondary, ghost) con animación de scale */
+const Button = ({ children, variant = 'primary', className = '', ...props }: {
+  children: React.ReactNode;
+  variant?: 'primary' | 'secondary' | 'ghost';
+  className?: string;
+  [key: string]: any;
+}) => {
+  const variants = {
+    primary: 'noir-gradient-btn text-white shadow-lg shadow-primary/20',
+    secondary: 'bg-surface-container-highest/50 border border-outline-variant/10 hover:bg-surface-bright text-on-surface',
+    ghost: 'text-on-surface-variant hover:text-on-surface transition-colors',
+  };
+
+  return (
+    <button
+      className={`py-4 px-6 rounded-lg font-bold uppercase tracking-widest text-sm transition-all active:scale-[0.98] hover:scale-[1.01] ${variants[variant]} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+```
+
+### Notas de adaptación para implementadores
+
+1. **CSS Modules**: Las clases Tailwind de esta guía deben traducirse a CSS Modules siguiendo la convención del proyecto. Los tokens de color (`surface`, `primary`, etc.) ya existen en el tema actual.
+2. **Login social**: Los botones de Google/Apple son placeholder visual. No implementar OAuth a menos que se agregue como HU adicional.
+3. **Imágenes**: Reemplazar URLs de Unsplash por assets locales o URLs del CDN del proyecto.
+4. **Avatar**: Usar iniciales del usuario o el email como fallback en lugar de dicebear.
+5. **Animaciones**: `framer-motion` ya es dependencia del proyecto — reutilizar las animaciones de esta guía.
+6. **Responsividad**: El sidebar colapsa a `w-20` (solo íconos) en mobile. Considerar un drawer en pantallas `< md`.
+7. **Accesibilidad**: Agregar `aria-label`, `role`, y focus traps que no están en esta guía visual.
