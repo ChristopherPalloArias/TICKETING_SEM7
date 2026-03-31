@@ -1,0 +1,286 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Detect changed paths to skip unnecessary jobs ──
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend-events: ${{ steps.filter.outputs.backend-events }}
+      backend-ticketing: ${{ steps.filter.outputs.backend-ticketing }}
+      backend-notifications: ${{ steps.filter.outputs.backend-notifications }}
+      backend-gateway: ${{ steps.filter.outputs.backend-gateway }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      docker: ${{ steps.filter.outputs.docker }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend-events:
+              - 'ms-events/**'
+            backend-ticketing:
+              - 'ms-ticketing/**'
+            backend-notifications:
+              - 'ms-notifications/**'
+            backend-gateway:
+              - 'api-gateway/**'
+            frontend:
+              - 'frontend/**'
+            docker:
+              - 'docker-compose.yml'
+              - '**/Dockerfile'
+
+  # ── ms-events ──
+  build-ms-events:
+    needs: changes
+    if: needs.changes.outputs.backend-events == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ms-events
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-ms-events-${{ hashFiles('ms-events/build.gradle', 'ms-events/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-ms-events-
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build
+        run: ./gradlew build -x test
+
+      - name: Test
+        run: ./gradlew test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ms-events-test-results
+          path: ms-events/build/reports/tests/
+          retention-days: 7
+
+  # ── ms-ticketing ──
+  build-ms-ticketing:
+    needs: changes
+    if: needs.changes.outputs.backend-ticketing == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ms-ticketing
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-ms-ticketing-${{ hashFiles('ms-ticketing/build.gradle', 'ms-ticketing/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-ms-ticketing-
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build
+        run: ./gradlew build -x test
+
+      - name: Test
+        run: ./gradlew test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ms-ticketing-test-results
+          path: ms-ticketing/build/reports/tests/
+          retention-days: 7
+
+  # ── ms-notifications ──
+  build-ms-notifications:
+    needs: changes
+    if: needs.changes.outputs.backend-notifications == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ms-notifications
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-ms-notifications-${{ hashFiles('ms-notifications/build.gradle', 'ms-notifications/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-ms-notifications-
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build
+        run: ./gradlew build -x test
+
+      - name: Test
+        run: ./gradlew test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ms-notifications-test-results
+          path: ms-notifications/build/reports/tests/
+          retention-days: 7
+
+  # ── api-gateway ──
+  build-api-gateway:
+    needs: changes
+    if: needs.changes.outputs.backend-gateway == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api-gateway
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-api-gateway-${{ hashFiles('api-gateway/build.gradle', 'api-gateway/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-api-gateway-
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build
+        run: ./gradlew build -x test
+
+      - name: Test
+        run: ./gradlew test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-gateway-test-results
+          path: api-gateway/build/reports/tests/
+          retention-days: 7
+
+  # ── Frontend ──
+  build-frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npx tsc -b --noEmit
+
+      - name: Test
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+  # ── Docker Compose validation ──
+  docker-validate:
+    needs: changes
+    if: needs.changes.outputs.docker == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate docker-compose.yml
+        run: docker compose -f docker-compose.yml config --quiet
+
+  # ── Gate: all checks passed ──
+  ci-passed:
+    if: always()
+    needs:
+      - build-ms-events
+      - build-ms-ticketing
+      - build-ms-notifications
+      - build-api-gateway
+      - build-frontend
+      - docker-validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check results
+        run: |
+          results=("${{ needs.build-ms-events.result }}" \
+                   "${{ needs.build-ms-ticketing.result }}" \
+                   "${{ needs.build-ms-notifications.result }}" \
+                   "${{ needs.build-api-gateway.result }}" \
+                   "${{ needs.build-frontend.result }}" \
+                   "${{ needs.docker-validate.result }}")
+          for r in "${results[@]}"; do
+            if [[ "$r" == "failure" || "$r" == "cancelled" ]]; then
+              echo "❌ CI failed: at least one job returned $r"
+              exit 1
+            fi
+          done
+          echo "✅ All CI checks passed (or were skipped)"
