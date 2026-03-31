@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import { Bell, ShoppingCart, Timer } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import NotificationsPanel from './NotificationsPanel';
+import CartBadge from '../Cart/CartBadge';
 import { useNotifications } from '../../contexts/NotificationsContext';
+import { useCart } from '../../contexts/CartContext';
 import styles from './NavBar.module.css';
 
 interface NavBarProps {
@@ -17,6 +19,7 @@ export default function NavBar({ activeLink = 'eventos', isTransactional = false
   const [notifOpen, setNotifOpen] = useState(false);
   const bellWrapRef = useRef<HTMLDivElement>(null);
   const { unreadCount } = useNotifications();
+  const { activeItemCount } = useCart();
 
   return (
     <>
@@ -69,8 +72,9 @@ export default function NavBar({ activeLink = 'eventos', isTransactional = false
                 </button>
                 <NotificationsPanel isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
               </div>
-              <Link to="/mis-tickets" className={styles.iconBtn} aria-label="Mis tickets">
+              <Link to="/carrito" className={`${styles.iconBtn} ${styles.cartWrap}`} aria-label="Carrito de compras">
                 <ShoppingCart size={20} />
+                <CartBadge count={activeItemCount} />
               </Link>
               <div className={styles.avatar}>
                 <img

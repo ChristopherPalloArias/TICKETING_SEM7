@@ -1,6 +1,6 @@
 ---
 id: SPEC-019
-status: IN_PROGRESS
+status: IMPLEMENTED
 feature: carrito-compras
 created: 2026-03-30
 updated: 2026-03-30

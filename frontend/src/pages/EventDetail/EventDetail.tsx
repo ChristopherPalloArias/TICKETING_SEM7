@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import NavBar from '../../components/NavBar/NavBar';
 import BottomNav from '../../components/NavBar/BottomNav';
@@ -13,16 +13,20 @@ import FailureScreen from './screens/FailureScreen';
 import { useEventDetail } from '../../hooks/useEventDetail';
 import { createReservation, processPayment } from '../../services/reservationService';
 import { useNotifications } from '../../contexts/NotificationsContext';
+import { useCart } from '../../contexts/CartContext';
+import { addCartItem } from '../../services/cartService';
 import { saveTicket } from '../../services/ticketsStorage';
 import QuantitySelector from '../../components/QuantitySelector/QuantitySelector';
 import type { Screen, Order, TicketInfo } from '../../types/flow.types';
+import type { CartItem } from '../../types/cart.types';
 import styles from './EventDetail.module.css';
 
-const TIMER_INIT = 599;
+const TIMER_INIT = 600;
 
 function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-  const s = (seconds % 60).toString().padStart(2, '0');
+  const clamped = Math.min(Math.max(seconds, 0), TIMER_INIT);
+  const m = Math.floor(clamped / 60).toString().padStart(2, '0');
+  const s = (clamped % 60).toString().padStart(2, '0');
   return `${m}:${s}`;
 }
 
@@ -37,13 +41,47 @@ const screenTransition = { duration: 0.4, ease: [0.22, 1, 0.36, 1] as [number, n
 export default function EventDetail() {
   const { event, loading, error } = useEventDetail();
   const { addNotification, setPollingEnabled } = useNotifications();
-  const [selectedTierId, setSelectedTierId] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
-  const [screen, setScreen] = useState<Screen>('details');
-  const [order, setOrder] = useState<Order | null>(null);
+  const { removeItem: removeCartItem, items: cartItems, addItem: addCartItemCtx } = useCart();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const cartState = location.state as { fromCart?: boolean; cartItem?: CartItem } | null;
+  const fromCart = cartState?.fromCart === true;
+  const cartItem = cartState?.cartItem;
+
+  const [selectedTierId, setSelectedTierId] = useState<string | null>(cartItem?.tierId ?? null);
+  const [quantity, setQuantity] = useState(cartItem?.quantity ?? 1);
+  const [screen, setScreen] = useState<Screen>(() => fromCart && cartItem ? 'checkout' : 'details');
+  const [order, setOrder] = useState<Order | null>(() => {
+    if (fromCart && cartItem) {
+      const total = cartItem.tierPrice * cartItem.quantity + 10_000;
+      const reference = `#NE-${Math.floor(100000 + Math.random() * 900000)}`;
+      return {
+        reservationId: cartItem.reservationId,
+        eventId: cartItem.eventId,
+        tierId: cartItem.tierId,
+        tierType: cartItem.tierType,
+        tierPrice: cartItem.tierPrice,
+        quantity: cartItem.quantity,
+        email: cartItem.email ?? '',
+        total,
+        reference,
+      };
+    }
+    return null;
+  });
   const [ticket, setTicket] = useState<TicketInfo | null>(null);
-  const [timeLeft, setTimeLeft] = useState(TIMER_INIT);
+  const [timeLeft, setTimeLeft] = useState(() => {
+    if (fromCart && cartItem) {
+      const ts = cartItem.validUntilAt;
+      const utcMs = new Date(ts.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(ts) ? ts : ts + 'Z').getTime();
+      const remaining = Math.floor((utcMs - Date.now()) / 1000);
+      return Math.min(Math.max(remaining, 0), TIMER_INIT);
+    }
+    return TIMER_INIT;
+  });
   const [retryCount, setRetryCount] = useState(0);
+  const [addingToCart, setAddingToCart] = useState(false);
   const timerNotifiedRef = useRef(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -92,10 +130,16 @@ export default function EventDetail() {
 
   const handleContinueToPayment = async (email: string) => {
     if (!event || !selectedTierId) return;
+    // If fromCart, reservation already exists — go straight to payment
+    if (fromCart && order) {
+      setOrder({ ...order, email });
+      setScreen('payment');
+      return;
+    }
     const reservation = await createReservation(event.id, selectedTierId);
     const tier = event.availableTiers.find((t) => t.id === selectedTierId)!;
     const tierPrice = parseFloat(tier.price);
-    const total = tierPrice * quantity + 10;
+    const total = tierPrice * quantity + 10_000;
     const reference = `#NE-${Math.floor(100000 + Math.random() * 900000)}`;
     setOrder({
       reservationId: reservation.id,
@@ -109,6 +153,62 @@ export default function EventDetail() {
       reference,
     });
     setScreen('payment');
+  };
+
+  const handleAddToCart = async () => {
+    if (!event || !selectedTierId) return;
+    const tier = event.availableTiers.find((t) => t.id === selectedTierId);
+    if (!tier) return;
+
+    // Validate duplicates before creating reservation
+    const duplicate = cartItems.find(
+      (i) => i.eventId === event.id && i.tierId === selectedTierId,
+    );
+    if (duplicate) {
+      alert('Ya tienes este tier en tu carrito');
+      return;
+    }
+
+    // Validate max items
+    if (cartItems.length >= 5) {
+      alert('Máximo 5 reservas simultáneas permitidas');
+      return;
+    }
+
+    setAddingToCart(true);
+    try {
+      const reservation = await createReservation(event.id, selectedTierId);
+      const newItem: CartItem = {
+        id: crypto.randomUUID(),
+        eventId: event.id,
+        eventTitle: event.title,
+        eventDate: event.date,
+        eventRoom: event.room?.name ?? '',
+        eventImageUrl: event.imageUrl ?? '',
+        tierId: selectedTierId,
+        tierType: tier.tierType,
+        tierPrice: parseFloat(tier.price),
+        quantity,
+        reservationId: reservation.id,
+        validUntilAt: reservation.validUntilAt,
+        email: '',
+        addedAt: new Date().toISOString(),
+        expired: false,
+        expirationAlerted: false,
+      };
+
+      const result = addCartItem(newItem);
+      if (result.success) {
+        addCartItemCtx(newItem);
+        alert('Agregado al carrito');
+      } else {
+        alert(result.error ?? 'Error al agregar al carrito');
+      }
+    } catch {
+      alert('Error al crear la reserva. Inténtalo nuevamente.');
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   const handleSimulatePayment = async (type: 'success' | 'failure') => {
@@ -152,6 +252,10 @@ export default function EventDetail() {
           reference: order.reference,
           purchasedAt: new Date().toISOString(),
         });
+      }
+      // Remove item from cart if coming from cart
+      if (fromCart && cartItem) {
+        removeCartItem(cartItem.id);
       }
       setScreen('success');
     } else {
@@ -219,8 +323,9 @@ export default function EventDetail() {
               event={event}
               tier={selectedTier}
               quantity={quantity}
-              onBack={() => setScreen('details')}
+              onBack={fromCart ? () => navigate('/carrito') : () => setScreen('details')}
               onContinue={handleContinueToPayment}
+              initialEmail={fromCart && cartItem ? cartItem.email : undefined}
             />
           </motion.div>
         )}
@@ -342,6 +447,8 @@ export default function EventDetail() {
                         setQuantity(1);
                       }}
                       onReservar={() => setScreen('checkout')}
+                      onAddToCart={handleAddToCart}
+                      addingToCart={addingToCart}
                       quantitySelector={
                         selectedTier && (
                           <QuantitySelector

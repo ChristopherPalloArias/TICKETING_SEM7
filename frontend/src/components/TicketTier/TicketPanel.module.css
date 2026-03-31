@@ -57,6 +57,29 @@
   opacity: 0.6;
 }
 
+.cartCta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.85rem 1.5rem;
+  border: 1px solid var(--color-primary);
+  border-radius: 0.75rem;
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.cartCta:hover {
+  background-color: rgba(255, 107, 71, 0.1);
+}
+
 .refund {
   margin: 0;
   text-align: center;

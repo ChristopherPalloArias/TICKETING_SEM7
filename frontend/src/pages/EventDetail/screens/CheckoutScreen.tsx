@@ -11,10 +11,11 @@ interface CheckoutScreenProps {
   quantity: number;
   onBack: () => void;
   onContinue: (email: string) => Promise<void>;
+  initialEmail?: string;
 }
 
-export default function CheckoutScreen({ event, tier, quantity, onBack, onContinue }: CheckoutScreenProps) {
-  const [email, setEmail] = useState('');
+export default function CheckoutScreen({ event, tier, quantity, onBack, onContinue, initialEmail }: CheckoutScreenProps) {
+  const [email, setEmail] = useState(initialEmail ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
