@@ -5,7 +5,7 @@ interface CartSummaryProps {
   items: CartItem[];
 }
 
-const SERVICE_FEE = 10_000;
+const SERVICE_FEE = 10;
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(value);

@@ -2,8 +2,34 @@ import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 import EventTagBadge from './EventTagBadge';
-import type { EventViewModel } from '../../types/event.types';
+import type { EventViewModel, TierResponse } from '../../types/event.types';
 import styles from './EventCard.module.css';
+
+const TIER_LABELS: Record<string, string> = {
+  VIP: 'VIP',
+  GENERAL: 'General',
+  EARLY_BIRD: 'Early Bird',
+};
+
+function TierPills({ tiers }: { tiers: TierResponse[] }) {
+  const visible = tiers.filter((t) => t.reason !== 'EXPIRED');
+  if (visible.length === 0) return null;
+  return (
+    <div className={styles.tierPills}>
+      {visible.map((t) => (
+        <span
+          key={t.id}
+          className={`${styles.tierPill} ${t.isAvailable ? styles.tierAvailable : styles.tierSoldOut}`}
+        >
+          {TIER_LABELS[t.tierType] ?? t.tierType}
+          {t.isAvailable
+            ? ` $${parseFloat(t.price).toLocaleString('en-US', { minimumFractionDigits: 0 })}`
+            : ' — Agotado'}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 const PLACEHOLDER_IMAGE = 'data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%22400%22 height%3D%22533%22 viewBox%3D%220 0 400 533%22%3E%3Crect width%3D%22400%22 height%3D%22533%22 fill%3D%22%23242424%22%2F%3E%3C%2Fsvg%3E';
 
@@ -75,6 +101,7 @@ export default function EventCard({ event, onReservar, variant = 'regular', inde
               <span className={styles.bentoPriceValue}>${event.minPrice}</span>
             </p>
           )}
+          <TierPills tiers={event.availableTiers} />
           <button
             disabled={isSoldOut}
             className={`${styles.btn} ${isSoldOut ? styles.btnSoldOut : styles.btnAvailable}`}
@@ -128,6 +155,7 @@ export default function EventCard({ event, onReservar, variant = 'regular', inde
           <span className={styles.dot}>•</span>
           <span>{event.room.name}</span>
         </p>
+        <TierPills tiers={event.availableTiers} />
       </div>
 
       <button

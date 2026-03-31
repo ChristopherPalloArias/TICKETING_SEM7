@@ -248,3 +248,34 @@
   white-space: nowrap;
 }
 
+/* ── Tier availability pills ─────────────────────────────────── */
+.tierPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+
+.tierPill {
+  display: inline-block;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.tierAvailable {
+  background-color: rgba(255, 107, 71, 0.15);
+  color: var(--color-primary);
+  border: 1px solid rgba(255, 107, 71, 0.3);
+}
+
+.tierSoldOut {
+  background-color: var(--color-surface-highest);
+  color: var(--color-on-surface-variant);
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+

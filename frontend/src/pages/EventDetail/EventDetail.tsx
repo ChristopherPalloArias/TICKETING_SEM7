@@ -54,7 +54,7 @@ export default function EventDetail() {
   const [screen, setScreen] = useState<Screen>(() => fromCart && cartItem ? 'checkout' : 'details');
   const [order, setOrder] = useState<Order | null>(() => {
     if (fromCart && cartItem) {
-      const total = cartItem.tierPrice * cartItem.quantity + 10_000;
+      const total = cartItem.tierPrice * cartItem.quantity + 10;
       const reference = `#NE-${Math.floor(100000 + Math.random() * 900000)}`;
       return {
         reservationId: cartItem.reservationId,
@@ -139,7 +139,7 @@ export default function EventDetail() {
     const reservation = await createReservation(event.id, selectedTierId);
     const tier = event.availableTiers.find((t) => t.id === selectedTierId)!;
     const tierPrice = parseFloat(tier.price);
-    const total = tierPrice * quantity + 10_000;
+    const total = tierPrice * quantity + 10;
     const reference = `#NE-${Math.floor(100000 + Math.random() * 900000)}`;
     setOrder({
       reservationId: reservation.id,
@@ -257,6 +257,7 @@ export default function EventDetail() {
       if (fromCart && cartItem) {
         removeCartItem(cartItem.id);
       }
+      if (event) addNotification('payment_success', event.title, order.reservationId, event.id);
       setScreen('success');
     } else {
       setRetryCount((c) => c + 1);
