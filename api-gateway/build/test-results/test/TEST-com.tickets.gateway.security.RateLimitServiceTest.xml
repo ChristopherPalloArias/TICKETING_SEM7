@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.tickets.gateway.security.RateLimitServiceTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-03-31T21:48:17.425Z" hostname="NITRO" time="0.039">
+  <properties/>
+  <testcase name="testTryConsume_differentIps_independentBuckets()" classname="com.tickets.gateway.security.RateLimitServiceTest" time="0.033"/>
+  <testcase name="testTryConsume_allowsUpToCapacity()" classname="com.tickets.gateway.security.RateLimitServiceTest" time="0.002"/>
+  <testcase name="testTryConsume_blocksAt6thAttempt()" classname="com.tickets.gateway.security.RateLimitServiceTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

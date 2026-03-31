@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.tickets.gateway.controller.AuthControllerTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-03-31T21:48:16.107Z" hostname="NITRO" time="0.695">
+  <properties/>
+  <testcase name="testRegister_withDuplicateEmail_returns409()" classname="com.tickets.gateway.controller.AuthControllerTest" time="0.532"/>
+  <testcase name="testRegister_withShortPassword_returns400()" classname="com.tickets.gateway.controller.AuthControllerTest" time="0.032"/>
+  <testcase name="testLogin_whenRateLimitExceeded_returns429()" classname="com.tickets.gateway.controller.AuthControllerTest" time="0.034"/>
+  <testcase name="testRegister_withValidData_returns201()" classname="com.tickets.gateway.controller.AuthControllerTest" time="0.027"/>
+  <testcase name="testLogin_withValidCredentials_returns200WithToken()" classname="com.tickets.gateway.controller.AuthControllerTest" time="0.018"/>
+  <testcase name="testLogin_withInvalidCredentials_returns401()" classname="com.tickets.gateway.controller.AuthControllerTest" time="0.016"/>
+  <testcase name="testRegister_withInvalidEmail_returns400()" classname="com.tickets.gateway.controller.AuthControllerTest" time="0.017"/>
+  <system-out><![CDATA[16:48:11.649 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.tickets.gateway.controller.AuthControllerTest]: AuthControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+16:48:11.812 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.tickets.gateway.ApiGatewayApplication for test class com.tickets.gateway.controller.AuthControllerTest
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.0)
+
+2026-03-31T16:48:12.593-05:00  INFO 33616 --- [api-gateway] [    Test worker] c.t.g.controller.AuthControllerTest      : Starting AuthControllerTest using Java 17.0.18 with PID 33616 (started by luisR in C:\Sofka\TICKETING_SEM7\api-gateway)
+2026-03-31T16:48:12.594-05:00  INFO 33616 --- [api-gateway] [    Test worker] c.t.g.controller.AuthControllerTest      : No active profile set, falling back to 1 default profile: "default"
+2026-03-31T16:48:15.849-05:00  INFO 33616 --- [api-gateway] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-03-31T16:48:15.850-05:00  INFO 33616 --- [api-gateway] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-03-31T16:48:15.853-05:00  INFO 33616 --- [api-gateway] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-03-31T16:48:16.076-05:00  INFO 33616 --- [api-gateway] [    Test worker] c.t.g.controller.AuthControllerTest      : Started AuthControllerTest in 4.147 seconds (process running for 5.591)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

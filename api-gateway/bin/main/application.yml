@@ -1,6 +1,20 @@
 spring:
   application:
     name: api-gateway
+  datasource:
+    url: jdbc:postgresql://postgres-gateway:5432/${GATEWAY_DB_NAME:gateway_db}
+    username: ${GATEWAY_DB_USER:gateway_user}
+    password: ${GATEWAY_DB_PASS:changeme}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
   cloud:
     gateway:
       routes:
@@ -39,18 +53,25 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins: "*"
+            allowedOrigins:
+              - "http://localhost:5173"
+              - "${FRONTEND_URL:http://localhost:5173}"
             allowedMethods:
               - GET
               - POST
               - PUT
-              - PATCH
               - DELETE
               - OPTIONS
-            allowedHeaders: "*"
+            allowedHeaders:
+              - Authorization
+              - Content-Type
+              - X-Requested-With
+              - X-User-Id
             exposedHeaders:
               - X-Role
               - X-User-Id
+            allowCredentials: false
+            maxAge: 3600
 
 server:
   port: ${GATEWAY_PORT:8080}
@@ -60,3 +81,16 @@ management:
     web:
       exposure:
         include: health, info
+
+jwt:
+  secret: ${JWT_SECRET:default-secret-change-in-production-must-be-at-least-32-chars}
+  expiration-ms: ${JWT_EXPIRATION_MS:28800000}
+
+admin:
+  email: ${ADMIN_EMAIL:admin@example.com}
+  password: ${ADMIN_PASSWORD:Admin1234!}
+
+rate-limit:
+  login:
+    capacity: 5
+    refill-minutes: 15

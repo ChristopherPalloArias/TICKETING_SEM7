@@ -4,7 +4,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import styles from './LoginPage.module.css';
 
 export default function LoginPage() {
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, login, isLoading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,13 +14,15 @@ export default function LoginPage() {
     return <Navigate to="/admin/events" replace />;
   }
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const success = login(email, password);
-    if (success) {
+    setError('');
+    try {
+      await login(email, password);
       navigate('/admin/events');
-    } else {
+    } catch {
       setError('Credenciales inválidas');
+      setPassword('');
     }
   }
 
@@ -54,7 +56,9 @@ export default function LoginPage() {
             />
           </div>
           {error && <p className={styles.error}>{error}</p>}
-          <button className={styles.submitBtn} type="submit">Iniciar Sesión</button>
+          <button className={styles.submitBtn} type="submit" disabled={isLoading}>
+            {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+          </button>
         </form>
       </div>
     </div>

@@ -1,6 +1,6 @@
 ---
 id: SPEC-020
-status: APPROVED
+status: IMPLEMENTED
 feature: sprint1-seguridad-jwt-gateway-login
 created: 2026-03-31
 updated: 2026-03-31

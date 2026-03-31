@@ -1,59 +1,57 @@
 import { useState, type ReactNode } from 'react';
-import type { AdminRole, AdminSession } from '../types/auth.types';
+import type { AdminRole } from '../types/auth.types';
 import { AuthContext } from './AuthContextDef';
+import * as authService from '../services/authService';
 
-const DEMO_EMAIL = 'admin@sem7.com';
-const DEMO_PASSWORD = 'admin123';
-const DEMO_USER_ID = '550e8400-e29b-41d4-a716-446655440000';
-const STORAGE_KEY = 'sem7_admin_session';
-
-interface StoredState {
-  role: AdminRole | null;
-  userId: string | null;
-  email: string | null;
-  isAuthenticated: boolean;
-}
-
-function readStoredSession(): StoredState {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const session: AdminSession = JSON.parse(raw);
-      if (session.role === 'ADMIN' && session.userId && session.email) {
-        return { role: session.role, userId: session.userId, email: session.email, isAuthenticated: true };
-      }
-    }
-    localStorage.removeItem(STORAGE_KEY);
-  } catch {
-    localStorage.removeItem(STORAGE_KEY);
-  }
-  return { role: null, userId: null, email: null, isAuthenticated: false };
-}
+const TOKEN_KEY = 'jwt_token';
+const ROLE_KEY = 'user_role';
+const USER_ID_KEY = 'user_id';
+const EMAIL_KEY = 'user_email';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<StoredState>(readStoredSession);
+  const [token, setToken] = useState<string | null>(() => sessionStorage.getItem(TOKEN_KEY));
+  const [role, setRole] = useState<AdminRole | null>(
+    () => sessionStorage.getItem(ROLE_KEY) as AdminRole | null
+  );
+  const [userId, setUserId] = useState<string | null>(() => sessionStorage.getItem(USER_ID_KEY));
+  const [email, setEmail] = useState<string | null>(() => sessionStorage.getItem(EMAIL_KEY));
+  const [isLoading, setIsLoading] = useState(false);
 
-  function login(inputEmail: string, inputPassword: string): boolean {
-    if (inputEmail === DEMO_EMAIL && inputPassword === DEMO_PASSWORD) {
-      const session: AdminSession = {
-        role: 'ADMIN',
-        userId: DEMO_USER_ID,
-        email: DEMO_EMAIL,
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-      setState({ role: 'ADMIN', userId: DEMO_USER_ID, email: DEMO_EMAIL, isAuthenticated: true });
-      return true;
+  const isAuthenticated = !!token;
+
+  async function login(inputEmail: string, inputPassword: string): Promise<void> {
+    setIsLoading(true);
+    try {
+      const response = await authService.login(inputEmail, inputPassword);
+      const profile = await authService.getProfile(response.token);
+
+      setToken(response.token);
+      setRole(response.role as AdminRole);
+      setUserId(profile.id);
+      setEmail(profile.email);
+
+      sessionStorage.setItem(TOKEN_KEY, response.token);
+      sessionStorage.setItem(ROLE_KEY, response.role);
+      sessionStorage.setItem(USER_ID_KEY, profile.id);
+      sessionStorage.setItem(EMAIL_KEY, profile.email);
+    } finally {
+      setIsLoading(false);
     }
-    return false;
   }
 
-  function logout() {
-    localStorage.removeItem(STORAGE_KEY);
-    setState({ role: null, userId: null, email: null, isAuthenticated: false });
+  function logout(): void {
+    setToken(null);
+    setRole(null);
+    setUserId(null);
+    setEmail(null);
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(ROLE_KEY);
+    sessionStorage.removeItem(USER_ID_KEY);
+    sessionStorage.removeItem(EMAIL_KEY);
   }
 
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider value={{ token, role, userId, email, isAuthenticated, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
