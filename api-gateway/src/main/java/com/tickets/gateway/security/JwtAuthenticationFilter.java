@@ -49,17 +49,16 @@ public class JwtAuthenticationFilter implements WebFilter {
 
         String path = exchange.getRequest().getURI().getPath();
 
-        // Siempre eliminar headers forjados del cliente
-        ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate()
-                .headers(headers -> {
-                    headers.remove("X-User-Id");
-                    headers.remove("X-Role");
-                });
-
         if (isPublicPath(path)) {
-            return chain.filter(exchange.mutate().request(requestBuilder.build()).build());
+            // Rutas públicas: solo eliminar X-Role para evitar escalada de privilegios.
+            // X-User-Id se permite pasar para que usuarios anónimos puedan identificarse.
+            ServerHttpRequest publicRequest = exchange.getRequest().mutate()
+                    .headers(headers -> headers.remove("X-Role"))
+                    .build();
+            return chain.filter(exchange.mutate().request(publicRequest).build());
         }
 
+        // Rutas protegidas: eliminar ambos headers forjados y reemplazar desde el JWT.
         String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return writeError(exchange, HttpStatus.UNAUTHORIZED, "Token de autenticación requerido");
@@ -71,11 +70,16 @@ public class JwtAuthenticationFilter implements WebFilter {
         }
 
         Claims claims = jwtService.validateAndExtractClaims(token);
-        requestBuilder
+        ServerHttpRequest authenticatedRequest = exchange.getRequest().mutate()
+                .headers(headers -> {
+                    headers.remove("X-User-Id");
+                    headers.remove("X-Role");
+                })
                 .header("X-User-Id", claims.getSubject())
-                .header("X-Role", (String) claims.get("role"));
+                .header("X-Role", (String) claims.get("role"))
+                .build();
 
-        return chain.filter(exchange.mutate().request(requestBuilder.build()).build());
+        return chain.filter(exchange.mutate().request(authenticatedRequest).build());
     }
 
     private boolean isPublicPath(String path) {
