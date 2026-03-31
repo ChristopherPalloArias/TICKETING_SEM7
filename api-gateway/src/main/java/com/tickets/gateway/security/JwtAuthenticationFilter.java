@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -24,6 +25,10 @@ public class JwtAuthenticationFilter implements WebFilter {
             "/api/v1/auth/login",
             "/api/v1/auth/register",
             "/api/v1/events",
+            "/api/v1/rooms",
+            "/api/v1/reservations",
+            "/api/v1/tickets",
+            "/api/v1/notifications",
             "/swagger-ui",
             "/v3/api-docs",
             "/actuator"
@@ -37,6 +42,11 @@ public class JwtAuthenticationFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        // Pass OPTIONS preflight through immediately so gateway CORS filter can respond
+        if (HttpMethod.OPTIONS.equals(exchange.getRequest().getMethod())) {
+            return chain.filter(exchange);
+        }
+
         String path = exchange.getRequest().getURI().getPath();
 
         // Siempre eliminar headers forjados del cliente

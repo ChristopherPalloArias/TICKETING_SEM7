@@ -154,7 +154,7 @@ services:
       POSTGRES_USER: ${GATEWAY_DB_USER:-gateway_user}
       POSTGRES_PASSWORD: ${GATEWAY_DB_PASS:-changeme}
     ports:
-      - "5434:5432"
+      - "5436:5432"
     volumes:
       - postgres-gateway-data:/var/lib/postgresql/data
     healthcheck:
@@ -181,6 +181,12 @@ services:
       MS_EVENTS_URL: http://ms-events:8081
       MS_TICKETING_URL: http://ms-ticketing:8082
       MS_NOTIFICATIONS_URL: http://ms-notifications:8083
+      GATEWAY_DB_NAME: ${GATEWAY_DB_NAME:-gateway_db}
+      GATEWAY_DB_USER: ${GATEWAY_DB_USER:-gateway_user}
+      GATEWAY_DB_PASS: ${GATEWAY_DB_PASS:-changeme}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@sem7.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin1234!}
+      JWT_SECRET: ${JWT_SECRET:-default-secret-change-in-production-must-be-at-least-32-chars}
     ports:
       - "${GATEWAY_PORT}:8080"
     networks:
