@@ -146,7 +146,6 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
   }, [localNotifications]);
 
   const unreadCount = useMemo(() => {
-    const localUnread = localNotifications.filter((n) => !n.read).length;
     const backendKeys = new Set(
       backendNotifications
         .map((bn) => {

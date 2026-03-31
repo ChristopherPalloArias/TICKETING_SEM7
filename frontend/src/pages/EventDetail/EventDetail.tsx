@@ -102,6 +102,7 @@ export default function EventDetail() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen]); 
 
   // Notify when timer hits zero

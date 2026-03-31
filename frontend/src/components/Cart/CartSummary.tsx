@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import type { CartItem } from '../../types/cart.types';
 import styles from './CartSummary.module.css';
 
@@ -11,10 +12,16 @@ function formatCurrency(value: number): string {
   return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(value);
 }
 
+function filterActive(items: CartItem[], now: number): CartItem[] {
+  return items.filter((i) => !i.expired && new Date(i.validUntilAt).getTime() > now);
+}
+
 export default function CartSummary({ items }: CartSummaryProps) {
-  const activeItems = items.filter(
-    (i) => !i.expired && new Date(i.validUntilAt).getTime() > Date.now(),
-  );
+  const [activeItems, setActiveItems] = useState(() => filterActive(items, Date.now()));
+
+  useEffect(() => {
+    setActiveItems(filterActive(items, Date.now()));
+  }, [items]);
 
   const subtotal = activeItems.reduce((sum, i) => sum + i.tierPrice * i.quantity, 0);
   const totalServiceFees = activeItems.length * SERVICE_FEE;

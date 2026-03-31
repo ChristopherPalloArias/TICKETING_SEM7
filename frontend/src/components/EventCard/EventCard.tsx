@@ -105,7 +105,7 @@ export default function EventCard({ event, onReservar, variant = 'regular', inde
           <button
             disabled={isSoldOut}
             className={`${styles.btn} ${isSoldOut ? styles.btnSoldOut : styles.btnAvailable}`}
-            onClick={(e) => { e.stopPropagation(); !isSoldOut && onReservar(event.id); }}
+            onClick={(e) => { e.stopPropagation(); if (!isSoldOut) onReservar(event.id); }}
           >
             {isSoldOut ? 'Sold Out' : 'Reservar'}
           </button>

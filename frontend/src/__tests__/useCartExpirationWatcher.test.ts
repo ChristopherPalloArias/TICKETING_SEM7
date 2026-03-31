@@ -139,7 +139,7 @@ describe('useCartExpirationWatcher', () => {
   it('sets up interval that runs every 30 seconds', () => {
     // GIVEN: item with plenty of time
     mockItems = [buildCartItem({ validUntilAt: new Date(Date.now() + 300_000).toISOString() })];
-    const setIntervalSpy = vi.spyOn(global, 'setInterval');
+    const setIntervalSpy = vi.spyOn(globalThis, 'setInterval');
     renderHook(() => useCartExpirationWatcher());
 
     // THEN: setInterval called with 30_000 ms

@@ -28,7 +28,6 @@ vi.mock('lucide-react', () => {
     Ticket: stub('Ticket'),
     MapPin: stub('MapPin'),
     User: stub('User'),
-    CreditCard: stub('CreditCard'),
   };
 });
 

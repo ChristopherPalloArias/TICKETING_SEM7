@@ -20,6 +20,16 @@ vi.mock('../contexts/NotificationsContext', () => ({
     setPollingEnabled: vi.fn(),
   }),
 }));
+vi.mock('../contexts/CartContext', () => ({
+  useCart: () => ({
+    items: [],
+    addItem: vi.fn(),
+    removeItem: vi.fn(),
+    updateItem: vi.fn(),
+    clearCart: vi.fn(),
+    activeItemCount: 0,
+  }),
+}));
 vi.mock('framer-motion', () => {
   const motionProxy = new Proxy({}, {
     get: () => {

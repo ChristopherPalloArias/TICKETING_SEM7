@@ -13,7 +13,10 @@ export function useCartExpirationWatcher(): void {
   const { items, updateItem } = useCart();
   const { addNotification } = useNotifications();
   const itemsRef = useRef(items);
-  itemsRef.current = items;
+
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
 
   useEffect(() => {
     function check() {

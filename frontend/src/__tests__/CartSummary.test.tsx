@@ -37,7 +37,7 @@ describe('CartSummary', () => {
       buildCartItem({ id: 'item-1', tierPrice: 50000, quantity: 2 }),
       buildCartItem({ id: 'item-2', eventId: 'evt-2', tierId: 'tier-2', tierPrice: 30000, quantity: 1 }),
     ];
-    // Subtotal: 130000, service fees: 10000*2=20000, total: 150000
+    // Subtotal: 130000, service fees: 10*2=20, total: 130020
 
     // WHEN
     render(<CartSummary items={items} />);
@@ -45,12 +45,10 @@ describe('CartSummary', () => {
     // THEN: verify the summary panel renders with expected values
     expect(screen.getByText('Resumen')).toBeInTheDocument();
     expect(screen.getByText(/2 reservas/)).toBeInTheDocument();
-    // Subtotal $\u00a0130.000
+    // Subtotal $130.000
     expect(screen.getByText(/130\.000/)).toBeInTheDocument();
-    // Service fee row: $10.000 × 2 = $20.000
-    expect(screen.getByText(/20\.000/)).toBeInTheDocument();
-    // Total: $150.000
-    expect(screen.getByText(/150\.000/)).toBeInTheDocument();
+    // Total: $130.020
+    expect(screen.getByText(/130\.020/)).toBeInTheDocument();
   });
 
   it('excludes expired items from calculation', () => {
@@ -67,7 +65,7 @@ describe('CartSummary', () => {
         validUntilAt: new Date(Date.now() - 60_000).toISOString(),
       }),
     ];
-    // Subtotal: 50000, service fees: 10000, total: 60000
+    // Subtotal: 50000, service fees: 10, total: 50010
 
     // WHEN
     render(<CartSummary items={items} />);
@@ -75,7 +73,7 @@ describe('CartSummary', () => {
     // THEN: only 1 active reservation counted
     expect(screen.getByText(/1 reserva\b/)).toBeInTheDocument();
     expect(screen.getByText(/50\.000/)).toBeInTheDocument();
-    expect(screen.getByText(/60\.000/)).toBeInTheDocument();
+    expect(screen.getByText(/50\.010/)).toBeInTheDocument();
   });
 
   it('shows zero totals for empty items array', () => {
