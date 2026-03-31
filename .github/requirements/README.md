@@ -34,5 +34,6 @@ requirements/<feature>.md  →  /generate-spec  →  specs/<feature>.spec.md
 | Detalle de Evento Frontend (HU-FE-08..HU-FE-12) | `detalle-evento-frontend.md` | LISTO PARA SPEC |
 | Checkout y Pago Frontend (HU-FE-13..HU-FE-18) | `checkout-pago-frontend.md` | LISTO PARA SPEC |
 | Notificaciones In-App (HU-NTF-01..HU-NTF-05) | `notificaciones-in-app.md` | LISTO PARA SPEC |
+| Seguridad, Login y Admin Panel (HU-SEC-01..HU-SEC-08, HU-ADM-01..HU-ADM-05) | `seguridad-login-admin-panel.md` | LISTO PARA SPEC |
 
 > Actualiza esta tabla al agregar o procesar requerimientos.
