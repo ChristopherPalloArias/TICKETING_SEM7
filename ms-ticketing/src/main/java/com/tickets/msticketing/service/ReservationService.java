@@ -7,6 +7,8 @@ import com.tickets.msticketing.repository.ReservationRepository;
 import com.tickets.msticketing.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -286,8 +288,38 @@ public class ReservationService {
         return ticketRepository
             .findByBuyerIdAndStatusOrderByCreatedAtDescIdDesc(buyerId, TicketStatus.VALID)
             .stream()
-            .map(this::mapToTicketResponse)
+            .map(this::enrichTicketWithEventData)
             .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PaginatedTicketsResponse getTicketsByBuyerPaginated(UUID buyerId, Pageable pageable) {
+        log.info("Fetching paginated tickets for buyer={}, page={}, size={}", buyerId, pageable.getPageNumber(), pageable.getPageSize());
+        Page<Ticket> page = ticketRepository.findByBuyerIdOrderByCreatedAtDesc(buyerId, pageable);
+        List<TicketResponse> enriched = page.getContent().stream()
+            .map(this::enrichTicketWithEventData)
+            .toList();
+        return new PaginatedTicketsResponse(
+            enriched,
+            page.getNumber(),
+            page.getSize(),
+            page.getTotalElements(),
+            page.getTotalPages()
+        );
+    }
+
+    @Transactional
+    public void associateAnonymousTickets(UUID userId, String email) {
+        log.info("Associating anonymous tickets for userId={}, email={}", userId, email);
+        List<Ticket> anonymousTickets = ticketRepository.findByBuyerEmailAndUserIdIsNull(email);
+        for (Ticket ticket : anonymousTickets) {
+            ticket.setUserId(userId);
+            ticket.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+        }
+        if (!anonymousTickets.isEmpty()) {
+            ticketRepository.saveAll(anonymousTickets);
+            log.info("Associated {} anonymous tickets to userId={}", anonymousTickets.size(), userId);
+        }
     }
 
     @Transactional
@@ -353,16 +385,36 @@ public class ReservationService {
         if (ticket == null) {
             throw new IllegalArgumentException("Ticket must not be null");
         }
+        return enrichTicketWithEventData(ticket);
+    }
+
+    private TicketResponse enrichTicketWithEventData(Ticket ticket) {
         String tierTypeName = ticket.getTierType() != null ? ticket.getTierType().toString() : "UNKNOWN";
+        
+        // Try to fetch event details for enrichment
+        String eventTitle = "Unknown Event";
+        LocalDateTime eventDate = null;
+        try {
+            EventDetailResponse eventDetail = msEventsIntegrationService.getEventDetail(ticket.getEventId());
+            if (eventDetail != null) {
+                eventTitle = eventDetail.title() != null ? eventDetail.title() : "Unknown Event";
+                eventDate = eventDetail.date();
+            }
+        } catch (Exception ex) {
+            log.warn("Could not fetch event details for ticket={}; using defaults: {}", ticket.getId(), ex.getMessage());
+        }
+
         return new TicketResponse(
             ticket.getId(),
-            ticket.getReservationId(),
             ticket.getEventId(),
-            ticket.getTierId(),
+            eventTitle,
+            eventDate,
             tierTypeName,
             ticket.getPrice(),
             ticket.getStatus(),
-            ticket.getCreatedAt()
+            ticket.getCreatedAt(),
+            ticket.getBuyerEmail(),
+            ticket.getReservationId()
         );
     }
 }

@@ -1,6 +1,7 @@
 package com.tickets.events.controller;
 
 import com.tickets.events.dto.AdminEventDetailResponse;
+import com.tickets.events.dto.AdminStatsResponse;
 import com.tickets.events.dto.CancelEventRequest;
 import com.tickets.events.dto.CancelEventResponse;
 import com.tickets.events.dto.EventCreateRequest;
@@ -9,6 +10,7 @@ import com.tickets.events.dto.EventResponse;
 import com.tickets.events.dto.EventUpdateRequest;
 import com.tickets.events.exception.ForbiddenAccessException;
 import com.tickets.events.service.EventService;
+import com.tickets.events.service.EventStatsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -29,6 +31,7 @@ import java.util.UUID;
 public class EventController {
     
     private final EventService eventService;
+    private final EventStatsService eventStatsService;
     
     @PostMapping
     @Operation(
@@ -103,24 +106,47 @@ public class EventController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/admin")
+    @GetMapping("/admin/stats")
     @Operation(
-        summary = "Listar todos los eventos (admin)",
-        description = "Devuelve todos los eventos sin filtrar por estado (DRAFT, PUBLISHED, CANCELLED). Solo usuarios con rol ADMIN."
+        summary = "Métricas del dashboard admin",
+        description = "Retorna métricas agregadas: total eventos, publicados, tickets vendidos, reservas activas. Solo ADMIN."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Lista de todos los eventos obtenida exitosamente"),
+        @ApiResponse(responseCode = "200", description = "Métricas obtenidas exitosamente"),
         @ApiResponse(responseCode = "403", description = "Acceso denegado - se requiere rol ADMIN")
     })
-    public ResponseEntity<Map<String, Object>> getAllEventsAdmin(
+    public ResponseEntity<AdminStatsResponse> getAdminStats(
         @RequestHeader(value = "X-Role", required = false) String role,
         @RequestHeader(value = "X-User-Id", required = false) String userId
     ) {
         if (!"ADMIN".equals(role)) {
             throw new ForbiddenAccessException("Only users with X-Role: ADMIN can access admin endpoints");
         }
-        List<AdminEventDetailResponse> events = eventService.getAllEvents();
-        return ResponseEntity.ok(Map.of("total", events.size(), "events", events));
+        AdminStatsResponse stats = eventStatsService.getAdminStats();
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/admin")
+    @Operation(
+        summary = "Listar todos los eventos (admin) con búsqueda y paginación",
+        description = "Devuelve todos los eventos con filtro opcional por título y paginación. Solo usuarios con rol ADMIN."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista de eventos obtenida exitosamente"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado - se requiere rol ADMIN")
+    })
+    public ResponseEntity<Map<String, Object>> getAllEventsAdmin(
+        @RequestHeader(value = "X-Role", required = false) String role,
+        @RequestHeader(value = "X-User-Id", required = false) String userId,
+        @RequestParam(required = false) String search,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        if (!"ADMIN".equals(role)) {
+            throw new ForbiddenAccessException("Only users with X-Role: ADMIN can access admin endpoints");
+        }
+        Map<String, Object> response = eventService.getAllEventsAdminPaged(search, page, size);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{eventId}")

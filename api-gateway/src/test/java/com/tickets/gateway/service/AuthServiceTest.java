@@ -2,6 +2,8 @@ package com.tickets.gateway.service;
 
 import com.tickets.gateway.dto.LoginResponse;
 import com.tickets.gateway.dto.RegisterResponse;
+import com.tickets.gateway.dto.UserRegisteredEvent;
+import com.tickets.gateway.exception.BadRequestException;
 import com.tickets.gateway.exception.ConflictException;
 import com.tickets.gateway.exception.UnauthorizedException;
 import com.tickets.gateway.model.User;
@@ -33,6 +35,9 @@ class AuthServiceTest {
     @Mock
     private JwtService jwtService;
 
+    @Mock
+    private AuthEventPublisher authEventPublisher;
+
     private AuthService authService;
 
     // Used locally to prepare hashed passwords for test fixtures
@@ -40,7 +45,7 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(userRepository, jwtService);
+        authService = new AuthService(userRepository, jwtService, authEventPublisher);
     }
 
     // ── LOGIN ──────────────────────────────────────────────────────────────────
@@ -199,6 +204,33 @@ class AuthServiceTest {
         }
 
         @Test
+        void testRegisterBuyer_publishesUserRegisteredEvent_afterSave() {
+                // GIVEN
+                UUID buyerId = UUID.randomUUID();
+                User savedBuyer = User.builder()
+                                .id(buyerId)
+                                .email("buyer2@example.com")
+                                .passwordHash(encoder.encode("BuyerPass1"))
+                                .role(User.Role.BUYER)
+                                .createdAt(Instant.now())
+                                .build();
+
+                when(userRepository.existsByEmail("buyer2@example.com")).thenReturn(false);
+                when(userRepository.save(any(User.class))).thenReturn(savedBuyer);
+                when(jwtService.generateToken(anyString(), anyString(), anyString())).thenReturn("t");
+
+                // WHEN
+                authService.registerBuyer("buyer2@example.com", "BuyerPass1");
+
+                // THEN — evento publicado con userId y email del buyer guardado
+                ArgumentCaptor<UserRegisteredEvent> captor = ArgumentCaptor.forClass(UserRegisteredEvent.class);
+                verify(authEventPublisher).publishUserRegistered(captor.capture());
+                assertEquals(buyerId, captor.getValue().userId());
+                assertEquals("buyer2@example.com", captor.getValue().email());
+                assertEquals("BUYER", captor.getValue().role());
+        }
+
+        @Test
         void testRegisterBuyer_withDuplicateEmail_throwsConflict() {
                 // GIVEN
                 when(userRepository.existsByEmail("buyer@example.com")).thenReturn(true);
@@ -207,6 +239,50 @@ class AuthServiceTest {
                 assertThrows(ConflictException.class,
                                 () -> authService.registerBuyer("buyer@example.com", "BuyerPass1"));
                 verify(userRepository, never()).save(any());
+        }
+
+        @Test
+        void testRegisterBuyer_withWeakPassword_throwsBadRequest() {
+                // GIVEN — contraseña sin mayúscula ni número
+                // WHEN / THEN
+                assertThrows(BadRequestException.class,
+                                () -> authService.registerBuyer("buyer@example.com", "weakpass"));
+                verify(userRepository, never()).save(any());
+        }
+
+        @Test
+        void testRegisterBuyer_withPasswordTooShort_throwsBadRequest() {
+                // GIVEN — contraseña < 8 caracteres
+                assertThrows(BadRequestException.class,
+                                () -> authService.registerBuyer("buyer@example.com", "Abc1"));
+                verify(userRepository, never()).save(any());
+        }
+
+        @Test
+        void testRegisterBuyer_withPasswordNoUppercase_throwsBadRequest() {
+                // GIVEN — sin mayúscula
+                assertThrows(BadRequestException.class,
+                                () -> authService.registerBuyer("buyer@example.com", "password1"));
+                verify(userRepository, never()).save(any());
+        }
+
+        @Test
+        void testRegisterBuyer_withPasswordNoNumber_throwsBadRequest() {
+                // GIVEN — sin número
+                assertThrows(BadRequestException.class,
+                                () -> authService.registerBuyer("buyer@example.com", "PasswordOnly"));
+                verify(userRepository, never()).save(any());
+        }
+
+        @Test
+        void testRegisterBuyer_doesNotPublishEvent_whenEmailAlreadyExists() {
+                // GIVEN
+                when(userRepository.existsByEmail("dup@example.com")).thenReturn(true);
+
+                // WHEN / THEN
+                assertThrows(ConflictException.class,
+                                () -> authService.registerBuyer("dup@example.com", "ValidPass1"));
+                verify(authEventPublisher, never()).publishUserRegistered(any());
         }
 
         @Test

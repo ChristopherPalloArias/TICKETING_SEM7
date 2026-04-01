@@ -12,6 +12,7 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 
 import jakarta.validation.ConstraintViolationException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestControllerAdvice
@@ -183,6 +184,13 @@ public class GlobalExceptionHandler {
             .body(new ErrorResponse("EVENT_UPDATE_NOT_ALLOWED", ex.getMessage()));
     }
 
+    @ExceptionHandler(RoomHasEventsException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<RoomHasEventsErrorResponse> handleRoomHasEventsException(RoomHasEventsException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new RoomHasEventsErrorResponse("ROOM_HAS_EVENTS", ex.getMessage(), ex.getEventTitles()));
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
@@ -236,5 +244,13 @@ public class GlobalExceptionHandler {
         private String error;
         private String message;
         private Map<String, String> details;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class RoomHasEventsErrorResponse {
+        private String error;
+        private String message;
+        private List<String> events;
     }
 }

@@ -1,19 +1,30 @@
 package com.tickets.events.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tickets.events.dto.RoomResponse;
+import com.tickets.events.dto.RoomUpdateRequest;
+import com.tickets.events.exception.RoomHasEventsException;
+import com.tickets.events.exception.RoomNotFoundException;
 import com.tickets.events.service.RoomService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(RoomController.class)
@@ -21,6 +32,9 @@ class RoomControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockBean
     private RoomService roomService;
@@ -102,5 +116,163 @@ class RoomControllerTest {
             .andExpect(jsonPath("$[1].id").value(roomId2.toString()))
             .andExpect(jsonPath("$[1].name").value("Grand Opera House"))
             .andExpect(jsonPath("$[1].maxCapacity").value(500));
+    }
+
+    // ── PUT /api/v1/rooms/{roomId} ─────────────────────────────────────────────
+
+    @Test
+    void updateRoom_returns200_withAdminRole() throws Exception {
+        // GIVEN
+        UUID roomId = UUID.randomUUID();
+        RoomResponse updated = new RoomResponse(roomId, "Sala Nueva", 350, LocalDateTime.now(), LocalDateTime.now());
+        when(roomService.updateRoom(eq(roomId), any(RoomUpdateRequest.class))).thenReturn(updated);
+
+        String body = objectMapper.writeValueAsString(new RoomUpdateRequest("Sala Nueva", 350));
+
+        // WHEN / THEN
+        mockMvc.perform(put("/api/v1/rooms/{id}", roomId)
+                .header("X-Role", "ADMIN")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.name").value("Sala Nueva"))
+            .andExpect(jsonPath("$.maxCapacity").value(350));
+    }
+
+    @Test
+    void updateRoom_returns403_withoutAdminRole() throws Exception {
+        // GIVEN
+        UUID roomId = UUID.randomUUID();
+        String body = objectMapper.writeValueAsString(new RoomUpdateRequest("X", 100));
+
+        // WHEN / THEN
+        mockMvc.perform(put("/api/v1/rooms/{id}", roomId)
+                .header("X-Role", "BUYER")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateRoom_returns403_withoutRoleHeader() throws Exception {
+        // GIVEN
+        UUID roomId = UUID.randomUUID();
+        String body = objectMapper.writeValueAsString(new RoomUpdateRequest("X", 100));
+
+        // WHEN / THEN
+        mockMvc.perform(put("/api/v1/rooms/{id}", roomId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateRoom_returns404_whenRoomNotFound() throws Exception {
+        // GIVEN
+        UUID unknownId = UUID.randomUUID();
+        when(roomService.updateRoom(eq(unknownId), any(RoomUpdateRequest.class)))
+            .thenThrow(new RoomNotFoundException("Room not found"));
+
+        String body = objectMapper.writeValueAsString(new RoomUpdateRequest("X", 100));
+
+        // WHEN / THEN
+        mockMvc.perform(put("/api/v1/rooms/{id}", unknownId)
+                .header("X-Role", "ADMIN")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updateRoom_returns400_whenNameIsBlank() throws Exception {
+        // GIVEN — nombre vacío viola @NotBlank
+        UUID roomId = UUID.randomUUID();
+        String body = """
+            {"name": "", "maxCapacity": 100}
+            """;
+
+        // WHEN / THEN
+        mockMvc.perform(put("/api/v1/rooms/{id}", roomId)
+                .header("X-Role", "ADMIN")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updateRoom_returns400_whenMaxCapacityIsZero() throws Exception {
+        // GIVEN — maxCapacity = 0 viola @Min(1)
+        UUID roomId = UUID.randomUUID();
+        String body = """
+            {"name": "Sala X", "maxCapacity": 0}
+            """;
+
+        // WHEN / THEN
+        mockMvc.perform(put("/api/v1/rooms/{id}", roomId)
+                .header("X-Role", "ADMIN")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isBadRequest());
+    }
+
+    // ── DELETE /api/v1/rooms/{roomId} ─────────────────────────────────────────
+
+    @Test
+    void deleteRoom_returns204_withAdminRole() throws Exception {
+        // GIVEN
+        UUID roomId = UUID.randomUUID();
+        doNothing().when(roomService).deleteRoom(roomId);
+
+        // WHEN / THEN
+        mockMvc.perform(delete("/api/v1/rooms/{id}", roomId)
+                .header("X-Role", "ADMIN"))
+            .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deleteRoom_returns403_withoutAdminRole() throws Exception {
+        // GIVEN
+        UUID roomId = UUID.randomUUID();
+
+        // WHEN / THEN
+        mockMvc.perform(delete("/api/v1/rooms/{id}", roomId)
+                .header("X-Role", "BUYER"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deleteRoom_returns403_withoutRoleHeader() throws Exception {
+        // GIVEN
+        UUID roomId = UUID.randomUUID();
+
+        // WHEN / THEN
+        mockMvc.perform(delete("/api/v1/rooms/{id}", roomId))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deleteRoom_returns404_whenRoomNotFound() throws Exception {
+        // GIVEN
+        UUID unknownId = UUID.randomUUID();
+        doThrow(new RoomNotFoundException("Room not found")).when(roomService).deleteRoom(unknownId);
+
+        // WHEN / THEN
+        mockMvc.perform(delete("/api/v1/rooms/{id}", unknownId)
+                .header("X-Role", "ADMIN"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteRoom_returns400_whenRoomHasActiveEvents() throws Exception {
+        // GIVEN
+        UUID roomId = UUID.randomUUID();
+        doThrow(new RoomHasEventsException("Tiene eventos activos", List.of("Obra A", "Obra B")))
+            .when(roomService).deleteRoom(roomId);
+
+        // WHEN / THEN
+        mockMvc.perform(delete("/api/v1/rooms/{id}", roomId)
+                .header("X-Role", "ADMIN"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value("ROOM_HAS_EVENTS"));
     }
 }

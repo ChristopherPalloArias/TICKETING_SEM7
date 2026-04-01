@@ -103,6 +103,106 @@
   gap: 1.25rem;
 }
 
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+.sortSelect {
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+  cursor: pointer;
+  transition: border-color 200ms;
+}
+
+.sortSelect:hover {
+  border-color: var(--color-primary);
+}
+
+.sortSelect:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.pageInfo {
+  font-size: 0.875rem;
+  color: var(--color-on-surface-variant);
+  font-weight: 600;
+}
+
+.paginationBtn {
+  padding: 0.6rem 1.2rem;
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 200ms;
+}
+
+.paginationBtn:hover:not(:disabled) {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary, #1c1c1c);
+  border-color: var(--color-primary);
+}
+
+.paginationBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.loadingIcon {
+  color: var(--color-on-surface-variant);
+  opacity: 0.3;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.loadingMsg {
+  font-size: 0.95rem;
+  color: var(--color-on-surface-variant);
+}
+
 /* ── Ticket Card ──────────────────────────────────────────────── */
 .card {
   display: flex;

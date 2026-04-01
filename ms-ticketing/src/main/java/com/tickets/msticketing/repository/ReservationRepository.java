@@ -31,4 +31,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
 
     List<Reservation> findByBuyerId(UUID buyerId);
     List<Reservation> findByEventId(UUID eventId);
+
+    // Para estadísticas de admin
+    long countByStatus(ReservationStatus status);
+    long countByEventIdAndStatus(UUID eventId, ReservationStatus status);
 }

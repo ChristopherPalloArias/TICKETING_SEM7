@@ -1,108 +1,181 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Edit, Trash2, Plus } from 'lucide-react';
 import { listAllRooms } from '../../../services/adminEventService';
-import { useCreateRoom } from '../../../hooks/admin/useCreateRoom';
-import RoomForm from '../../../components/admin/RoomForm/RoomForm';
-import RoomCard from '../../../components/admin/RoomCard/RoomCard';
+import { useRooms } from '../../../hooks/useRooms';
+import RoomFormModal from '../../../components/admin/RoomFormModal/RoomFormModal';
 import { showToast } from '../../../utils/toast';
 import type { RoomOption } from '../../../types/admin.types';
 import styles from './RoomsAdminPage.module.css';
 
 export default function RoomsAdminPage() {
   const navigate = useNavigate();
-  const { createNewRoom, isSubmitting, error } = useCreateRoom();
-  const [rooms, setRooms] = useState<RoomOption[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const { rooms, loading, createNewRoom, updateExistingRoom, deleteExistingRoom } = useRooms();
 
-  useEffect(() => {
-    loadRooms();
-  }, []);
+  const [showModal, setShowModal] = useState(false);
+  const [editingRoom, setEditingRoom] = useState<RoomOption | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  async function loadRooms() {
+  async function handleCreate(data: { name: string; maxCapacity: number }) {
+    setIsSubmitting(true);
     try {
-      setLoading(true);
-      const data = await listAllRooms();
-      setRooms(data);
-    } catch {
-      showToast('Error al cargar las salas', 'error');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleCreateRoom(data: { name: string; maxCapacity: number }) {
-    try {
-      const newRoom = await createNewRoom(data);
-      setRooms((prev) => [...prev, newRoom]);
-      setShowForm(false);
+      await createNewRoom(data);
+      setShowModal(false);
       showToast('Sala creada exitosamente', 'success');
-    } catch {
-      // Error manejado por el hook
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al crear la sala';
+      showToast(message, 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
-  if (loading) {
-    return (
-      <div className={styles.container}>
-        <p className={styles.loadingMsg}>Cargando salas...</p>
-      </div>
-    );
+  async function handleUpdate(data: { name: string; maxCapacity: number }) {
+    if (!editingRoom) return;
+    setIsSubmitting(true);
+    try {
+      await updateExistingRoom(editingRoom.id, data);
+      setShowModal(false);
+      setEditingRoom(null);
+      showToast('Sala actualizada exitosamente', 'success');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al actualizar la sala';
+      showToast(message, 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleDelete(roomId: string) {
+    setIsDeleting(true);
+    try {
+      await deleteExistingRoom(roomId);
+      setDeleteConfirm(null);
+      showToast('Sala eliminada exitosamente', 'success');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al eliminar la sala';
+      showToast(message, 'error');
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  function openCreateModal() {
+    setEditingRoom(null);
+    setShowModal(true);
+  }
+
+  function openEditModal(room: RoomOption) {
+    setEditingRoom(room);
+    setShowModal(true);
+  }
+
+  function closeModal() {
+    setShowModal(false);
+    setEditingRoom(null);
   }
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={() => navigate('/admin/events')}>
-          ← Volver
-        </button>
         <h1 className={styles.title}>Gestión de Salas</h1>
+        <button className={styles.createBtn} onClick={openCreateModal}>
+          <Plus size={18} />
+          Nueva Sala
+        </button>
       </div>
 
-      {!showForm && (
-        <button
-          className={styles.createBtn}
-          onClick={() => setShowForm(true)}
-        >
-          + Nueva Sala
-        </button>
-      )}
+      {loading ? (
+        <div className={styles.loadingState}>
+          <p className={styles.loadingMsg}>Cargando salas...</p>
+        </div>
+      ) : rooms.length === 0 ? (
+        <div className={styles.emptyState}>
+          <p className={styles.emptyTitle}>No hay salas registradas</p>
+          <p className={styles.emptyHint}>Crea la primera sala para empezar</p>
+          <button className={styles.ctaBtn} onClick={openCreateModal}>
+            <Plus size={18} />
+            Crear Primera Sala
+          </button>
+        </div>
+      ) : (
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Capacidad</th>
+                <th>Eventos Asociados</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rooms.map((room) => (
+                <tr key={room.id}>
+                  <td>
+                    <strong>{room.name}</strong>
+                  </td>
+                  <td>{room.maxCapacity} personas</td>
+                  <td>{room.eventsCount ?? 0}</td>
+                  <td>
+                    <div className={styles.actions}>
+                      <button
+                        className={styles.editBtn}
+                        onClick={() => openEditModal(room)}
+                        title="Editar sala"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      {deleteConfirm === room.id ? (
+                        <div className={styles.confirmDelete}>
+                          <span className={styles.confirmText}>¿Eliminar?</span>
+                          <button
+                            className={styles.confirmYes}
+                            onClick={() => handleDelete(room.id)}
+                            disabled={isDeleting}
+                          >
+                            Sí
+                          </button>
+                          <button
+                            className={styles.confirmNo}
+                            onClick={() => setDeleteConfirm(null)}
+                            disabled={isDeleting}
+                          >
+                            No
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          className={styles.deleteBtn}
+                          onClick={() => setDeleteConfirm(room.id)}
+                          title="Eliminar sala"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-      {showForm && (
-        <div className={styles.formSection}>
-          <RoomForm
-            onSubmit={handleCreateRoom}
-            isSubmitting={isSubmitting}
-            submitError={error}
-            onCancel={() => setShowForm(false)}
-          />
+          <div className={styles.summary}>
+            Total: <strong>{rooms.length}</strong> salas registradas
+          </div>
         </div>
       )}
 
-      <div className={styles.content}>
-        {rooms.length === 0 ? (
-          <div className={styles.emptyState}>
-            <p className={styles.emptyText}>No hay salas registradas</p>
-            <button
-              className={styles.createBtnAlt}
-              onClick={() => setShowForm(true)}
-            >
-              + Crear la primera sala
-            </button>
-          </div>
-        ) : (
-          <div className={styles.roomList}>
-            <h2 className={styles.listTitle}>
-              Total: <span className={styles.count}>{rooms.length}</span> salas
-            </h2>
-            <div className={styles.grid}>
-              {rooms.map((room) => (
-                <RoomCard key={room.id} room={room} />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+      <RoomFormModal
+        key={editingRoom?.id ?? 'new'}
+        isOpen={showModal}
+        room={editingRoom}
+        onClose={closeModal}
+        onSubmit={editingRoom ? handleUpdate : handleCreate}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ package com.tickets.gateway.service;
 import com.tickets.gateway.dto.LoginResponse;
 import com.tickets.gateway.dto.RegisterResponse;
 import com.tickets.gateway.dto.UserProfileResponse;
+import com.tickets.gateway.dto.UserRegisteredEvent;
 import com.tickets.gateway.exception.BadRequestException;
 import com.tickets.gateway.exception.ConflictException;
 import com.tickets.gateway.exception.UnauthorizedException;
@@ -14,6 +15,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -27,11 +30,13 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final AuthEventPublisher authEventPublisher;
 
-    public AuthService(UserRepository userRepository, JwtService jwtService) {
+    public AuthService(UserRepository userRepository, JwtService jwtService, AuthEventPublisher authEventPublisher) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = new BCryptPasswordEncoder(10);
+        this.authEventPublisher = authEventPublisher;
     }
 
     @Transactional(readOnly = true)
@@ -91,6 +96,14 @@ public class AuthService {
         User saved = userRepository.save(user);
         log.info("New buyer registered: {}", email);
 
+        // Publicar evento para que ms-ticketing asocie tickets anónimos
+        authEventPublisher.publishUserRegistered(new UserRegisteredEvent(
+            saved.getId(),
+            saved.getEmail(),
+            saved.getRole().name(),
+            LocalDateTime.now(ZoneOffset.UTC)
+        ));
+
         String token = jwtService.generateToken(
                 saved.getId().toString(),
                 saved.getEmail(),
@@ -110,6 +123,31 @@ public class AuthService {
 
     public String encodePassword(String raw) {
         return passwordEncoder.encode(raw);
+    }
+
+    @Transactional
+    public void changePassword(String userId, String currentPassword, String newPassword) {
+        UUID id = UUID.fromString(userId);
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new UnauthorizedException("Usuario no encontrado"));
+
+        // Validate current password
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new BadRequestException("La contraseña actual es incorrecta");
+        }
+
+        // Validate new password complexity
+        if (!PASSWORD_PATTERN.matcher(newPassword).matches()) {
+            throw new BadRequestException(
+                "La contraseña debe tener mínimo 8 caracteres, al menos 1 mayúscula y al menos 1 número"
+            );
+        }
+
+        // Update password
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        log.info("Password changed for user: {}", user.getEmail());
     }
 }
 

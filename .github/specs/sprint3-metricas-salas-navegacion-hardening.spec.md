@@ -1,9 +1,9 @@
 ---
 id: SPEC-022
-status: DRAFT
+status: IMPLEMENTED
 feature: sprint3-metricas-salas-navegacion-hardening
 created: 2026-03-31
-updated: 2026-03-31
+updated: 2026-04-02
 author: spec-generator
 version: "1.0"
 related-specs: [SPEC-020, SPEC-021]

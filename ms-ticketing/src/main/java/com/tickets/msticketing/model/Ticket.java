@@ -13,7 +13,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "ticket", indexes = {
     @Index(name = "idx_ticket_buyer_id", columnList = "buyer_id"),
-    @Index(name = "idx_ticket_event_id", columnList = "event_id")
+    @Index(name = "idx_ticket_event_id", columnList = "event_id"),
+    @Index(name = "idx_ticket_buyer_email", columnList = "buyer_email"),
+    @Index(name = "idx_ticket_user_id", columnList = "user_id")
 })
 @Data
 @NoArgsConstructor
@@ -46,6 +48,12 @@ public class Ticket {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private TicketStatus status;
+
+    @Column(name = "buyer_email", length = 255)
+    private String buyerEmail;
+
+    @Column(name = "user_id")
+    private UUID userId;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

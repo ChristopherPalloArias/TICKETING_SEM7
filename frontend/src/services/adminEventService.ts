@@ -94,3 +94,58 @@ export async function listAllRooms(): Promise<RoomOption[]> {
   return res.data;
 }
 
+// SPEC-022 — Admin dashboard metrics and room management
+
+export interface AdminStatsResponse {
+  totalEvents: number;
+  publishedEvents: number;
+  totalTicketsSold: number;
+  activeReservations: number;
+}
+
+export interface AdminEventMetrics {
+  id: string;
+  title: string;
+  status: string;
+  date: string;
+  capacity: number;
+  ticketsSold: number;
+  activeReservations: number;
+  estimatedRevenue: number;
+  roomName: string;
+}
+
+export interface AdminEventsWithMetricsResponse {
+  content: AdminEventMetrics[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+export async function getAdminStats(): Promise<AdminStatsResponse> {
+  const res = await apiClient.get<AdminStatsResponse>('/api/v1/events/admin/stats');
+  return res.data;
+}
+
+export async function getAdminEventsWithMetrics(
+  { search = '', page = 0, size = 10 } = {}
+): Promise<AdminEventsWithMetricsResponse> {
+  const res = await apiClient.get<AdminEventsWithMetricsResponse>('/api/v1/events/admin', {
+    params: { search, page, size },
+  });
+  return res.data;
+}
+
+export async function updateRoom(
+  id: string,
+  data: { name: string; maxCapacity: number }
+): Promise<RoomOption> {
+  const res = await apiClient.put<RoomOption>(`/api/v1/rooms/${id}`, data);
+  return res.data;
+}
+
+export async function deleteRoom(id: string): Promise<void> {
+  await apiClient.delete(`/api/v1/rooms/${id}`);
+}
+
