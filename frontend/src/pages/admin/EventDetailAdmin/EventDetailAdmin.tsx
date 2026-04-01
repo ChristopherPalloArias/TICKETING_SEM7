@@ -2,6 +2,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAdminEventDetail } from '../../../hooks/admin/useAdminEventDetail';
 import { useEventTiers } from '../../../hooks/admin/useEventTiers';
+import { useBreadcrumbs } from '../../../hooks/admin/useBreadcrumbs';
 import { useAuth } from '../../../hooks/useAuth';
 import { publishEvent, cancelEvent } from '../../../services/adminEventService';
 import EventStatusBadge from '../../../components/admin/EventStatusBadge/EventStatusBadge';
@@ -10,6 +11,8 @@ import TierForm from '../../../components/admin/TierForm/TierForm';
 import CapacityBar from '../../../components/admin/CapacityBar/CapacityBar';
 import PublishModal from '../../../components/admin/PublishModal/PublishModal';
 import CancelEventModal from '../../../components/admin/CancelEventModal/CancelEventModal';
+import Breadcrumbs from '../../../components/admin/Breadcrumbs/Breadcrumbs';
+import ImagePreview from '../../../components/admin/ImagePreview/ImagePreview';
 import { showToast } from '../../../utils/toast';
 import type { AdminTierResponse } from '../../../types/admin.types';
 import styles from './EventDetailAdmin.module.css';
@@ -32,6 +35,7 @@ export default function EventDetailAdmin() {
   const { tiers, loading: tiersLoading, error: tiersError, deleteTier } = useEventTiers(
     eventId ?? '',
   );
+  const { segments } = useBreadcrumbs(event?.title);
 
   const [showTierForm, setShowTierForm] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
@@ -122,6 +126,8 @@ export default function EventDetailAdmin() {
 
   return (
     <div className={styles.container}>
+      <Breadcrumbs segments={segments} />
+
       {/* Event Info Section */}
       <section className={styles.infoSection}>
         <div className={styles.infoHeader}>
@@ -149,6 +155,8 @@ export default function EventDetailAdmin() {
             )}
           </div>
         </div>
+
+        <ImagePreview url={event.imageUrl ?? ''} />
 
         <div className={styles.metaGrid}>
           <div className={styles.metaItem}>

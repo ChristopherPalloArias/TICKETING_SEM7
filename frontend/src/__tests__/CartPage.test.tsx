@@ -52,6 +52,20 @@ vi.mock('../contexts/CartContext', () => ({
   CartProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+vi.mock('../hooks/useAuth', () => ({
+  useAuth: () => ({
+    token: null,
+    role: null,
+    userId: null,
+    email: null,
+    isAuthenticated: false,
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
+    registerBuyer: vi.fn(),
+  }),
+}));
+
 function buildCartItem(overrides: Partial<CartItem> = {}): CartItem {
   return {
     id: 'item-1',

@@ -16,8 +16,12 @@ export async function getAllEvents(): Promise<AdminEventsListResponse> {
 }
 
 export async function getAdminEventById(eventId: string): Promise<AdminEventResponse> {
-  const res = await apiClient.get<AdminEventResponse>(`/api/v1/events/${eventId}`);
-  return res.data;
+  const res = await apiClient.get<{ events: AdminEventResponse[] }>('/api/v1/events/admin');
+  const event = res.data.events.find(e => e.id === eventId);
+  if (!event) {
+    throw new Error(`Evento ${eventId} no encontrado`);
+  }
+  return event;
 }
 
 export async function publishEvent(eventId: string): Promise<AdminEventResponse> {
@@ -75,6 +79,18 @@ export async function cancelEvent(
     `/api/v1/events/${eventId}/cancel`,
     { cancellationReason: reason },
   );
+  return res.data;
+}
+
+// Rooms management
+
+export async function createRoom(data: { name: string; maxCapacity: number }): Promise<RoomOption> {
+  const res = await apiClient.post<RoomOption>('/api/v1/rooms', data);
+  return res.data;
+}
+
+export async function listAllRooms(): Promise<RoomOption[]> {
+  const res = await apiClient.get<RoomOption[]>('/api/v1/rooms');
   return res.data;
 }
 

@@ -30,6 +30,19 @@ vi.mock('../contexts/CartContext', () => ({
     activeItemCount: 0,
   }),
 }));
+vi.mock('../hooks/useAuth', () => ({
+  useAuth: () => ({
+    token: null,
+    role: null,
+    userId: null,
+    email: null,
+    isAuthenticated: false,
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
+    registerBuyer: vi.fn(),
+  }),
+}));
 vi.mock('framer-motion', () => {
   const motionProxy = new Proxy({}, {
     get: () => {

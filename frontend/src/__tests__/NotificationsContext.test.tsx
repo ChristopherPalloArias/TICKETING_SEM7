@@ -5,6 +5,19 @@ import { NotificationsProvider, useNotifications } from '../contexts/Notificatio
 
 vi.mock('../hooks/useNotificationPolling');
 vi.mock('../services/notificationService');
+vi.mock('../hooks/useAuth', () => ({
+  useAuth: () => ({
+    token: null,
+    role: null,
+    userId: null,
+    email: null,
+    isAuthenticated: false,
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
+    registerBuyer: vi.fn(),
+  }),
+}));
 
 import { useNotificationPolling } from '../hooks/useNotificationPolling';
 import { markAllRead, archiveAll } from '../services/notificationService';

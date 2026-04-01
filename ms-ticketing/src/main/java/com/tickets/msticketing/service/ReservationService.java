@@ -172,18 +172,18 @@ public class ReservationService {
 
             throw new MaxPaymentAttemptsExceededException("Maximum payment attempts exceeded");
         }
-        if (!paymentRequest.paymentMethod().equals("MOCK")) {
+        if (paymentRequest.paymentMethod() != PaymentMethod.MOCK) {
             throw new InvalidPaymentStatusException("Only MOCK payment method is supported");
         }
 
-        if (!paymentRequest.status().equals("APPROVED") && !paymentRequest.status().equals("DECLINED")) {
+        if (paymentRequest.status() != PaymentStatus.APPROVED && paymentRequest.status() != PaymentStatus.DECLINED) {
             throw new InvalidPaymentStatusException("Invalid payment status");
         }
 
         paymentAttempts = paymentAttempts + 1;
         reservation.setPaymentAttempts(paymentAttempts);
 
-        if (paymentRequest.status().equals("DECLINED")) {
+        if (paymentRequest.status() == PaymentStatus.DECLINED) {
             reservation.setStatus(ReservationStatus.PAYMENT_FAILED);
             reservationRepository.save(reservation);
 

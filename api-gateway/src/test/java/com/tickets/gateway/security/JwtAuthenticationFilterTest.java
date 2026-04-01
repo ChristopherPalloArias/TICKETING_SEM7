@@ -142,11 +142,11 @@ class JwtAuthenticationFilterTest {
             return Mono.empty();
         }).block();
 
-        // THEN — role is stripped, user id can flow for anonymous/cart flows
+        // THEN — both X-Role and X-User-Id are stripped on public endpoints to prevent spoofing
         assertNotNull(captured[0]);
         assertNull(captured[0].getHeaders().getFirst("X-Role"),
-                "Forged X-Role header must be stripped by the filter");
-        assertEquals("malicious-id", captured[0].getHeaders().getFirst("X-User-Id"),
-            "X-User-Id is preserved on public endpoints by current gateway contract");
+                "Forged X-Role header must be stripped by the filter on public endpoints");
+        assertNull(captured[0].getHeaders().getFirst("X-User-Id"),
+                "Forged X-User-Id header must be stripped by the filter on public endpoints to prevent identity spoofing");
     }
 }

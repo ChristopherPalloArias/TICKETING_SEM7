@@ -28,6 +28,33 @@
   font-weight: 400;
 }
 
+.menu {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.menuLink {
+  padding: 1rem 1.25rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--color-on-surface-variant);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+
+.menuLink:hover {
+  color: var(--color-on-surface);
+}
+
+.menuLink.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
 .right {
   display: flex;
   align-items: center;

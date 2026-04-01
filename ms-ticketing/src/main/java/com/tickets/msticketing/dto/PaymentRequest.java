@@ -1,5 +1,7 @@
 package com.tickets.msticketing.dto;
 
+import com.tickets.msticketing.model.PaymentMethod;
+import com.tickets.msticketing.model.PaymentStatus;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -10,8 +12,8 @@ public record PaymentRequest(
     BigDecimal amount,
 
     @NotNull(message = "paymentMethod is required")
-    String paymentMethod,
+    PaymentMethod paymentMethod,
 
     @NotNull(message = "status is required")
-    String status
+    PaymentStatus status
 ) {}

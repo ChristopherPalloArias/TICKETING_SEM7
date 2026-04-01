@@ -185,7 +185,7 @@ services:
       GATEWAY_DB_USER: ${GATEWAY_DB_USER:-gateway_user}
       GATEWAY_DB_PASS: ${GATEWAY_DB_PASS:-changeme}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@sem7.com}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin1234!}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Dev-Only-2026!ChangeInProd}
       JWT_SECRET: ${JWT_SECRET:-dev-only-secret-NOT-for-production-replace-with-64-char-random-val}
     ports:
       - "${GATEWAY_PORT}:8080"
