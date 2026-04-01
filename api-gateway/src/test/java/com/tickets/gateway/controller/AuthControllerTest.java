@@ -13,6 +13,7 @@ import com.tickets.gateway.exception.UnauthorizedException;
 import com.tickets.gateway.security.JwtAuthenticationFilter;
 import com.tickets.gateway.security.RateLimitService;
 import com.tickets.gateway.service.AuthService;
+import io.github.bucket4j.ConsumptionProbe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,8 @@ class AuthControllerTest {
 
     @Test
     void testLogin_withValidCredentials_returns200WithToken() throws Exception {
-        when(rateLimitService.tryConsume(anyString())).thenReturn(true);
+        when(rateLimitService.tryConsumeAndGetProbe(anyString()))
+                .thenReturn(ConsumptionProbe.consumed(4, 900_000_000_000L));
         when(authService.login("user@example.com", "password123"))
                 .thenReturn(new LoginResponse("jwt.token.value", 3600L, "ADMIN"));
 
@@ -83,7 +85,8 @@ class AuthControllerTest {
 
     @Test
     void testLogin_withInvalidCredentials_returns401() throws Exception {
-        when(rateLimitService.tryConsume(anyString())).thenReturn(true);
+        when(rateLimitService.tryConsumeAndGetProbe(anyString()))
+                .thenReturn(ConsumptionProbe.consumed(4, 900_000_000_000L));
         when(authService.login(anyString(), anyString()))
                 .thenThrow(new UnauthorizedException("Credenciales invalidas"));
 
@@ -100,7 +103,9 @@ class AuthControllerTest {
 
     @Test
     void testLogin_whenRateLimitExceeded_returns429() throws Exception {
-        when(rateLimitService.tryConsume(anyString())).thenReturn(false);
+        // Rejected probe: 0 tokens restantes, ~15 min de espera
+        when(rateLimitService.tryConsumeAndGetProbe(anyString()))
+                .thenReturn(ConsumptionProbe.rejected(0, 900_000_000_000L, 900_000_000_000L));
 
         String body = objectMapper.writeValueAsString(new LoginRequest("user@example.com", "password123"));
 
@@ -109,6 +114,7 @@ class AuthControllerTest {
                 .bodyValue(body)
                 .exchange()
                 .expectStatus().isEqualTo(429)
+                .expectHeader().exists("Retry-After")
                 .expectBody()
                 .jsonPath("$.error").exists();
     }

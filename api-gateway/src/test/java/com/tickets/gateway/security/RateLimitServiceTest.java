@@ -12,12 +12,13 @@ class RateLimitServiceTest {
 
     private static final int CAPACITY       = 5;
     private static final int REFILL_MINUTES = 15;
+    private static final int MAX_IPS        = 1000;
 
     private RateLimitService rateLimitService;
 
     @BeforeEach
     void setUp() {
-        rateLimitService = new RateLimitService(CAPACITY, REFILL_MINUTES);
+        rateLimitService = new RateLimitService(CAPACITY, REFILL_MINUTES, MAX_IPS);
     }
 
     @Test
