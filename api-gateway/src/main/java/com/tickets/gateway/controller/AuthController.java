@@ -1,6 +1,8 @@
 package com.tickets.gateway.controller;
 
 import com.tickets.gateway.dto.BuyerRegisterRequest;
+import com.tickets.gateway.dto.ChangePasswordRequest;
+import com.tickets.gateway.dto.ChangePasswordResponse;
 import com.tickets.gateway.dto.LoginRequest;
 import com.tickets.gateway.dto.LoginResponse;
 import com.tickets.gateway.dto.RegisterRequest;
