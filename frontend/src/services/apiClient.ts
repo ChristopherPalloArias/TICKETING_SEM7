@@ -1,31 +1,46 @@
 import axios from 'axios';
 
+const TOKEN_KEY = 'jwt_token';
+const ROLE_KEY = 'user_role';
+
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
 });
 
-// Interceptor de request: inyectar token JWT
 apiClient.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem('jwt_token');
+  const token = sessionStorage.getItem(TOKEN_KEY);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// Interceptor de response: manejar 401 globalmente
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      sessionStorage.removeItem('jwt_token');
-      sessionStorage.removeItem('user_role');
+    const status = error?.response?.status;
+    if (status === 401) {
+      const role = sessionStorage.getItem(ROLE_KEY);
+      sessionStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem(ROLE_KEY);
       sessionStorage.removeItem('user_id');
       sessionStorage.removeItem('user_email');
-      window.location.href = '/admin/login';
+      window.dispatchEvent(
+        new CustomEvent('app:toast', {
+          detail: { message: 'Tu sesión ha expirado', type: 'error', id: Date.now() },
+        }),
+      );
+      const redirectPath = role === 'ADMIN' ? '/admin/login' : '/login';
+      window.location.replace(redirectPath);
+    } else if (status === 403) {
+      window.dispatchEvent(
+        new CustomEvent('app:toast', {
+          detail: { message: 'No tienes permisos para esta acción', type: 'error', id: Date.now() },
+        }),
+      );
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

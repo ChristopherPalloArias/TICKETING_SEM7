@@ -28,3 +28,11 @@ export async function getProfile(token: string): Promise<UserProfile> {
   });
   return response.data;
 }
+
+export async function registerBuyer(email: string, password: string): Promise<LoginResponse> {
+  const response = await axios.post<LoginResponse>(`${API_BASE}/api/v1/auth/register/buyer`, {
+    email,
+    password,
+  });
+  return response.data;
+}

@@ -19,21 +19,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = !!token;
 
+  function persistSession(newToken: string, newRole: string, profileId: string, profileEmail: string) {
+    setToken(newToken);
+    setRole(newRole as AdminRole);
+    setUserId(profileId);
+    setEmail(profileEmail);
+    sessionStorage.setItem(TOKEN_KEY, newToken);
+    sessionStorage.setItem(ROLE_KEY, newRole);
+    sessionStorage.setItem(USER_ID_KEY, profileId);
+    sessionStorage.setItem(EMAIL_KEY, profileEmail);
+  }
+
   async function login(inputEmail: string, inputPassword: string): Promise<void> {
     setIsLoading(true);
     try {
       const response = await authService.login(inputEmail, inputPassword);
       const profile = await authService.getProfile(response.token);
+      persistSession(response.token, response.role, profile.id, profile.email);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
-      setToken(response.token);
-      setRole(response.role as AdminRole);
-      setUserId(profile.id);
-      setEmail(profile.email);
-
-      sessionStorage.setItem(TOKEN_KEY, response.token);
-      sessionStorage.setItem(ROLE_KEY, response.role);
-      sessionStorage.setItem(USER_ID_KEY, profile.id);
-      sessionStorage.setItem(EMAIL_KEY, profile.email);
+  async function registerBuyer(inputEmail: string, inputPassword: string): Promise<void> {
+    setIsLoading(true);
+    try {
+      const response = await authService.registerBuyer(inputEmail, inputPassword);
+      const profile = await authService.getProfile(response.token);
+      persistSession(response.token, response.role, profile.id, profile.email);
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ token, role, userId, email, isAuthenticated, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ token, role, userId, email, isAuthenticated, isLoading, login, logout, registerBuyer }}>
       {children}
     </AuthContext.Provider>
   );

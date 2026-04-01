@@ -1,9 +1,12 @@
 package com.tickets.events.controller;
 
 import com.tickets.events.dto.AdminEventDetailResponse;
+import com.tickets.events.dto.CancelEventRequest;
+import com.tickets.events.dto.CancelEventResponse;
 import com.tickets.events.dto.EventCreateRequest;
 import com.tickets.events.dto.EventDetailResponse;
 import com.tickets.events.dto.EventResponse;
+import com.tickets.events.dto.EventUpdateRequest;
 import com.tickets.events.exception.ForbiddenAccessException;
 import com.tickets.events.service.EventService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -118,5 +121,45 @@ public class EventController {
         }
         List<AdminEventDetailResponse> events = eventService.getAllEvents();
         return ResponseEntity.ok(Map.of("total", events.size(), "events", events));
+    }
+
+    @PutMapping("/{eventId}")
+    @Operation(
+        summary = "Editar evento",
+        description = "Actualiza los campos de un evento. Para DRAFT se permiten todos los campos; para PUBLISHED solo campos no-estructurales."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Evento actualizado exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Intento de modificar campo estructural en PUBLISHED o capacidad inválida"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado - se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "404", description = "Evento no encontrado")
+    })
+    public ResponseEntity<EventResponse> updateEvent(
+        @PathVariable UUID eventId,
+        @RequestBody EventUpdateRequest request,
+        @RequestHeader("X-Role") String role
+    ) {
+        EventResponse response = eventService.updateEvent(eventId, request, role);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{eventId}/cancel")
+    @Operation(
+        summary = "Cancelar evento",
+        description = "Cancela un evento PUBLISHED. Publica evento RabbitMQ event.cancelled. Solo usuarios con rol ADMIN."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Evento cancelado exitosamente"),
+        @ApiResponse(responseCode = "400", description = "El evento no está en estado PUBLISHED"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado - se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "404", description = "Evento no encontrado")
+    })
+    public ResponseEntity<CancelEventResponse> cancelEvent(
+        @PathVariable UUID eventId,
+        @Valid @RequestBody CancelEventRequest request,
+        @RequestHeader("X-Role") String role
+    ) {
+        CancelEventResponse response = eventService.cancelEvent(eventId, request.cancellationReason(), role);
+        return ResponseEntity.ok(response);
     }
 }

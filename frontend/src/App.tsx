@@ -8,8 +8,12 @@ import LoginPage from './pages/admin/LoginPage/LoginPage';
 import EventsDashboard from './pages/admin/EventsDashboard/EventsDashboard';
 import CreateEventPage from './pages/admin/CreateEventPage/CreateEventPage';
 import EventDetailAdmin from './pages/admin/EventDetailAdmin/EventDetailAdmin';
+import EditEventPage from './pages/admin/EditEventPage/EditEventPage';
+import BuyerLoginPage from './pages/BuyerLoginPage/BuyerLoginPage';
+import BuyerRegisterPage from './pages/BuyerRegisterPage/BuyerRegisterPage';
 import AdminGuard from './components/admin/AdminGuard/AdminGuard';
 import AdminLayout from './components/admin/AdminLayout/AdminLayout';
+import Toast from './components/Toast/Toast';
 import { useCartExpirationWatcher } from './hooks/useCartExpirationWatcher';
 import './styles/global.css';
 
@@ -22,6 +26,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <CartExpirationWatcher />
+      <Toast />
       <Routes>
         {/* Rutas públicas del comprador */}
         <Route path="/eventos" element={<CarteleraPage />} />
@@ -29,6 +34,8 @@ export default function App() {
         <Route path="/venues" element={<VenuesPage />} />
         <Route path="/mis-tickets" element={<MyTicketsPage />} />
         <Route path="/carrito" element={<CartPage />} />
+        <Route path="/login" element={<BuyerLoginPage />} />
+        <Route path="/registro" element={<BuyerRegisterPage />} />
         <Route path="/" element={<Navigate to="/eventos" replace />} />
 
         {/* Rutas admin — login público */}
@@ -40,6 +47,7 @@ export default function App() {
             <Route path="events" element={<EventsDashboard />} />
             <Route path="events/new" element={<CreateEventPage />} />
             <Route path="events/:id" element={<EventDetailAdmin />} />
+            <Route path="events/:id/edit" element={<EditEventPage />} />
           </Route>
           <Route index element={<Navigate to="events" replace />} />
         </Route>

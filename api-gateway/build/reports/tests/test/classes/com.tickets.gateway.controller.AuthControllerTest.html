@@ -23,7 +23,7 @@
 <tr>
 <td>
 <div class="infoBox" id="tests">
-<div class="counter">7</div>
+<div class="counter">9</div>
 <p>tests</p>
 </div>
 </td>
@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.676s</div>
+<div class="counter">0.761s</div>
 <p>duration</p>
 </div>
 </td>
@@ -78,38 +78,48 @@
 </tr>
 </thead>
 <tr>
-<td class="success">testLogin_whenRateLimitExceeded_returns429()</td>
-<td class="success">0.034s</td>
-<td class="success">passed</td>
-</tr>
-<tr>
-<td class="success">testLogin_withInvalidCredentials_returns401()</td>
+<td class="success">testGetMe_withValidAuthenticatedHeader_returnsProfile()</td>
 <td class="success">0.016s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
+<td class="success">testGetMe_withoutAuthenticatedHeader_returns401()</td>
+<td class="success">0.008s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testLogin_whenRateLimitExceeded_returns429()</td>
+<td class="success">0.023s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testLogin_withInvalidCredentials_returns401()</td>
+<td class="success">0.010s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
 <td class="success">testLogin_withValidCredentials_returns200WithToken()</td>
-<td class="success">0.018s</td>
+<td class="success">0.012s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testRegisterBuyer_withDuplicateEmail_returns409()</td>
+<td class="success">0.015s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testRegisterBuyer_withValidData_returns201WithBuyerJwt()</td>
+<td class="success">0.013s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testRegister_withDuplicateEmail_returns409()</td>
-<td class="success">0.532s</td>
-<td class="success">passed</td>
-</tr>
-<tr>
-<td class="success">testRegister_withInvalidEmail_returns400()</td>
-<td class="success">0.017s</td>
-<td class="success">passed</td>
-</tr>
-<tr>
-<td class="success">testRegister_withShortPassword_returns400()</td>
-<td class="success">0.032s</td>
+<td class="success">0.652s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testRegister_withValidData_returns201()</td>
-<td class="success">0.027s</td>
+<td class="success">0.012s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -117,8 +127,8 @@
 <div class="tab">
 <h2>Standard output</h2>
 <span class="code">
-<pre>16:48:11.649 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.tickets.gateway.controller.AuthControllerTest]: AuthControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-16:48:11.812 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.tickets.gateway.ApiGatewayApplication for test class com.tickets.gateway.controller.AuthControllerTest
+<pre>19:41:19.640 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.tickets.gateway.controller.AuthControllerTest]: AuthControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+19:41:19.836 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.tickets.gateway.ApiGatewayApplication for test class com.tickets.gateway.controller.AuthControllerTest
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
 ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
@@ -128,12 +138,13 @@
 
  :: Spring Boot ::                (v3.3.0)
 
-2026-03-31T16:48:12.593-05:00  INFO 33616 --- [api-gateway] [    Test worker] c.t.g.controller.AuthControllerTest      : Starting AuthControllerTest using Java 17.0.18 with PID 33616 (started by luisR in C:\Sofka\TICKETING_SEM7\api-gateway)
-2026-03-31T16:48:12.594-05:00  INFO 33616 --- [api-gateway] [    Test worker] c.t.g.controller.AuthControllerTest      : No active profile set, falling back to 1 default profile: &quot;default&quot;
-2026-03-31T16:48:15.849-05:00  INFO 33616 --- [api-gateway] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-03-31T16:48:15.850-05:00  INFO 33616 --- [api-gateway] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-03-31T16:48:15.853-05:00  INFO 33616 --- [api-gateway] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-03-31T16:48:16.076-05:00  INFO 33616 --- [api-gateway] [    Test worker] c.t.g.controller.AuthControllerTest      : Started AuthControllerTest in 4.147 seconds (process running for 5.591)
+2026-03-31T19:41:20.487-05:00  INFO 33516 --- [api-gateway] [    Test worker] c.t.g.controller.AuthControllerTest      : Starting AuthControllerTest using Java 17.0.18 with PID 33516 (started by luisR in C:\Sofka\TICKETING_SEM7\api-gateway)
+2026-03-31T19:41:20.489-05:00  INFO 33516 --- [api-gateway] [    Test worker] c.t.g.controller.AuthControllerTest      : No active profile set, falling back to 1 default profile: &quot;default&quot;
+2026-03-31T19:41:22.595-05:00  INFO 33516 --- [api-gateway] [    Test worker] ctiveUserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 20dbe787-521b-4dcf-9e2a-b2f93b3402ef
+
+2026-03-31T19:41:22.675-05:00  INFO 33516 --- [api-gateway] [    Test worker] c.t.g.controller.AuthControllerTest      : Started AuthControllerTest in 2.761 seconds (process running for 4.022)
 </pre>
 </span>
 </div>
@@ -145,7 +156,7 @@
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="https://www.gradle.org">Gradle 8.14</a> at 31 mar. 2026 16:48:18</p>
+<a href="https://www.gradle.org">Gradle 8.14</a> at 31 mar. 2026 19:41:24</p>
 </div>
 </div>
 </body>

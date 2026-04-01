@@ -60,6 +60,79 @@
   gap: 0.5rem;
 }
 
+.authButtons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 0.25rem;
+}
+
+.authBtnSecondary,
+.authBtnPrimary {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 9999px;
+  padding: 0.45rem 0.75rem;
+  transition: all 150ms ease;
+}
+
+.authBtnSecondary {
+  color: var(--color-on-surface);
+  border: 1px solid var(--color-outline-variant);
+}
+
+.authBtnSecondary:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.authBtnPrimary {
+  color: var(--color-on-primary);
+  background-color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.authBtnPrimary:hover {
+  opacity: 0.9;
+}
+
+.buyerMenu {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: 0.4rem;
+  padding: 0.2rem 0.35rem 0.2rem 0.6rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-outline-variant);
+}
+
+.buyerEmail {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  color: var(--color-on-surface);
+}
+
+.logoutBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-outline-variant);
+  color: var(--color-on-surface-variant);
+}
+
+.logoutBtn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
 .iconBtn {
   display: flex;
   align-items: center;
@@ -148,6 +221,11 @@
 @media (max-width: 767px) {
   .nav {
     padding: 0 1.5rem;
+  }
+
+  .authButtons,
+  .buyerMenu {
+    display: none;
   }
 
   .links {

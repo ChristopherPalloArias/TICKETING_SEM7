@@ -3,12 +3,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAdminEventDetail } from '../../../hooks/admin/useAdminEventDetail';
 import { useEventTiers } from '../../../hooks/admin/useEventTiers';
 import { useAuth } from '../../../hooks/useAuth';
-import { publishEvent } from '../../../services/adminEventService';
+import { publishEvent, cancelEvent } from '../../../services/adminEventService';
 import EventStatusBadge from '../../../components/admin/EventStatusBadge/EventStatusBadge';
 import TierCard from '../../../components/admin/TierCard/TierCard';
 import TierForm from '../../../components/admin/TierForm/TierForm';
 import CapacityBar from '../../../components/admin/CapacityBar/CapacityBar';
 import PublishModal from '../../../components/admin/PublishModal/PublishModal';
+import CancelEventModal from '../../../components/admin/CancelEventModal/CancelEventModal';
+import { showToast } from '../../../utils/toast';
 import type { AdminTierResponse } from '../../../types/admin.types';
 import styles from './EventDetailAdmin.module.css';
 
@@ -36,6 +38,8 @@ export default function EventDetailAdmin() {
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [localTiers, setLocalTiers] = useState<AdminTierResponse[] | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   const allTiers = localTiers ?? tiers;
   const totalQuota = allTiers.reduce((sum, t) => sum + t.quota, 0);
@@ -52,7 +56,7 @@ export default function EventDetailAdmin() {
       await deleteTier(tierId);
       setLocalTiers((prev) => (prev ?? tiers).filter((t) => t.id !== tierId));
     } catch {
-      // hook already updates tiers state on success; no-op on error
+      
     }
   }
 
@@ -79,6 +83,28 @@ export default function EventDetailAdmin() {
     }
   }
 
+  async function handleConfirmCancel(reason: string) {
+    if (!event || !userId) return;
+    setCancelling(true);
+    try {
+      await cancelEvent(event.id, reason, userId);
+      setEvent((prev) => ({
+        ...prev,
+        fetchedId: prev.fetchedId,
+        event: { ...event, status: 'CANCELLED' },
+        error: null,
+      }));
+      setShowCancelModal(false);
+      showToast('Evento cancelado correctamente', 'success');
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      const msg = axiosErr?.response?.data?.message ?? 'Error al cancelar el evento';
+      showToast(msg, 'error');
+    } finally {
+      setCancelling(false);
+    }
+  }
+
   if (eventLoading) {
     return <div className={styles.container}><p className={styles.stateMsg}>Cargando evento...</p></div>;
   }
@@ -88,7 +114,7 @@ export default function EventDetailAdmin() {
       <div className={styles.container}>
         <p className={styles.errorMsg}>{eventError ?? 'Evento no encontrado.'}</p>
         <button className={styles.backBtn} onClick={() => navigate('/admin/events')}>
-          â† Volver al dashboard
+          - Volver al dashboard
         </button>
       </div>
     );
@@ -96,14 +122,32 @@ export default function EventDetailAdmin() {
 
   return (
     <div className={styles.container}>
-      {/* â”€â”€ Event Info Section â”€â”€ */}
+      {/* Event Info Section */}
       <section className={styles.infoSection}>
         <div className={styles.infoHeader}>
           <div>
             <h1 className={styles.title}>{event.title}</h1>
             {event.subtitle && <p className={styles.subtitle}>{event.subtitle}</p>}
           </div>
-          <EventStatusBadge status={event.status} />
+          <div className={styles.headerActions}>
+            <EventStatusBadge status={event.status} />
+            <button
+              className={styles.editBtn}
+              onClick={() => navigate(`/admin/events/${event.id}/edit`)}
+              disabled={event.status === 'CANCELLED'}
+            >
+              Editar
+            </button>
+            {isPublished && (
+              <button
+                className={styles.cancelEventBtn}
+                onClick={() => setShowCancelModal(true)}
+                disabled={cancelling}
+              >
+                Cancelar Evento
+              </button>
+            )}
+          </div>
         </div>
 
         <div className={styles.metaGrid}>
@@ -113,7 +157,7 @@ export default function EventDetailAdmin() {
           </div>
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>Sala</span>
-            <span className={styles.metaValue}>{event.room?.name ?? 'â€”'}</span>
+            <span className={styles.metaValue}>{event.room?.name ?? '-'}</span>
           </div>
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>Aforo</span>
@@ -121,23 +165,23 @@ export default function EventDetailAdmin() {
           </div>
           {event.director && (
             <div className={styles.metaItem}>
-              <span className={styles.metaLabel}>DirecciÃ³n</span>
+              <span className={styles.metaLabel}>Direccion</span>
               <span className={styles.metaValue}>{event.director}</span>
             </div>
           )}
           {event.duration && (
             <div className={styles.metaItem}>
-              <span className={styles.metaLabel}>DuraciÃ³n</span>
+              <span className={styles.metaLabel}>Duracion</span>
               <span className={styles.metaValue}>{event.duration} min</span>
             </div>
           )}
         </div>
       </section>
 
-      {/* â”€â”€ Tiers Section â”€â”€ */}
+      {/* Tiers Section */}
       <section className={styles.tiersSection}>
         <div className={styles.tiersHeader}>
-          <h2 className={styles.sectionTitle}>ConfiguraciÃ³n de Tiers</h2>
+          <h2 className={styles.sectionTitle}>Configuracion de Tiers</h2>
           {isDraft && !showTierForm && (
             <button
               className={styles.addTierBtn}
@@ -163,7 +207,7 @@ export default function EventDetailAdmin() {
 
         {!tiersLoading && allTiers.length === 0 && (
           <div className={styles.emptyState}>
-            <p className={styles.emptyText}>No hay tiers configurados aÃºn.</p>
+            <p className={styles.emptyText}>No hay tiers configurados aun.</p>
             {isDraft && !showTierForm && (
               <button
                 className={styles.addTierBtn}
@@ -195,7 +239,7 @@ export default function EventDetailAdmin() {
         )}
       </section>
 
-      {/* â”€â”€ Publish Action â”€â”€ */}
+      {/* Publish Action */}
       {!isPublished && (
         <div className={styles.publishSection}>
           {publishError && <p className={styles.errorMsg}>{publishError}</p>}
@@ -220,6 +264,13 @@ export default function EventDetailAdmin() {
         onConfirm={handleConfirmPublish}
         onCancel={() => setShowPublishModal(false)}
         loading={publishing}
+      />
+
+      <CancelEventModal
+        eventId={event.id}
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={handleConfirmCancel}
       />
     </div>
   );

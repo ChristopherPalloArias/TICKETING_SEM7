@@ -14,13 +14,17 @@ public class RabbitMQConfig {
     public static final String TICKETS_EXCHANGE = "tickets.exchange";
     public static final String TICKETS_DLQ_EXCHANGE = "tickets.dlq.exchange";
 
+    public static final String EVENTS_EXCHANGE = "events.exchange";
+
     public static final String TICKET_PAID_ROUTING_KEY = "ticket.paid";
     public static final String TICKET_FAILED_ROUTING_KEY = "ticket.payment_failed";
     public static final String TICKET_EXPIRED_ROUTING_KEY = "ticket.expired";
+    public static final String EVENT_CANCELLED_ROUTING_KEY = "event.cancelled";
 
     public static final String TICKET_PAID_QUEUE = "ticketing.ticket.paid";
     public static final String TICKET_FAILED_QUEUE = "ticketing.ticket.failed";
     public static final String TICKET_EXPIRED_QUEUE = "ticketing.ticket.expired";
+    public static final String EVENT_CANCELLED_QUEUE = "ticketing.event.cancelled";
 
     public static final String TICKET_PAID_DLQ = "ticketing.ticket.paid.dlq";
     public static final String TICKET_FAILED_DLQ = "ticketing.ticket.failed.dlq";
@@ -29,6 +33,11 @@ public class RabbitMQConfig {
     @Bean
     public TopicExchange ticketsExchange() {
         return new TopicExchange(TICKETS_EXCHANGE, true, false);
+    }
+
+    @Bean
+    public TopicExchange eventsExchange() {
+        return new TopicExchange(EVENTS_EXCHANGE, true, false);
     }
 
     @Bean
@@ -61,6 +70,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue eventCancelledQueue() {
+        return QueueBuilder.durable(EVENT_CANCELLED_QUEUE).build();
+    }
+
+    @Bean
     public Queue ticketPaidDlq() {
         return QueueBuilder.durable(TICKET_PAID_DLQ).build();
     }
@@ -88,6 +102,11 @@ public class RabbitMQConfig {
     @Bean
     public Binding bindExpiredQueue(Queue ticketExpiredQueue, TopicExchange ticketsExchange) {
         return BindingBuilder.bind(ticketExpiredQueue).to(ticketsExchange).with(TICKET_EXPIRED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindEventCancelledQueue(Queue eventCancelledQueue, TopicExchange eventsExchange) {
+        return BindingBuilder.bind(eventCancelledQueue).to(eventsExchange).with(EVENT_CANCELLED_ROUTING_KEY);
     }
 
     @Bean

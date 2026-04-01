@@ -1,8 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-// Mock de componentes pesados con implementaciones ligeras
+vi.mock('../hooks/useCartExpirationWatcher', () => ({
+  useCartExpirationWatcher: vi.fn(),
+}));
+
+vi.mock('../components/Toast/Toast', () => ({
+  default: () => null,
+}));
+
 vi.mock('../pages/CarteleraPage/CarteleraPage', () => ({
   default: () => <div data-testid="cartelera-page">Cartelera</div>,
 }));
@@ -11,71 +17,84 @@ vi.mock('../pages/EventDetail/EventDetail', () => ({
   default: () => <div data-testid="event-detail-page">Event Detail</div>,
 }));
 
+vi.mock('../pages/VenuesPage/VenuesPage', () => ({
+  default: () => <div data-testid="venues-page">Venues</div>,
+}));
+
+vi.mock('../pages/MyTicketsPage/MyTicketsPage', () => ({
+  default: () => <div data-testid="my-tickets-page">My Tickets</div>,
+}));
+
+vi.mock('../pages/CartPage/CartPage', () => ({
+  default: () => <div data-testid="cart-page">Cart</div>,
+}));
+
 vi.mock('../pages/admin/LoginPage/LoginPage', () => ({
-  default: () => <div data-testid="login-page">Login</div>,
+  default: () => <div data-testid="admin-login-page">Admin Login</div>,
 }));
 
 vi.mock('../pages/admin/EventsDashboard/EventsDashboard', () => ({
   default: () => <div data-testid="events-dashboard">Dashboard</div>,
 }));
 
-vi.mock('../components/admin/AdminGuard/AdminGuard', () => ({
-  default: () => <div data-testid="admin-guard">Guard</div>,
+vi.mock('../pages/admin/CreateEventPage/CreateEventPage', () => ({
+  default: () => <div data-testid="create-event-page">Create Event</div>,
 }));
 
-vi.mock('../components/admin/AdminNavBar/AdminNavBar', () => ({
-  default: () => <div data-testid="admin-navbar">NavBar</div>,
+vi.mock('../pages/admin/EventDetailAdmin/EventDetailAdmin', () => ({
+  default: () => <div data-testid="event-detail-admin-page">Event Detail Admin</div>,
 }));
 
-import CarteleraPage from '../pages/CarteleraPage/CarteleraPage';
-import EventDetail from '../pages/EventDetail/EventDetail';
-import LoginPage from '../pages/admin/LoginPage/LoginPage';
-import AdminGuard from '../components/admin/AdminGuard/AdminGuard';
-import AdminNavBar from '../components/admin/AdminNavBar/AdminNavBar';
-import EventsDashboard from '../pages/admin/EventsDashboard/EventsDashboard';
+vi.mock('../pages/admin/EditEventPage/EditEventPage', () => ({
+  default: () => <div data-testid="edit-event-page">Edit Event</div>,
+}));
 
-const STORAGE_KEY = 'sem7_admin_session';
+vi.mock('../pages/BuyerLoginPage/BuyerLoginPage', () => ({
+  default: () => <div data-testid="buyer-login-page">Buyer Login</div>,
+}));
 
-function renderAppRoutes(initialPath: string) {
-  return render(
-    <MemoryRouter initialEntries={[initialPath]}>
-      <Routes>
-        <Route path="/eventos" element={<CarteleraPage />} />
-        <Route path="/eventos/:id" element={<EventDetail />} />
-        <Route path="/" element={<Navigate to="/eventos" replace />} />
-        <Route path="/admin/login" element={<LoginPage />} />
-        <Route path="/admin" element={<AdminGuard />}>
-          <Route
-            path="events"
-            element={
-              <>
-                <AdminNavBar />
-                <EventsDashboard />
-              </>
-            }
-          />
-          <Route index element={<Navigate to="events" replace />} />
-        </Route>
-      </Routes>
-    </MemoryRouter>,
-  );
+vi.mock('../pages/BuyerRegisterPage/BuyerRegisterPage', () => ({
+  default: () => <div data-testid="buyer-register-page">Buyer Register</div>,
+}));
+
+vi.mock('../components/admin/AdminGuard/AdminGuard', async () => {
+  const reactRouterDom = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+  return {
+    default: () => <reactRouterDom.Outlet />,
+  };
+});
+
+vi.mock('../components/admin/AdminLayout/AdminLayout', async () => {
+  const reactRouterDom = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+  return {
+    default: () => <reactRouterDom.Outlet />,
+  };
+});
+
+import App from '../App';
+
+function renderAt(path: string) {
+  window.history.pushState({}, '', path);
+  return render(<App />);
 }
 
-describe('AppRoutes', () => {
+describe('AppRoutes (SPEC-021)', () => {
   beforeEach(() => {
-    localStorage.clear();
     vi.clearAllMocks();
   });
 
-  it('rutas públicas /eventos accesibles sin sesión de admin', () => {
-    // GIVEN: sin sesión de admin almacenada en localStorage
-    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+  it('incluye ruta /login para BuyerLoginPage', () => {
+    renderAt('/login');
+    expect(screen.getByTestId('buyer-login-page')).toBeInTheDocument();
+  });
 
-    // WHEN: navegar a /eventos con el árbol de rutas de la aplicación
-    renderAppRoutes('/eventos');
+  it('incluye ruta /registro para BuyerRegisterPage', () => {
+    renderAt('/registro');
+    expect(screen.getByTestId('buyer-register-page')).toBeInTheDocument();
+  });
 
-    // THEN: renderiza la cartelera pública y NO redirige a /admin/login
-    expect(screen.getByTestId('cartelera-page')).toBeInTheDocument();
-    expect(screen.queryByTestId('login-page')).not.toBeInTheDocument();
+  it('incluye ruta /admin/events/:id/edit para EditEventPage', () => {
+    renderAt('/admin/events/event-123/edit');
+    expect(screen.getByTestId('edit-event-page')).toBeInTheDocument();
   });
 });

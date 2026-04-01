@@ -2,9 +2,12 @@ package com.tickets.events.service;
 
 import com.tickets.events.dto.AdminEventDetailResponse;
 import com.tickets.events.dto.AvailableTierResponse;
+import com.tickets.events.dto.CancelEventResponse;
+import com.tickets.events.dto.EventCancelledMessage;
 import com.tickets.events.dto.EventCreateRequest;
 import com.tickets.events.dto.EventDetailResponse;
 import com.tickets.events.dto.EventResponse;
+import com.tickets.events.dto.EventUpdateRequest;
 import com.tickets.events.dto.RoomResponse;
 import com.tickets.events.exception.*;
 import com.tickets.events.model.Event;
@@ -39,6 +42,7 @@ public class EventService {
     private final RoomRepository roomRepository;
     private final TierRepository tierRepository;
     private final TierService tierService;
+    private final EventPublisherService eventPublisherService;
     
     public EventResponse createEvent(EventCreateRequest request, String role, String userId) {
         validateAdminRole(role);
@@ -287,6 +291,94 @@ public class EventService {
             event.getCreatedBy(),
             event.getCreatedAt(),
             event.getUpdatedAt()
+        );
+    }
+
+    @Transactional
+    public EventResponse updateEvent(UUID id, EventUpdateRequest request, String xRole) {
+        validateAdminRole(xRole);
+
+        Event event = eventRepository.findById(id)
+            .orElseThrow(() -> new EventNotFoundException("Event with id '" + id + "' does not exist"));
+
+        if (event.getStatus() == EventStatus.PUBLISHED) {
+            if (request.title() != null || request.date() != null
+                    || request.capacity() != null || request.roomId() != null) {
+                throw new EventUpdateNotAllowedException(
+                    "Cannot modify structural fields (title, date, capacity, roomId) of a PUBLISHED event"
+                );
+            }
+            if (request.description() != null) event.setDescription(request.description());
+            if (request.subtitle() != null) event.setSubtitle(request.subtitle());
+            if (request.imageUrl() != null) event.setImageUrl(request.imageUrl());
+            if (request.director() != null) event.setDirector(request.director());
+            if (request.castMembers() != null) event.setCastMembers(request.castMembers());
+            if (request.location() != null) event.setLocation(request.location());
+
+        } else if (event.getStatus() == EventStatus.DRAFT) {
+            if (request.title() != null) event.setTitle(request.title());
+            if (request.subtitle() != null) event.setSubtitle(request.subtitle());
+            if (request.description() != null) event.setDescription(request.description());
+            if (request.date() != null) event.setDate(request.date());
+            if (request.roomId() != null) {
+                Room room = retrieveRoom(request.roomId());
+                event.setRoomId(request.roomId());
+                event.setRoom(room);
+            }
+            if (request.imageUrl() != null) event.setImageUrl(request.imageUrl());
+            if (request.director() != null) event.setDirector(request.director());
+            if (request.castMembers() != null) event.setCastMembers(request.castMembers());
+            if (request.location() != null) event.setLocation(request.location());
+            if (request.capacity() != null) {
+                List<Tier> tiers = tierRepository.findByEventId(id);
+                int totalQuota = tiers.stream().mapToInt(Tier::getQuota).sum();
+                if (request.capacity() < totalQuota) {
+                    throw new InvalidQuotaException(
+                        "New capacity (" + request.capacity() + ") cannot be less than total tier quotas (" + totalQuota + ")"
+                    );
+                }
+                event.setCapacity(request.capacity());
+            }
+
+        } else {
+            throw new InvalidEventStateException(
+                "Cannot update a CANCELLED event",
+                event.getStatus().name()
+            );
+        }
+
+        Event saved = eventRepository.save(event);
+        return convertToResponse(saved);
+    }
+
+    @Transactional
+    public CancelEventResponse cancelEvent(UUID id, String cancellationReason, String xRole) {
+        validateAdminRole(xRole);
+
+        Event event = eventRepository.findById(id)
+            .orElseThrow(() -> new EventNotFoundException("Event with id '" + id + "' does not exist"));
+
+        if (event.getStatus() != EventStatus.PUBLISHED) {
+            throw new EventUpdateNotAllowedException("Solo eventos PUBLISHED pueden cancelarse");
+        }
+
+        event.setStatus(EventStatus.CANCELLED);
+        event.setCancellationReason(cancellationReason);
+        Event saved = eventRepository.save(event);
+
+        eventPublisherService.publishEventCancelled(new EventCancelledMessage(
+            saved.getId(),
+            saved.getTitle(),
+            cancellationReason,
+            saved.getUpdatedAt()
+        ));
+
+        return new CancelEventResponse(
+            saved.getId(),
+            saved.getTitle(),
+            saved.getStatus(),
+            saved.getCancellationReason(),
+            saved.getUpdatedAt()
         );
     }
 }

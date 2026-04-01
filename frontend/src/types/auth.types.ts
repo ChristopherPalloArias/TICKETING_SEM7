@@ -1,4 +1,4 @@
-export type AdminRole = 'ADMIN';
+export type AdminRole = 'ADMIN' | 'BUYER';
 
 export interface AdminSession {
   role: AdminRole;
@@ -15,4 +15,5 @@ export interface AuthContextValue {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  registerBuyer: (email: string, password: string) => Promise<void>;
 }

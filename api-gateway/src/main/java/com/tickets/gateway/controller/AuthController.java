@@ -1,9 +1,11 @@
 package com.tickets.gateway.controller;
 
+import com.tickets.gateway.dto.BuyerRegisterRequest;
 import com.tickets.gateway.dto.LoginRequest;
 import com.tickets.gateway.dto.LoginResponse;
 import com.tickets.gateway.dto.RegisterRequest;
 import com.tickets.gateway.dto.RegisterResponse;
+import com.tickets.gateway.dto.UserProfileResponse;
 import com.tickets.gateway.security.RateLimitService;
 import com.tickets.gateway.service.AuthService;
 import jakarta.validation.Valid;
@@ -41,6 +43,22 @@ public class AuthController {
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
         RegisterResponse response = authService.register(request.email(), request.password());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/register/buyer")
+    public ResponseEntity<LoginResponse> registerBuyer(@Valid @RequestBody BuyerRegisterRequest request) {
+        LoginResponse response = authService.registerBuyer(request.email(), request.password());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileResponse> getMe(
+            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+        if (userId == null || userId.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        UserProfileResponse profile = authService.getCurrentUser(userId);
+        return ResponseEntity.ok(profile);
     }
 
     private String getClientIp(ServerHttpRequest request) {

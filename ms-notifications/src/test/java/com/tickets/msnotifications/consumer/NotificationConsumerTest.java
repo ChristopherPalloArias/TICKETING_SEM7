@@ -1,6 +1,7 @@
 package com.tickets.msnotifications.consumer;
 
 import com.rabbitmq.client.Channel;
+import com.tickets.msnotifications.dto.EventCancelledMessage;
 import com.tickets.msnotifications.dto.TicketExpiredEvent;
 import com.tickets.msnotifications.dto.TicketPaidEvent;
 import com.tickets.msnotifications.dto.TicketPaymentFailedEvent;
@@ -37,6 +38,9 @@ class NotificationConsumerTest {
 
     @InjectMocks
     private TicketPaidConsumer ticketPaidConsumer;
+
+        @InjectMocks
+        private EventCancelledConsumer eventCancelledConsumer;
 
     private final long DELIVERY_TAG = 1L;
     private final UUID RESERVATION_ID = UUID.randomUUID();
@@ -290,4 +294,57 @@ class NotificationConsumerTest {
         // THEN
         verify(channel).basicNack(DELIVERY_TAG, false, false);
     }
+
+        // ===================== EventCancelledConsumer =====================
+
+        @Test
+        void eventCancelled_shouldAckWhenPayloadIsValid() throws IOException {
+                // GIVEN
+                EventCancelledMessage event = new EventCancelledMessage(
+                                EVENT_ID,
+                                "Hamlet",
+                                "Fuerza mayor",
+                                LocalDateTime.now());
+
+                // WHEN
+                eventCancelledConsumer.onEventCancelled(event, channel, DELIVERY_TAG);
+
+                // THEN
+                verify(channel).basicAck(DELIVERY_TAG, false);
+                verify(channel, never()).basicNack(anyLong(), anyBoolean(), anyBoolean());
+        }
+
+        @Test
+        void eventCancelled_shouldAckAndSkipWhenPayloadIsInvalid() throws IOException {
+                // GIVEN
+                EventCancelledMessage event = new EventCancelledMessage(
+                                null,
+                                "Hamlet",
+                                "Fuerza mayor",
+                                LocalDateTime.now());
+
+                // WHEN
+                eventCancelledConsumer.onEventCancelled(event, channel, DELIVERY_TAG);
+
+                // THEN
+                verify(channel).basicAck(DELIVERY_TAG, false);
+                verify(channel, never()).basicNack(anyLong(), anyBoolean(), anyBoolean());
+        }
+
+        @Test
+        void eventCancelled_shouldNackWhenAckFails() throws IOException {
+                // GIVEN
+                EventCancelledMessage event = new EventCancelledMessage(
+                                EVENT_ID,
+                                "Hamlet",
+                                "Fuerza mayor",
+                                LocalDateTime.now());
+                doThrow(new IOException("ack error")).when(channel).basicAck(DELIVERY_TAG, false);
+
+                // WHEN
+                eventCancelledConsumer.onEventCancelled(event, channel, DELIVERY_TAG);
+
+                // THEN
+                verify(channel).basicNack(DELIVERY_TAG, false, false);
+        }
 }

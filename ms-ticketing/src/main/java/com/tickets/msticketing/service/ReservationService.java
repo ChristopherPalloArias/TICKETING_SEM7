@@ -290,6 +290,20 @@ public class ReservationService {
             .toList();
     }
 
+    @Transactional
+    public void expireReservationsByEvent(UUID eventId) {
+        log.info("Expiring PENDING reservations for cancelled eventId={}", eventId);
+        List<Reservation> pending = reservationRepository.findByEventId(eventId).stream()
+            .filter(r -> r.getStatus() == ReservationStatus.PENDING)
+            .toList();
+        for (Reservation reservation : pending) {
+            reservation.setStatus(ReservationStatus.EXPIRED);
+            reservation.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+        }
+        reservationRepository.saveAll(pending);
+        log.info("Expired {} reservations for eventId={}", pending.size(), eventId);
+    }
+
     private ReservationResponse mapToReservationResponse(Reservation reservation) {
         if (reservation == null) {
             throw new IllegalArgumentException("Reservation must not be null");

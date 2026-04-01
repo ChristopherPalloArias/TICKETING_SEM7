@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.tickets.gateway.security.JwtAuthenticationFilterTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-03-31T21:48:16.818Z" hostname="NITRO" time="0.358">
+<testsuite name="com.tickets.gateway.security.JwtAuthenticationFilterTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-04-01T00:41:23.484Z" hostname="NITRO" time="0.228">
   <properties/>
-  <testcase name="testFilter_onPublicEndpoint_passesThrough()" classname="com.tickets.gateway.security.JwtAuthenticationFilterTest" time="0.123"/>
-  <testcase name="testFilter_withForgedXRoleHeader_isStripped()" classname="com.tickets.gateway.security.JwtAuthenticationFilterTest" time="0.003"/>
-  <testcase name="testFilter_withValidJwt_propagatesHeadersAndBlocksForgery()" classname="com.tickets.gateway.security.JwtAuthenticationFilterTest" time="0.22"/>
-  <testcase name="testFilter_withoutToken_onProtectedEndpoint_returns401()" classname="com.tickets.gateway.security.JwtAuthenticationFilterTest" time="0.003"/>
-  <testcase name="testFilter_withInvalidToken_returns401()" classname="com.tickets.gateway.security.JwtAuthenticationFilterTest" time="0.002"/>
+  <testcase name="testFilter_onPublicEndpoint_passesThrough()" classname="com.tickets.gateway.security.JwtAuthenticationFilterTest" time="0.061"/>
+  <testcase name="testFilter_withForgedHeadersOnPublicEndpoint_roleIsStripped_userIdIsPreserved()" classname="com.tickets.gateway.security.JwtAuthenticationFilterTest" time="0.003"/>
+  <testcase name="testFilter_withValidJwt_propagatesHeadersAndBlocksForgery()" classname="com.tickets.gateway.security.JwtAuthenticationFilterTest" time="0.148"/>
+  <testcase name="testFilter_withoutToken_onProtectedEndpoint_returns401()" classname="com.tickets.gateway.security.JwtAuthenticationFilterTest" time="0.01"/>
+  <testcase name="testFilter_withInvalidToken_returns401()" classname="com.tickets.gateway.security.JwtAuthenticationFilterTest" time="0.004"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
