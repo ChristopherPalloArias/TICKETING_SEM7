@@ -131,18 +131,24 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
   const markAllRead = useCallback(() => {
     setLocalNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    markAllReadApi(userId ?? '').catch((err) => {
-      console.error('[NotificationsContext] markAllRead failed:', err);
-    });
+    // Only call API if user is authenticated
+    if (userId) {
+      markAllReadApi(userId).catch((err) => {
+        console.error('[NotificationsContext] markAllRead failed:', err);
+      });
+    }
   }, [userId]);
 
   const clearAll = useCallback(() => {
     const prevLocal = localNotifications;
     setLocalNotifications([]);
-    archiveAllApi(userId ?? '').catch((err) => {
-      console.error('[NotificationsContext] archiveAll failed, rolling back:', err);
-      setLocalNotifications(prevLocal);
-    });
+    // Only call API if user is authenticated
+    if (userId) {
+      archiveAllApi(userId).catch((err) => {
+        console.error('[NotificationsContext] archiveAll failed, rolling back:', err);
+        setLocalNotifications(prevLocal);
+      });
+    }
   }, [localNotifications, userId]);
 
   const unreadCount = useMemo(() => {

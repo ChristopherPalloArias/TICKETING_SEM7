@@ -30,7 +30,8 @@ public class ReservationController {
     @PostMapping
     @Operation(
         summary = "Crear reserva",
-        description = "Bloquea entradas por 10 minutos en estado PENDING. Requiere header X-User-Id con el UUID del comprador."
+        description = "Bloquea entradas por 10 minutos en estado PENDING. " +
+            "Requiere header X-User-Id con el UUID del comprador (autenticado o guest para checkout anónimo)."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Reserva creada en estado PENDING"),
@@ -39,9 +40,11 @@ public class ReservationController {
     })
     public ResponseEntity<ReservationResponse> createReservation(
             @Valid @RequestBody CreateReservationRequest request,
-            @RequestHeader("X-User-Id") UUID buyerId) {
-        log.info("POST /api/v1/reservations - buyer={}", buyerId);
-        ReservationResponse response = reservationService.createReservation(request, buyerId);
+            @RequestHeader(value = "X-User-Id", required = false) UUID buyerId) {
+        // Support both authenticated users and anonymous guest checkout
+        final UUID finalBuyerId = buyerId != null ? buyerId : UUID.randomUUID();
+        log.info("POST /api/v1/reservations - buyer={}", finalBuyerId);
+        ReservationResponse response = reservationService.createReservation(request, finalBuyerId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -50,7 +53,8 @@ public class ReservationController {
         summary = "Procesar mock payment",
         description = "Procesa el pago simulado de una reserva PENDING o PAYMENT_FAILED. " +
             "Enviar `status: APPROVED` para confirmar el ticket o `status: DECLINED` para fallar el pago. " +
-            "Máximo 3 intentos. paymentMethod siempre debe ser `MOCK`."
+            "Máximo 3 intentos. paymentMethod siempre debe ser `MOCK`. " +
+            "Soporta usuarios autenticados (con JWT) y anónimos (con X-User-Id del guest)."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Pago aprobado — ticket generado"),
@@ -62,9 +66,11 @@ public class ReservationController {
     public ResponseEntity<PaymentResponse> processPayment(
             @PathVariable UUID reservationId,
             @Valid @RequestBody PaymentRequest request,
-            @RequestHeader("X-User-Id") UUID buyerId) {
-        log.info("POST /api/v1/reservations/{}/payments - buyer={}", reservationId, buyerId);
-        PaymentResponse response = reservationService.processPayment(reservationId, request, buyerId);
+            @RequestHeader(value = "X-User-Id", required = false) UUID buyerId) {
+        // Support both authenticated users and anonymous guest checkout
+        final UUID finalBuyerId = buyerId != null ? buyerId : UUID.randomUUID();
+        log.info("POST /api/v1/reservations/{}/payments - buyer={}", reservationId, finalBuyerId);
+        PaymentResponse response = reservationService.processPayment(reservationId, request, finalBuyerId);
         return ResponseEntity.ok(response);
     }
 
