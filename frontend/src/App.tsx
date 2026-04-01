@@ -9,6 +9,7 @@ import EventsDashboard from './pages/admin/EventsDashboard/EventsDashboard';
 import CreateEventPage from './pages/admin/CreateEventPage/CreateEventPage';
 import EventDetailAdmin from './pages/admin/EventDetailAdmin/EventDetailAdmin';
 import EditEventPage from './pages/admin/EditEventPage/EditEventPage';
+import RoomsAdminPage from './pages/admin/RoomsAdminPage/RoomsAdminPage';
 import BuyerLoginPage from './pages/BuyerLoginPage/BuyerLoginPage';
 import BuyerRegisterPage from './pages/BuyerRegisterPage/BuyerRegisterPage';
 import AdminGuard from './components/admin/AdminGuard/AdminGuard';
@@ -48,6 +49,7 @@ export default function App() {
             <Route path="events/new" element={<CreateEventPage />} />
             <Route path="events/:id" element={<EventDetailAdmin />} />
             <Route path="events/:id/edit" element={<EditEventPage />} />
+            <Route path="rooms" element={<RoomsAdminPage />} />
           </Route>
           <Route index element={<Navigate to="events" replace />} />
         </Route>

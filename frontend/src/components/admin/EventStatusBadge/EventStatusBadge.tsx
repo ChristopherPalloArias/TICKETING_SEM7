@@ -8,6 +8,9 @@ const LABELS: Record<string, string> = {
 };
 
 export default function EventStatusBadge({ status }: EventStatusBadgeProps) {
+  if (!status) {
+    return <span className={`${styles.badge} ${styles.draft}`}>Desconocido</span>;
+  }
   return (
     <span className={`${styles.badge} ${styles[status.toLowerCase()]}`}>
       {LABELS[status] ?? status}

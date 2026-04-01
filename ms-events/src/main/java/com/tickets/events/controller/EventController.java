@@ -136,7 +136,7 @@ public class EventController {
     })
     public ResponseEntity<EventResponse> updateEvent(
         @PathVariable UUID eventId,
-        @RequestBody EventUpdateRequest request,
+        @Valid @RequestBody EventUpdateRequest request,
         @RequestHeader("X-Role") String role
     ) {
         EventResponse response = eventService.updateEvent(eventId, request, role);

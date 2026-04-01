@@ -1,0 +1,129 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.backBtn {
+  font-size: 0.875rem;
+  color: var(--color-on-surface-variant);
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.backBtn:hover {
+  color: var(--color-primary);
+}
+
+.title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.createBtn {
+  align-self: flex-start;
+  padding: 0.6rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.createBtn:hover {
+  opacity: 0.9;
+}
+
+.createBtnAlt {
+  padding: 0.6rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.createBtnAlt:hover {
+  opacity: 0.9;
+}
+
+.formSection {
+  background-color: var(--color-surface-dim);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+  border: 2px dashed var(--color-outline-variant);
+  border-radius: 0.75rem;
+  text-align: center;
+}
+
+.emptyText {
+  font-size: 0.9375rem;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+}
+
+.roomList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.listTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.count {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.loadingMsg {
+  text-align: center;
+  color: var(--color-on-surface-variant);
+  font-size: 0.9375rem;
+  padding: 2rem;
+}

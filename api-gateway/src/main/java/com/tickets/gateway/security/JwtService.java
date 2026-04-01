@@ -5,6 +5,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -15,14 +16,28 @@ import java.util.Map;
 @Slf4j
 public class JwtService {
 
+    /** Mínimo 32 bytes = 256 bits, requerido por HMAC-SHA256. */
+    private static final int MIN_SECRET_BYTES = 32;
+
     private final SecretKey secretKey;
     private final long expirationMs;
 
     public JwtService(
-            @Value("${jwt.secret:default-secret-change-in-production-must-be-at-least-32-chars}") String secret,
+            @Value("${jwt.secret}") String secret,
             @Value("${jwt.expiration-ms:28800000}") long expirationMs) {
-        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+
+        Assert.hasText(secret, "jwt.secret no puede estar vacío — define la variable de entorno JWT_SECRET");
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        Assert.isTrue(
+                keyBytes.length >= MIN_SECRET_BYTES,
+                "jwt.secret debe tener al menos " + MIN_SECRET_BYTES + " bytes (" + (MIN_SECRET_BYTES * 8) +
+                " bits). Longitud actual: " + keyBytes.length + " bytes. " +
+                "Genera un secreto seguro con: openssl rand -hex 32");
+
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
         this.expirationMs = expirationMs;
+        log.info("JwtService inicializado — expiración: {}ms, longitud de clave: {} bytes",
+                expirationMs, keyBytes.length);
     }
 
     public String generateToken(String userId, String email, String role) {

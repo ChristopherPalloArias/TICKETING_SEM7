@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import {
   fetchNotifications,
   markAllRead,
@@ -7,15 +7,15 @@ import {
   archiveAll,
 } from '../services/notificationService';
 
-vi.mock('axios', () => ({
+vi.mock('../services/apiClient', () => ({
   default: {
     get: vi.fn(),
     patch: vi.fn(),
   },
 }));
 
-const mockedGet = vi.mocked(axios.get);
-const mockedPatch = vi.mocked(axios.patch);
+const mockedGet = vi.mocked(apiClient.get);
+const mockedPatch = vi.mocked(apiClient.patch);
 
 const BUYER_ID = 'buyer-123';
 
@@ -38,12 +38,11 @@ describe('notificationService', () => {
     // WHEN
     const result = await fetchNotifications(BUYER_ID);
 
-    // THEN: GET to buyer notifications endpoint with correct params and header
+    // THEN: GET to buyer notifications endpoint with correct params
     expect(mockedGet).toHaveBeenCalledWith(
       expect.stringContaining(`/api/v1/notifications/buyer/${BUYER_ID}`),
       expect.objectContaining({
         params: { page: 0, size: 20 },
-        headers: { 'X-User-Id': BUYER_ID },
       }),
     );
     expect(result).toEqual(pagedResponse);
@@ -56,13 +55,10 @@ describe('notificationService', () => {
     // WHEN
     const result = await markAllRead(BUYER_ID);
 
-    // THEN: PATCH to read-all endpoint with X-User-Id header
+    // THEN: PATCH to read-all endpoint
     expect(mockedPatch).toHaveBeenCalledWith(
       expect.stringContaining(`/api/v1/notifications/buyer/${BUYER_ID}/read-all`),
       null,
-      expect.objectContaining({
-        headers: { 'X-User-Id': BUYER_ID },
-      }),
     );
     expect(result).toEqual({ updatedCount: 3 });
   });
@@ -74,12 +70,9 @@ describe('notificationService', () => {
     // WHEN
     const result = await fetchUnreadCount(BUYER_ID);
 
-    // THEN: GET to unread-count endpoint with X-User-Id header
+    // THEN: GET to unread-count endpoint
     expect(mockedGet).toHaveBeenCalledWith(
       expect.stringContaining(`/api/v1/notifications/buyer/${BUYER_ID}/unread-count`),
-      expect.objectContaining({
-        headers: { 'X-User-Id': BUYER_ID },
-      }),
     );
     expect(result).toEqual({ unreadCount: 5 });
   });
@@ -91,13 +84,10 @@ describe('notificationService', () => {
     // WHEN
     const result = await archiveAll(BUYER_ID);
 
-    // THEN: PATCH to archive-all endpoint with X-User-Id header
+    // THEN: PATCH to archive-all endpoint
     expect(mockedPatch).toHaveBeenCalledWith(
       expect.stringContaining(`/api/v1/notifications/buyer/${BUYER_ID}/archive-all`),
       null,
-      expect.objectContaining({
-        headers: { 'X-User-Id': BUYER_ID },
-      }),
     );
     expect(result).toEqual({ archivedCount: 4 });
   });

@@ -8,8 +8,10 @@ import com.tickets.gateway.dto.RegisterResponse;
 import com.tickets.gateway.dto.UserProfileResponse;
 import com.tickets.gateway.security.RateLimitService;
 import com.tickets.gateway.service.AuthService;
+import io.github.bucket4j.ConsumptionProbe;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -31,9 +33,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request, ServerHttpRequest httpRequest) {
         String clientIp = getClientIp(httpRequest);
-        if (!rateLimitService.tryConsume(clientIp)) {
+        ConsumptionProbe probe = rateLimitService.tryConsumeAndGetProbe(clientIp);
+        if (!probe.isConsumed()) {
+            long retryAfterSeconds = (probe.getNanosToWaitForRefill() / 1_000_000_000L) + 1;
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                    .body(new ErrorResponse("Demasiados intentos. Intente de nuevo más tarde"));
+                    .header(HttpHeaders.RETRY_AFTER, String.valueOf(retryAfterSeconds))
+                    .body(new ErrorResponse("Demasiados intentos. Intente de nuevo en " + retryAfterSeconds + " segundos"));
         }
         LoginResponse response = authService.login(request.email(), request.password());
         return ResponseEntity.ok(response);
