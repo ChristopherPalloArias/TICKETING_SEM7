@@ -37,41 +37,48 @@ public class JwtAuthenticationFilter implements WebFilter {
 
         String path = exchange.getRequest().getURI().getPath();
         HttpMethod method = exchange.getRequest().getMethod();
+        String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
 
+        // Try to extract and validate JWT if present
+        Claims claims = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            if (jwtService.isTokenValid(token)) {
+                claims = jwtService.validateAndExtractClaims(token);
+            }
+        }
+
+        // Caso 1: Usuario autenticado (tiene JWT válido)
+        if (claims != null) {
+            // User authenticated: remove client-provided headers and use JWT claims
+            ServerHttpRequest authenticatedRequest = exchange.getRequest().mutate()
+                    .headers(headers -> {
+                        headers.remove("X-User-Id");
+                        headers.remove("X-Role");
+                    })
+                    .header("X-User-Id", claims.getSubject())
+                    .header("X-Role", (String) claims.get("role"))
+                    .build();
+            return chain.filter(exchange.mutate().request(authenticatedRequest).build());
+        }
+
+        // Caso 2: No hay JWT válido → verificar si es ruta pública
         if (isPublicPath(path, method)) {
-            // Rutas públicas: eliminar ambos headers de identidad para evitar suplantación.
-            // El downstream no debe confiar en ningún header de identidad en rutas públicas.
+            // Rutas públicas sin autenticación: eliminar X-Role pero permitir X-User-Id del cliente (guest checkout)
             ServerHttpRequest publicRequest = exchange.getRequest().mutate()
                     .headers(headers -> {
                         headers.remove("X-Role");
-                        headers.remove("X-User-Id");
+                        // Remove X-User-Id only for non-guest paths to prevent header spoofing
+                        if (!isGuestCheckoutPath(path, method)) {
+                            headers.remove("X-User-Id");
+                        }
                     })
                     .build();
             return chain.filter(exchange.mutate().request(publicRequest).build());
         }
 
-        // Rutas protegidas: eliminar ambos headers forjados y reemplazar desde el JWT.
-        String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return writeError(exchange, HttpStatus.UNAUTHORIZED, "Token de autenticación requerido");
-        }
-
-        String token = authHeader.substring(7);
-        if (!jwtService.isTokenValid(token)) {
-            return writeError(exchange, HttpStatus.UNAUTHORIZED, "Token inválido o expirado");
-        }
-
-        Claims claims = jwtService.validateAndExtractClaims(token);
-        ServerHttpRequest authenticatedRequest = exchange.getRequest().mutate()
-                .headers(headers -> {
-                    headers.remove("X-User-Id");
-                    headers.remove("X-Role");
-                })
-                .header("X-User-Id", claims.getSubject())
-                .header("X-Role", (String) claims.get("role"))
-                .build();
-
-        return chain.filter(exchange.mutate().request(authenticatedRequest).build());
+        // Caso 3: Ruta protegida sin JWT → rechazar
+        return writeError(exchange, HttpStatus.UNAUTHORIZED, "Token de autenticación requerido");
     }
 
     /**
@@ -83,6 +90,16 @@ public class JwtAuthenticationFilter implements WebFilter {
         // Auth: login y register son siempre públicos
         if (path.startsWith("/api/v1/auth/login") ||
                 path.startsWith("/api/v1/auth/register")) {
+            return true;
+        }
+
+        // Guest checkout: POST /api/v1/reservations (anonymous user can create reservations)
+        if (HttpMethod.POST.equals(method) && path.equals("/api/v1/reservations")) {
+            return true;
+        }
+
+        // Guest payment: POST /api/v1/reservations/{uuid}/payments (anonymous user can pay for their reservation)
+        if (HttpMethod.POST.equals(method) && path.matches("/api/v1/reservations/[0-9a-fA-F-]+/payments")) {
             return true;
         }
 
@@ -110,6 +127,15 @@ public class JwtAuthenticationFilter implements WebFilter {
         }
 
         return false;
+    }
+
+    /**
+     * Determina si POST /api/v1/reservations, donde X-User-Id contiene el guest checkout ID
+     * que debe ser preservado sin validación JWT.
+     */
+    private boolean isGuestCheckoutPath(String path, HttpMethod method) {
+        return (HttpMethod.POST.equals(method) && path.equals("/api/v1/reservations")) ||
+               (HttpMethod.POST.equals(method) && path.matches("/api/v1/reservations/[0-9a-fA-F-]+/payments"));
     }
 
     /**
