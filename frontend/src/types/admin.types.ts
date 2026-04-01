@@ -122,11 +122,39 @@ export interface EventStatusBadgeProps {
   status: EventStatus;
 }
 
+export interface EventUpdateFormData {
+  title?: string;
+  description?: string;
+  date?: string;
+  capacity?: number;
+  roomId?: string;
+  subtitle?: string;
+  imageUrl?: string;
+  director?: string;
+  castMembers?: string;
+  duration?: number;
+  location?: string;
+  tag?: string;
+  isLimited?: boolean;
+  isFeatured?: boolean;
+  author?: string;
+}
+
+export interface CancelEventModalProps {
+  eventId: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (reason: string) => void;
+}
+
 export interface EventFormProps {
   rooms: RoomOption[];
   onSubmit: (data: EventCreateFormData) => Promise<void>;
   isSubmitting: boolean;
   submitError?: string;
+  initialData?: Partial<EventCreateFormData>;
+  disabledFields?: (keyof EventCreateFormData)[];
+  mode?: 'create' | 'edit';
 }
 
 export interface ImagePreviewProps {

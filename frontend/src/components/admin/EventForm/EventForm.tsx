@@ -22,23 +22,33 @@ interface FormErrors {
   duration?: string;
 }
 
-export default function EventForm({ rooms, onSubmit, isSubmitting, submitError }: EventFormProps) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [date, setDate] = useState(NOW_PLUS_1H);
-  const [capacity, setCapacity] = useState('');
-  const [roomId, setRoomId] = useState('');
-  const [subtitle, setSubtitle] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [imagePreviewUrl, setImagePreviewUrl] = useState('');
-  const [director, setDirector] = useState('');
-  const [castMembers, setCastMembers] = useState('');
-  const [duration, setDuration] = useState('');
-  const [location, setLocation] = useState('');
-  const [tag, setTag] = useState('');
-  const [isLimited, setIsLimited] = useState(false);
-  const [isFeatured, setIsFeatured] = useState(false);
-  const [author, setAuthor] = useState('');
+export default function EventForm({
+  rooms,
+  onSubmit,
+  isSubmitting,
+  submitError,
+  initialData,
+  disabledFields = [],
+  mode = 'create',
+}: EventFormProps) {
+  const isDisabled = (field: keyof EventCreateFormData) => disabledFields.includes(field);
+
+  const [title, setTitle] = useState(initialData?.title ?? '');
+  const [description, setDescription] = useState(initialData?.description ?? '');
+  const [date, setDate] = useState(initialData?.date ?? NOW_PLUS_1H);
+  const [capacity, setCapacity] = useState(initialData?.capacity?.toString() ?? '');
+  const [roomId, setRoomId] = useState(initialData?.roomId ?? '');
+  const [subtitle, setSubtitle] = useState(initialData?.subtitle ?? '');
+  const [imageUrl, setImageUrl] = useState(initialData?.imageUrl ?? '');
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(initialData?.imageUrl ?? '');
+  const [director, setDirector] = useState(initialData?.director ?? '');
+  const [castMembers, setCastMembers] = useState(initialData?.castMembers ?? '');
+  const [duration, setDuration] = useState(initialData?.duration?.toString() ?? '');
+  const [location, setLocation] = useState(initialData?.location ?? '');
+  const [tag, setTag] = useState(initialData?.tag ?? '');
+  const [isLimited, setIsLimited] = useState(initialData?.isLimited ?? false);
+  const [isFeatured, setIsFeatured] = useState(initialData?.isFeatured ?? false);
+  const [author, setAuthor] = useState(initialData?.author ?? '');
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -108,11 +118,13 @@ export default function EventForm({ rooms, onSubmit, isSubmitting, submitError }
         <label htmlFor="ef-title" className={styles.label}>Título <span className={styles.required}>*</span></label>
         <input
           id="ef-title"
-          className={`${styles.input} ${displayErrors.title ? styles.inputError : ''}`}
+          className={`${styles.input} ${displayErrors.title ? styles.inputError : ''} ${isDisabled('title') ? styles.inputDisabled : ''}`}
           value={title}
           onChange={e => setTitle(e.target.value)}
           maxLength={150}
+          disabled={isDisabled('title')}
         />
+        {isDisabled('title') && <span className={styles.hint}>Este campo no se puede modificar en eventos publicados</span>}
         {displayErrors.title && <span className={styles.error}>{displayErrors.title}</span>}
       </div>
 
@@ -135,10 +147,12 @@ export default function EventForm({ rooms, onSubmit, isSubmitting, submitError }
           <input
             id="ef-date"
             type="datetime-local"
-            className={`${styles.input} ${displayErrors.date ? styles.inputError : ''}`}
+            className={`${styles.input} ${displayErrors.date ? styles.inputError : ''} ${isDisabled('date') ? styles.inputDisabled : ''}`}
             value={date}
             onChange={e => setDate(e.target.value)}
+            disabled={isDisabled('date')}
           />
+          {isDisabled('date') && <span className={styles.hint}>Este campo no se puede modificar en eventos publicados</span>}
           {displayErrors.date && <span className={styles.error}>{displayErrors.date}</span>}
         </div>
 
@@ -148,10 +162,12 @@ export default function EventForm({ rooms, onSubmit, isSubmitting, submitError }
             id="ef-capacity"
             type="number"
             min={1}
-            className={`${styles.input} ${displayErrors.capacity ? styles.inputError : ''}`}
+            className={`${styles.input} ${displayErrors.capacity ? styles.inputError : ''} ${isDisabled('capacity') ? styles.inputDisabled : ''}`}
             value={capacity}
             onChange={e => setCapacity(e.target.value)}
+            disabled={isDisabled('capacity')}
           />
+          {isDisabled('capacity') && <span className={styles.hint}>Este campo no se puede modificar en eventos publicados</span>}
           {displayErrors.capacity && <span className={styles.error}>{displayErrors.capacity}</span>}
         </div>
       </div>
@@ -160,9 +176,10 @@ export default function EventForm({ rooms, onSubmit, isSubmitting, submitError }
         <label htmlFor="ef-room" className={styles.label}>Sala <span className={styles.required}>*</span></label>
         <select
           id="ef-room"
-          className={`${styles.input} ${displayErrors.roomId ? styles.inputError : ''}`}
+          className={`${styles.input} ${displayErrors.roomId ? styles.inputError : ''} ${isDisabled('roomId') ? styles.inputDisabled : ''}`}
           value={roomId}
           onChange={e => setRoomId(e.target.value)}
+          disabled={isDisabled('roomId')}
         >
           <option value="">Selecciona una sala</option>
           {rooms.map(r => (
@@ -265,7 +282,10 @@ export default function EventForm({ rooms, onSubmit, isSubmitting, submitError }
         className={styles.submitBtn}
         disabled={isSubmitting || hasBusinessErrors}
       >
-        {isSubmitting ? 'Creando...' : 'Crear Evento'}
+        {isSubmitting
+          ? mode === 'edit' ? 'Guardando...' : 'Creando...'
+          : mode === 'edit' ? 'Guardar Cambios' : 'Crear Evento'
+        }
       </button>
     </form>
   );

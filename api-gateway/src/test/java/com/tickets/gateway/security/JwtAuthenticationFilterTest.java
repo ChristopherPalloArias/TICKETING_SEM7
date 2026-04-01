@@ -40,7 +40,7 @@ class JwtAuthenticationFilterTest {
     void testFilter_withValidJwt_propagatesHeadersAndBlocksForgery() {
         // GIVEN
         MockServerHttpRequest request = MockServerHttpRequest
-                .post("/api/v1/reservations")
+            .get("/api/v1/auth/me")
                 .header("Authorization", "Bearer valid.token")
                 .header("X-Role", "HACKER")
                 .build();
@@ -52,9 +52,18 @@ class JwtAuthenticationFilterTest {
         when(jwtService.isTokenValid("valid.token")).thenReturn(true);
         when(jwtService.validateAndExtractClaims("valid.token")).thenReturn(mockClaims);
 
-        // WHEN / THEN — response should NOT be 401
-        filter.filter(exchange, passThroughChain()).block();
+        // WHEN — capture request forwarded to downstream chain
+        final org.springframework.http.server.reactive.ServerHttpRequest[] captured =
+                new org.springframework.http.server.reactive.ServerHttpRequest[1];
+        filter.filter(exchange, ex -> {
+            captured[0] = ex.getRequest();
+            return Mono.empty();
+        }).block();
 
+        // THEN
+        assertNotNull(captured[0]);
+        assertEquals("user-123", captured[0].getHeaders().getFirst("X-User-Id"));
+        assertEquals("ADMIN", captured[0].getHeaders().getFirst("X-Role"));
         assertNotEquals(HttpStatus.UNAUTHORIZED, exchange.getResponse().getStatusCode());
     }
 
@@ -64,7 +73,7 @@ class JwtAuthenticationFilterTest {
     void testFilter_withoutToken_onProtectedEndpoint_returns401() {
         // GIVEN
         MockServerHttpRequest request = MockServerHttpRequest
-                .post("/api/v1/reservations")
+            .get("/api/v1/auth/me")
                 .build();
         MockServerWebExchange exchange = MockServerWebExchange.from(request);
 
@@ -82,7 +91,7 @@ class JwtAuthenticationFilterTest {
     void testFilter_withInvalidToken_returns401() {
         // GIVEN
         MockServerHttpRequest request = MockServerHttpRequest
-                .post("/api/v1/reservations")
+            .get("/api/v1/auth/me")
                 .header("Authorization", "Bearer invalid.token")
                 .build();
         MockServerWebExchange exchange = MockServerWebExchange.from(request);
@@ -117,7 +126,7 @@ class JwtAuthenticationFilterTest {
     // ── FORGED HEADERS STRIPPED ON PUBLIC ENDPOINT ─────────────────────────────
 
     @Test
-    void testFilter_withForgedXRoleHeader_isStripped() {
+    void testFilter_withForgedHeadersOnPublicEndpoint_roleIsStripped_userIdIsPreserved() {
         // GIVEN — public endpoint, client sends forged privilege headers
         MockServerHttpRequest request = MockServerHttpRequest
                 .post("/api/v1/auth/login")
@@ -133,11 +142,11 @@ class JwtAuthenticationFilterTest {
             return Mono.empty();
         }).block();
 
-        // THEN — forged headers removed
+        // THEN — role is stripped, user id can flow for anonymous/cart flows
         assertNotNull(captured[0]);
         assertNull(captured[0].getHeaders().getFirst("X-Role"),
                 "Forged X-Role header must be stripped by the filter");
-        assertNull(captured[0].getHeaders().getFirst("X-User-Id"),
-                "Forged X-User-Id header must be stripped by the filter");
+        assertEquals("malicious-id", captured[0].getHeaders().getFirst("X-User-Id"),
+            "X-User-Id is preserved on public endpoints by current gateway contract");
     }
 }

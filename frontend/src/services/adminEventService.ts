@@ -1,7 +1,9 @@
 import axios from 'axios';
+import apiClient from './apiClient';
 import type {
   AdminEventsListResponse,
   EventCreateFormData,
+  EventUpdateFormData,
   RoomOption,
   AdminEventResponse,
   TierFormData,
@@ -86,3 +88,32 @@ export async function deleteTier(
     headers: adminHeaders(userId),
   });
 }
+
+// SPEC-021 — Event editing and cancellation
+
+export async function updateEvent(
+  eventId: string,
+  data: EventUpdateFormData,
+  userId: string,
+): Promise<AdminEventResponse> {
+  const res = await apiClient.put<AdminEventResponse>(
+    `/api/v1/events/${eventId}`,
+    data,
+    { headers: adminHeaders(userId) },
+  );
+  return res.data;
+}
+
+export async function cancelEvent(
+  eventId: string,
+  reason: string,
+  userId: string,
+): Promise<AdminEventResponse> {
+  const res = await apiClient.patch<AdminEventResponse>(
+    `/api/v1/events/${eventId}/cancel`,
+    { cancellationReason: reason },
+    { headers: adminHeaders(userId) },
+  );
+  return res.data;
+}
+

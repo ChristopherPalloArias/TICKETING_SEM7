@@ -2,6 +2,8 @@ package com.tickets.gateway.service;
 
 import com.tickets.gateway.dto.LoginResponse;
 import com.tickets.gateway.dto.RegisterResponse;
+import com.tickets.gateway.dto.UserProfileResponse;
+import com.tickets.gateway.exception.BadRequestException;
 import com.tickets.gateway.exception.ConflictException;
 import com.tickets.gateway.exception.UnauthorizedException;
 import com.tickets.gateway.model.User;
@@ -12,9 +14,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+import java.util.regex.Pattern;
+
 @Service
 @Slf4j
 public class AuthService {
+
+    private static final Pattern PASSWORD_PATTERN =
+        Pattern.compile("^(?=.*[A-Z])(?=.*[0-9]).{8,}$");
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -62,7 +70,46 @@ public class AuthService {
         return new RegisterResponse(saved.getId(), saved.getEmail(), saved.getRole().name(), saved.getCreatedAt());
     }
 
+    @Transactional
+    public LoginResponse registerBuyer(String email, String password) {
+        if (!PASSWORD_PATTERN.matcher(password).matches()) {
+            throw new BadRequestException(
+                "La contraseña debe tener mínimo 8 caracteres, al menos 1 mayúscula y al menos 1 número"
+            );
+        }
+
+        if (userRepository.existsByEmail(email)) {
+            throw new ConflictException("El email ya está registrado");
+        }
+
+        User user = User.builder()
+                .email(email)
+                .passwordHash(passwordEncoder.encode(password))
+                .role(User.Role.BUYER)
+                .build();
+
+        User saved = userRepository.save(user);
+        log.info("New buyer registered: {}", email);
+
+        String token = jwtService.generateToken(
+                saved.getId().toString(),
+                saved.getEmail(),
+                saved.getRole().name()
+        );
+
+        return new LoginResponse(token, 28800L, saved.getRole().name());
+    }
+
+    @Transactional(readOnly = true)
+    public UserProfileResponse getCurrentUser(String userId) {
+        UUID id = UUID.fromString(userId);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UnauthorizedException("Usuario no encontrado"));
+        return new UserProfileResponse(user.getId(), user.getEmail(), user.getRole().name(), user.getCreatedAt());
+    }
+
     public String encodePassword(String raw) {
         return passwordEncoder.encode(raw);
     }
 }
+

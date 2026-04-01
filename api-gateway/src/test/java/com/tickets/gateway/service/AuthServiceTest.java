@@ -167,4 +167,70 @@ class AuthServiceTest {
                 () -> authService.register("existing@example.com", "somePassword123"));
         verify(userRepository, never()).save(any());
     }
+
+        @Test
+        void testRegisterBuyer_withValidData_returnsBuyerJwt() {
+                // GIVEN
+                UUID buyerId = UUID.randomUUID();
+                User savedBuyer = User.builder()
+                                .id(buyerId)
+                                .email("buyer@example.com")
+                                .passwordHash(encoder.encode("BuyerPass1"))
+                                .role(User.Role.BUYER)
+                                .createdAt(Instant.now())
+                                .build();
+
+                when(userRepository.existsByEmail("buyer@example.com")).thenReturn(false);
+                when(userRepository.save(any(User.class))).thenReturn(savedBuyer);
+                when(jwtService.generateToken(anyString(), anyString(), anyString())).thenReturn("buyer.jwt.token");
+
+                // WHEN
+                LoginResponse response = authService.registerBuyer("buyer@example.com", "BuyerPass1");
+
+                // THEN
+                assertNotNull(response);
+                assertEquals("buyer.jwt.token", response.token());
+                assertEquals("BUYER", response.role());
+                assertEquals(28800L, response.expiresIn());
+
+                ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+                verify(userRepository).save(captor.capture());
+                assertEquals(User.Role.BUYER, captor.getValue().getRole());
+        }
+
+        @Test
+        void testRegisterBuyer_withDuplicateEmail_throwsConflict() {
+                // GIVEN
+                when(userRepository.existsByEmail("buyer@example.com")).thenReturn(true);
+
+                // WHEN / THEN
+                assertThrows(ConflictException.class,
+                                () -> authService.registerBuyer("buyer@example.com", "BuyerPass1"));
+                verify(userRepository, never()).save(any());
+        }
+
+        @Test
+        void testGetCurrentUser_withValidId_returnsProfile() {
+                // GIVEN
+                UUID id = UUID.randomUUID();
+                Instant createdAt = Instant.now();
+                User buyer = User.builder()
+                                .id(id)
+                                .email("buyer@example.com")
+                                .passwordHash(encoder.encode("BuyerPass1"))
+                                .role(User.Role.BUYER)
+                                .createdAt(createdAt)
+                                .build();
+
+                when(userRepository.findById(id)).thenReturn(Optional.of(buyer));
+
+                // WHEN
+                var response = authService.getCurrentUser(id.toString());
+
+                // THEN
+                assertEquals(id, response.id());
+                assertEquals("buyer@example.com", response.email());
+                assertEquals("BUYER", response.role());
+                assertEquals(createdAt, response.createdAt());
+        }
 }

@@ -1,9 +1,9 @@
 ---
 id: SPEC-021
-status: DRAFT
+status: IMPLEMENTED
 feature: sprint2-crud-admin-login-compradores
 created: 2026-03-31
-updated: 2026-03-31
+updated: 2026-04-01
 author: spec-generator
 version: "1.0"
 related-specs: [SPEC-020]

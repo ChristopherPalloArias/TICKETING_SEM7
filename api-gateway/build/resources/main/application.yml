@@ -66,6 +66,7 @@ spring:
               - Authorization
               - Content-Type
               - X-Requested-With
+              - X-User-Id
             exposedHeaders:
               - X-Role
               - X-User-Id

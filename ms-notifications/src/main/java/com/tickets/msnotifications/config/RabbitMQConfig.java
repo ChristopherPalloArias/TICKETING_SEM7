@@ -15,6 +15,9 @@ public class RabbitMQConfig {
     // Main exchange (shared with ms-ticketing)
     public static final String TICKETS_EXCHANGE = "tickets.exchange";
 
+    // Events exchange (published by ms-events)
+    public static final String EVENTS_EXCHANGE = "events.exchange";
+
     // DLQ exchange
     public static final String TICKETS_DLQ_EXCHANGE = "tickets.dlq.exchange";
 
@@ -22,6 +25,7 @@ public class RabbitMQConfig {
     public static final String TICKET_PAID_QUEUE = "ticketing.ticket.paid";
     public static final String TICKET_FAILED_QUEUE = "ticketing.ticket.failed";
     public static final String TICKET_EXPIRED_QUEUE = "ticketing.ticket.expired";
+    public static final String EVENT_CANCELLED_QUEUE = "notifications.event.cancelled";
 
     // DLQ queues
     public static final String TICKET_PAID_DLQ = "ticketing.ticket.paid.dlq";
@@ -32,12 +36,18 @@ public class RabbitMQConfig {
     public static final String TICKET_PAID_ROUTING_KEY = "ticket.paid";
     public static final String TICKET_FAILED_ROUTING_KEY = "ticket.payment_failed";
     public static final String TICKET_EXPIRED_ROUTING_KEY = "ticket.expired";
+    public static final String EVENT_CANCELLED_ROUTING_KEY = "event.cancelled";
 
     // ─── Exchanges ────────────────────────────────────────────────────────────
 
     @Bean
     public TopicExchange ticketsExchange() {
         return new TopicExchange(TICKETS_EXCHANGE, true, false);
+    }
+
+    @Bean
+    public TopicExchange eventsExchange() {
+        return new TopicExchange(EVENTS_EXCHANGE, true, false);
     }
 
     @Bean
@@ -69,6 +79,11 @@ public class RabbitMQConfig {
             .withArgument("x-dead-letter-exchange", TICKETS_DLQ_EXCHANGE)
             .withArgument("x-dead-letter-routing-key", TICKET_EXPIRED_DLQ)
             .build();
+    }
+
+    @Bean
+    public Queue eventCancelledQueue() {
+        return QueueBuilder.durable(EVENT_CANCELLED_QUEUE).build();
     }
 
     // ─── DLQ queues ───────────────────────────────────────────────────────────
@@ -103,6 +118,11 @@ public class RabbitMQConfig {
     @Bean
     public Binding bindExpiredQueue(Queue ticketExpiredQueue, TopicExchange ticketsExchange) {
         return BindingBuilder.bind(ticketExpiredQueue).to(ticketsExchange).with(TICKET_EXPIRED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindEventCancelledQueue(Queue eventCancelledQueue, TopicExchange eventsExchange) {
+        return BindingBuilder.bind(eventCancelledQueue).to(eventsExchange).with(EVENT_CANCELLED_ROUTING_KEY);
     }
 
     // ─── Bindings (DLQ) ──────────────────────────────────────────────────────

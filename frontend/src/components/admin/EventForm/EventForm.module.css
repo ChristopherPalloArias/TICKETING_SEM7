@@ -58,6 +58,12 @@
   border-color: #ef5350;
 }
 
+.inputDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--color-surface-highest);
+}
+
 .error {
   font-size: 0.8rem;
   color: #ef5350;

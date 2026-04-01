@@ -84,6 +84,9 @@ public class Event {
     @Column(name = "author", length = 200)
     private String author;
 
+    @Column(name = "cancellation_reason", length = 500)
+    private String cancellationReason;
+
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")
     private LocalDateTime createdAt;
     
