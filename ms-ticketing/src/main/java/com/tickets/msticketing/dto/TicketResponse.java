@@ -6,12 +6,14 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record TicketResponse(
-    UUID id,
-    UUID reservationId,
+    UUID ticketId,
     UUID eventId,
-    UUID tierId,
-    String tierType,
-    BigDecimal price,
+    String eventTitle,
+    LocalDateTime eventDate,
+    String tier,
+    BigDecimal pricePaid,
     TicketStatus status,
-    LocalDateTime createdAt
+    LocalDateTime purchasedAt,
+    String buyerEmail,
+    UUID reservationId
 ) {}

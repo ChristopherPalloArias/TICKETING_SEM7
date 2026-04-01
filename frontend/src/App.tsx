@@ -4,6 +4,7 @@ import EventDetail from './pages/EventDetail/EventDetail';
 import VenuesPage from './pages/VenuesPage/VenuesPage';
 import MyTicketsPage from './pages/MyTicketsPage/MyTicketsPage';
 import CartPage from './pages/CartPage/CartPage';
+import ProfilePage from './pages/ProfilePage/ProfilePage';
 import LoginPage from './pages/admin/LoginPage/LoginPage';
 import EventsDashboard from './pages/admin/EventsDashboard/EventsDashboard';
 import CreateEventPage from './pages/admin/CreateEventPage/CreateEventPage';
@@ -34,6 +35,7 @@ export default function App() {
         <Route path="/eventos/:id" element={<EventDetail />} />
         <Route path="/venues" element={<VenuesPage />} />
         <Route path="/mis-tickets" element={<MyTicketsPage />} />
+        <Route path="/perfil" element={<ProfilePage />} />
         <Route path="/carrito" element={<CartPage />} />
         <Route path="/login" element={<BuyerLoginPage />} />
         <Route path="/registro" element={<BuyerRegisterPage />} />

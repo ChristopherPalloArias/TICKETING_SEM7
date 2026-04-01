@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react';
-import { getAllRooms } from '../services/adminEventService';
+import {
+  listAllRooms,
+  createRoom,
+  updateRoom,
+  deleteRoom,
+} from '../services/adminEventService';
 import { useAuth } from './useAuth';
 import type { RoomOption } from '../types/admin.types';
 
@@ -7,6 +12,10 @@ interface UseRoomsResult {
   rooms: RoomOption[];
   loading: boolean;
   error: string | null;
+  createNewRoom: (data: { name: string; maxCapacity: number }) => Promise<RoomOption>;
+  updateExistingRoom: (id: string, data: { name: string; maxCapacity: number }) => Promise<RoomOption>;
+  deleteExistingRoom: (id: string) => Promise<void>;
+  refetch: () => Promise<void>;
 }
 
 export function useRooms(): UseRoomsResult {
@@ -15,32 +24,67 @@ export function useRooms(): UseRoomsResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const refetch = async () => {
     if (!userId) return;
-    let cancelled = false;
-
-    async function fetchRooms() {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getAllRooms();
-        if (!cancelled) {
-          setRooms(data);
-        }
-      } catch {
-        if (!cancelled) {
-          setError('No se pudieron cargar las salas.');
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await listAllRooms();
+      setRooms(data);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al cargar salas';
+      setError(message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    fetchRooms();
-    return () => { cancelled = true; };
+  useEffect(() => {
+    refetch();
   }, [userId]);
 
-  return { rooms, loading, error };
+  const createNewRoom = async (data: { name: string; maxCapacity: number }): Promise<RoomOption> => {
+    try {
+      const newRoom = await createRoom(data);
+      setRooms((prev) => [...prev, newRoom]);
+      return newRoom;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al crear sala';
+      throw new Error(message);
+    }
+  };
+
+  const updateExistingRoom = async (
+    id: string,
+    data: { name: string; maxCapacity: number }
+  ): Promise<RoomOption> => {
+    try {
+      const updated = await updateRoom(id, data);
+      setRooms((prev) => prev.map((r) => (r.id === id ? updated : r)));
+      return updated;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al actualizar sala';
+      throw new Error(message);
+    }
+  };
+
+  const deleteExistingRoom = async (id: string): Promise<void> => {
+    try {
+      await deleteRoom(id);
+      setRooms((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al eliminar sala';
+      throw new Error(message);
+    }
+  };
+
+  return {
+    rooms,
+    loading,
+    error,
+    createNewRoom,
+    updateExistingRoom,
+    deleteExistingRoom,
+    refetch,
+  };
 }

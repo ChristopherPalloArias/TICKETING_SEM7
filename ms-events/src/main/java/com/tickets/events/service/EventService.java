@@ -257,6 +257,27 @@ public class EventService {
             .toList();
     }
 
+    @Transactional(readOnly = true)
+    public Map<String, Object> getAllEventsAdminPaged(String search, int page, int size) {
+        Pageable pageable = PageRequest.of(page, Math.min(size, 100), Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Event> eventsPage = eventRepository.findAllBySearch(
+            (search != null && !search.isBlank()) ? search.trim() : "",
+            pageable
+        );
+
+        List<AdminEventDetailResponse> events = eventsPage.getContent().stream()
+            .map(this::convertToAdminEventDetailResponse)
+            .toList();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", events);
+        response.put("page", page);
+        response.put("size", size);
+        response.put("totalElements", eventsPage.getTotalElements());
+        response.put("totalPages", eventsPage.getTotalPages());
+        return response;
+    }
+
     private AdminEventDetailResponse convertToAdminEventDetailResponse(Event event) {
         Room room = event.getRoom();
         if (room == null) {
@@ -290,7 +311,10 @@ public class EventService {
             event.getAuthor(),
             event.getCreatedBy(),
             event.getCreatedAt(),
-            event.getUpdatedAt()
+            event.getUpdatedAt(),
+            0L,
+            0L,
+            java.math.BigDecimal.ZERO
         );
     }
 

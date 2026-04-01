@@ -1,0 +1,161 @@
+.container {
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.tabBar {
+  display: flex;
+  border-bottom: 2px solid #e5e7eb;
+  background: #f9fafb;
+  gap: 0;
+}
+
+.tab {
+  flex: 1;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  transition: all 0.2s;
+  position: relative;
+  text-align: center;
+}
+
+.tab:hover {
+  color: #1f2937;
+  background: #f3f4f6;
+}
+
+.tab.active {
+  color: #3b82f6;
+  background: #ffffff;
+  border-bottom: 3px solid #3b82f6;
+  margin-bottom: -2px;
+}
+
+.content {
+  min-height: 400px;
+}
+
+.tabPane {
+  padding: 24px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.tabPane h3 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.infoItem label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.infoItem p {
+  margin: 0;
+  font-size: 14px;
+  color: #1f2937;
+  word-break: break-word;
+}
+
+.tiersList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tierItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f9fafb;
+  border-radius: 6px;
+  border-left: 3px solid #3b82f6;
+}
+
+.tierItem strong {
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.tierBadge {
+  display: inline-block;
+  margin-left: 12px;
+  padding: 4px 8px;
+  background: #dbeafe;
+  color: #0c4a6e;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tierItem p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.emptyMsg {
+  color: #9ca3af;
+  font-size: 14px;
+  text-align: center;
+  padding: 32px 0;
+}
+
+.childrenArea {
+  border-top: 1px solid #e5e7eb;
+  padding: 24px;
+}
+
+@media (max-width: 640px) {
+  .tabBar {
+    overflow-x: auto;
+  }
+
+  .tab {
+    padding: 12px 16px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .tabPane {
+    padding: 16px;
+  }
+}

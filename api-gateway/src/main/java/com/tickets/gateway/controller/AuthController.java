@@ -1,6 +1,8 @@
 package com.tickets.gateway.controller;
 
 import com.tickets.gateway.dto.BuyerRegisterRequest;
+import com.tickets.gateway.dto.ChangePasswordRequest;
+import com.tickets.gateway.dto.ChangePasswordResponse;
 import com.tickets.gateway.dto.LoginRequest;
 import com.tickets.gateway.dto.LoginResponse;
 import com.tickets.gateway.dto.RegisterRequest;
@@ -64,6 +66,17 @@ public class AuthController {
         }
         UserProfileResponse profile = authService.getCurrentUser(userId);
         return ResponseEntity.ok(profile);
+    }
+
+    @PatchMapping("/me/password")
+    public ResponseEntity<?> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+        if (userId == null || userId.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        authService.changePassword(userId, request.currentPassword(), request.newPassword());
+        return ResponseEntity.ok(new ChangePasswordResponse("Contraseña actualizada exitosamente"));
     }
 
     private String getClientIp(ServerHttpRequest request) {

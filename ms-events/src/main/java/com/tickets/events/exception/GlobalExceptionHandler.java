@@ -2,6 +2,7 @@ package com.tickets.events.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -12,9 +13,11 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 
 import jakarta.validation.ConstraintViolationException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
     
     @ExceptionHandler(ForbiddenAccessException.class)
@@ -183,9 +186,17 @@ public class GlobalExceptionHandler {
             .body(new ErrorResponse("EVENT_UPDATE_NOT_ALLOWED", ex.getMessage()));
     }
 
+    @ExceptionHandler(RoomHasEventsException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<RoomHasEventsErrorResponse> handleRoomHasEventsException(RoomHasEventsException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new RoomHasEventsErrorResponse("ROOM_HAS_EVENTS", ex.getMessage(), ex.getEventTitles()));
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
+        log.error("Unhandled exception: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(new ErrorResponse("INTERNAL_SERVER_ERROR", "An unexpected error occurred while processing the request"));
     }
@@ -236,5 +247,13 @@ public class GlobalExceptionHandler {
         private String error;
         private String message;
         private Map<String, String> details;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class RoomHasEventsErrorResponse {
+        private String error;
+        private String message;
+        private List<String> events;
     }
 }

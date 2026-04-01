@@ -36,3 +36,21 @@ export async function registerBuyer(email: string, password: string): Promise<Lo
   });
   return response.data;
 }
+
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string,
+  token: string
+): Promise<{ message: string }> {
+  const response = await axios.patch<{ message: string }>(
+    `${API_BASE}/api/v1/auth/me/password`,
+    {
+      currentPassword,
+      newPassword,
+    },
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  return response.data;
+}

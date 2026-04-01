@@ -2,6 +2,7 @@ package com.tickets.events.dto;
 
 import com.tickets.events.model.EventStatus;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -27,5 +28,8 @@ public record AdminEventDetailResponse(
     String author,
     String createdBy,
     LocalDateTime created_at,
-    LocalDateTime updated_at
+    LocalDateTime updated_at,
+    long ticketsSold,
+    long activeReservations,
+    BigDecimal estimatedRevenue
 ) {}
