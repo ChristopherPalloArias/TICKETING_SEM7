@@ -26,7 +26,7 @@ export function useAdminEvents(): UseAdminEventsResult {
       try {
         setLoading(true);
         setError(null);
-        const data = await getAllEvents(userId as string);
+        const data = await getAllEvents();
         if (!cancelled) {
           setEvents(data.events);
         }
@@ -51,7 +51,7 @@ export function useAdminEvents(): UseAdminEventsResult {
 
   const publishEvent = useCallback(async (eventId: string) => {
     if (!userId) return;
-    await publishEventApi(eventId, userId);
+    await publishEventApi(eventId);
     setEvents(prev =>
       prev.map(e => e.id === eventId ? { ...e, status: 'PUBLISHED' as const } : e)
     );

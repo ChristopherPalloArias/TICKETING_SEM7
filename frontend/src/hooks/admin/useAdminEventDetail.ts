@@ -31,7 +31,7 @@ export function useAdminEventDetail(): UseAdminEventDetailResult {
     if (!id || !userId) return;
     let cancelled = false;
 
-    getAdminEventById(id, userId)
+    getAdminEventById(id)
       .then((data) => {
         if (!cancelled) {
           setResult({ fetchedId: id, event: data, error: null });
@@ -50,7 +50,7 @@ export function useAdminEventDetail(): UseAdminEventDetailResult {
     return () => {
       cancelled = true;
     };
-  }, [id, userId]);
+  }, [id]);
 
   if (!id) {
     return {

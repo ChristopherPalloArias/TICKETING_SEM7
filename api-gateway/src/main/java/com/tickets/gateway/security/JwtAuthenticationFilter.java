@@ -14,25 +14,13 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Slf4j
 public class JwtAuthenticationFilter implements WebFilter {
 
-    private static final List<String> PUBLIC_PATHS = List.of(
-            "/api/v1/auth/login",
-            "/api/v1/auth/register",
-            "/api/v1/events",
-            "/api/v1/rooms",
-            "/api/v1/reservations",
-            "/api/v1/tickets",
-            "/api/v1/notifications",
-            "/swagger-ui",
-            "/v3/api-docs",
-            "/actuator"
-    );
+    private static final String UUID_PATTERN =
+            "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
 
     private final JwtService jwtService;
 
@@ -48,12 +36,16 @@ public class JwtAuthenticationFilter implements WebFilter {
         }
 
         String path = exchange.getRequest().getURI().getPath();
+        HttpMethod method = exchange.getRequest().getMethod();
 
-        if (isPublicPath(path)) {
-            // Rutas públicas: solo eliminar X-Role para evitar escalada de privilegios.
-            // X-User-Id se permite pasar para que usuarios anónimos puedan identificarse.
+        if (isPublicPath(path, method)) {
+            // Rutas públicas: eliminar ambos headers de identidad para evitar suplantación.
+            // El downstream no debe confiar en ningún header de identidad en rutas públicas.
             ServerHttpRequest publicRequest = exchange.getRequest().mutate()
-                    .headers(headers -> headers.remove("X-Role"))
+                    .headers(headers -> {
+                        headers.remove("X-Role");
+                        headers.remove("X-User-Id");
+                    })
                     .build();
             return chain.filter(exchange.mutate().request(publicRequest).build());
         }
@@ -82,8 +74,52 @@ public class JwtAuthenticationFilter implements WebFilter {
         return chain.filter(exchange.mutate().request(authenticatedRequest).build());
     }
 
-    private boolean isPublicPath(String path) {
-        return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
+    /**
+     * Determina si una ruta debe ser tratada como pública (sin requerir JWT).
+     * Usa matching exacto o por método para evitar que rutas privadas sean
+     * accidentalmente clasificadas como públicas (ej: /api/v1/events/admin).
+     */
+    private boolean isPublicPath(String path, HttpMethod method) {
+        // Auth: login y register son siempre públicos
+        if (path.startsWith("/api/v1/auth/login") ||
+                path.startsWith("/api/v1/auth/register")) {
+            return true;
+        }
+
+        // Catálogo de eventos y detalle de evento — solo GET
+        if (HttpMethod.GET.equals(method)) {
+            // Listado de eventos: GET /api/v1/events
+            if (path.equals("/api/v1/events")) {
+                return true;
+            }
+            // Detalle de evento público: GET /api/v1/events/{uuid} (sin segmentos adicionales)
+            if (path.startsWith("/api/v1/events/") && isExactUuidTail(path, "/api/v1/events/".length())) {
+                return true;
+            }
+            // Salas públicas: GET /api/v1/rooms/public
+            if (path.equals("/api/v1/rooms/public")) {
+                return true;
+            }
+        }
+
+        // Infraestructura: Swagger y Actuator
+        if (path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs") ||
+                path.startsWith("/actuator")) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Verifica que el segmento de path desde {@code start} sea exactamente un UUID
+     * sin segmentos adicionales. Esto evita que /api/v1/events/{id}/tiers sea público.
+     */
+    private boolean isExactUuidTail(String path, int start) {
+        if (start >= path.length()) return false;
+        String tail = path.substring(start);
+        return !tail.contains("/") && tail.matches(UUID_PATTERN);
     }
 
     private Mono<Void> writeError(ServerWebExchange exchange, HttpStatus status, String message) {

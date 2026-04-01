@@ -39,7 +39,7 @@ export function useEventTiers(eventId: string): UseEventTiersReturn {
   const addTier = useCallback(
     async (data: TierFormData): Promise<AdminTierResponse> => {
       if (!userId) throw new Error('Usuario no autenticado');
-      const newTier = await addTierService(eventId, data, userId);
+      const newTier = await addTierService(eventId, data);
       setTiers((prev) => [...prev, newTier]);
       return newTier;
     },
@@ -49,7 +49,7 @@ export function useEventTiers(eventId: string): UseEventTiersReturn {
   const deleteTier = useCallback(
     async (tierId: string): Promise<void> => {
       if (!userId) throw new Error('Usuario no autenticado');
-      await deleteTierService(eventId, tierId, userId);
+      await deleteTierService(eventId, tierId);
       setTiers((prev) => prev.filter((t) => t.id !== tierId));
     },
     [eventId, userId],

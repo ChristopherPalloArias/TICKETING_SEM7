@@ -61,11 +61,11 @@ export default function EventDetailAdmin() {
   }
 
   async function handleConfirmPublish() {
-    if (!event || !userId) return;
+    if (!event) return;
     setPublishing(true);
     setPublishError(null);
     try {
-      const updated = await publishEvent(event.id, userId);
+      const updated = await publishEvent(event.id);
       setEvent((prev) => ({
         ...prev,
         fetchedId: prev.fetchedId,
@@ -84,10 +84,10 @@ export default function EventDetailAdmin() {
   }
 
   async function handleConfirmCancel(reason: string) {
-    if (!event || !userId) return;
+    if (!event) return;
     setCancelling(true);
     try {
-      await cancelEvent(event.id, reason, userId);
+      await cancelEvent(event.id, reason);
       setEvent((prev) => ({
         ...prev,
         fetchedId: prev.fetchedId,

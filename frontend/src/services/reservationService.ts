@@ -1,9 +1,4 @@
-import axios from 'axios';
-
-const API_BASE = import.meta.env.VITE_API_URL as string;
-
-
-const DEMO_BUYER_ID = '11111111-1111-1111-1111-111111111111';
+import apiClient from './apiClient';
 
 export interface ReservationResponse {
   id: string;
@@ -37,13 +32,8 @@ export interface PaymentResponse {
 export async function createReservation(
   eventId: string,
   tierId: string,
-  buyerId: string = DEMO_BUYER_ID,
 ): Promise<ReservationResponse> {
-  const res = await axios.post<ReservationResponse>(
-    `${API_BASE}/api/v1/reservations`,
-    { eventId, tierId },
-    { headers: { 'X-User-Id': buyerId } }, 
-  );
+  const res = await apiClient.post<ReservationResponse>('/api/v1/reservations', { eventId, tierId });
   return res.data;
 }
 
@@ -51,12 +41,10 @@ export async function processPayment(
   reservationId: string,
   amount: number,
   status: 'APPROVED' | 'DECLINED',
-  buyerId: string = DEMO_BUYER_ID,
 ): Promise<PaymentResponse> {
-  const res = await axios.post<PaymentResponse>(
-    `${API_BASE}/api/v1/reservations/${reservationId}/payments`,
+  const res = await apiClient.post<PaymentResponse>(
+    `/api/v1/reservations/${reservationId}/payments`,
     { amount, paymentMethod: 'MOCK', status },
-    { headers: { 'X-User-Id': buyerId } }, 
   );
   return res.data;
 }

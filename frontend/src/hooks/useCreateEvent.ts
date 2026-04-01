@@ -19,7 +19,7 @@ export function useCreateEvent(): UseCreateEventResult {
     setIsSubmitting(true);
     setError(null);
     try {
-      const result = await createEvent(data, userId);
+      const result = await createEvent(data);
       return result;
     } catch (err: unknown) {
       let message = 'Error al crear el evento';

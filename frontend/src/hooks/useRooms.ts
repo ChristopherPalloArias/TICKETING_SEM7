@@ -23,7 +23,7 @@ export function useRooms(): UseRoomsResult {
       try {
         setLoading(true);
         setError(null);
-        const data = await getAllRooms(userId as string);
+        const data = await getAllRooms();
         if (!cancelled) {
           setRooms(data);
         }

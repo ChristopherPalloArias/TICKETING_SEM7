@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { useNotificationPolling } from '../hooks/useNotificationPolling';
+import { useAuth } from '../hooks/useAuth';
 import {
   markAllRead as markAllReadApi,
   archiveAll as archiveAllApi,
@@ -30,8 +31,6 @@ interface NotificationsContextValue {
 }
 
 const NotificationsContext = createContext<NotificationsContextValue | null>(null);
-
-const BUYER_ID = '11111111-1111-1111-1111-111111111111';
 
 const MESSAGES: Record<NotificationType, { title: string; message: (event: string) => string }> = {
   timer_expired: {
@@ -98,13 +97,14 @@ function mergeNotifications(
 }
 
 export function NotificationsProvider({ children }: { children: React.ReactNode }) {
+  const { userId } = useAuth();
   const [localNotifications, setLocalNotifications] = useState<AppNotification[]>([]);
   const [pollingEnabled, setPollingEnabled] = useState(true);
   const counterRef = useRef(0);
 
   const { backendNotifications, unreadCount: serverUnreadCount } = useNotificationPolling({
-    buyerId: BUYER_ID,
-    enabled: pollingEnabled,
+    buyerId: userId ?? '',
+    enabled: pollingEnabled && !!userId,
   });
 
   const notifications = useMemo(
@@ -131,19 +131,19 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
   const markAllRead = useCallback(() => {
     setLocalNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    markAllReadApi(BUYER_ID).catch((err) => {
+    markAllReadApi(userId ?? '').catch((err) => {
       console.error('[NotificationsContext] markAllRead failed:', err);
     });
-  }, []);
+  }, [userId]);
 
   const clearAll = useCallback(() => {
     const prevLocal = localNotifications;
     setLocalNotifications([]);
-    archiveAllApi(BUYER_ID).catch((err) => {
+    archiveAllApi(userId ?? '').catch((err) => {
       console.error('[NotificationsContext] archiveAll failed, rolling back:', err);
       setLocalNotifications(prevLocal);
     });
-  }, [localNotifications]);
+  }, [localNotifications, userId]);
 
   const unreadCount = useMemo(() => {
     const backendKeys = new Set(

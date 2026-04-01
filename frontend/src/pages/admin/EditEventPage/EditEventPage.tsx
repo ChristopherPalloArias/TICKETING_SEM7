@@ -26,7 +26,7 @@ export default function EditEventPage() {
     if (!eventId || !userId) return;
     let cancelled = false;
     setLoading(true);
-    getAdminEventById(eventId, userId)
+    getAdminEventById(eventId)
       .then((data) => {
         if (!cancelled) {
           setEvent(data);
@@ -43,11 +43,11 @@ export default function EditEventPage() {
   }, [eventId, userId]);
 
   async function handleSubmit(data: EventCreateFormData) {
-    if (!eventId || !userId) return;
+    if (!eventId) return;
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      await updateEvent(eventId, data, userId);
+      await updateEvent(eventId, data);
       showToast('Evento actualizado correctamente', 'success');
       navigate(`/admin/events/${eventId}`);
     } catch (err: unknown) {
