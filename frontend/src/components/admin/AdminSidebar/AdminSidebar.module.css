@@ -4,14 +4,14 @@
   top: 0;
   height: 100vh;
   width: 264px;
-  background: #1f2937;
-  color: #f3f4f6;
+  background: var(--color-surface-low);
+  color: var(--color-on-surface);
   display: flex;
   flex-direction: column;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.4);
   z-index: 1000;
   transition: width 0.3s ease;
-  border-right: 1px solid #374151;
+  border-right: 1px solid var(--color-outline-variant);
 }
 
 .sidebar.collapsed {
@@ -32,7 +32,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 16px;
-  border-bottom: 1px solid #374151;
+  border-bottom: 1px solid var(--color-outline-variant);
   gap: 8px;
 }
 
@@ -50,11 +50,11 @@
 }
 
 .logoSem7 {
-  color: #3b82f6;
+  color: var(--color-primary);
 }
 
 .logoAdmin {
-  color: #f3f4f6;
+  color: var(--color-on-surface);
 }
 
 .sidebar.collapsed .logo {
@@ -70,18 +70,18 @@
 .collapseBtn {
   background: transparent;
   border: none;
-  color: #f3f4f6;
+  color: var(--color-on-surface-variant);
   cursor: pointer;
   padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.2s;
+  transition: color 0.2s;
   flex-shrink: 0;
 }
 
 .collapseBtn:hover {
-  opacity: 0.7;
+  color: var(--color-on-surface);
 }
 
 .sidebar.collapsed .collapseBtn {
@@ -103,7 +103,7 @@
   padding: 12px 16px;
   background: transparent;
   border: none;
-  color: #d1d5db;
+  color: var(--color-on-surface-variant);
   cursor: pointer;
   font-weight: 500;
   font-size: 14px;
@@ -119,14 +119,14 @@
 }
 
 .navItem:hover {
-  background: #374151;
-  color: #f3f4f6;
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
 }
 
 .navItem.active {
-  background: #3b82f6;
-  color: #ffffff;
-  border-left-color: #3b82f6;
+  background: rgba(255, 107, 71, 0.12);
+  color: var(--color-primary);
+  border-left-color: var(--color-primary);
 }
 
 .sidebar.collapsed .navItem.active {

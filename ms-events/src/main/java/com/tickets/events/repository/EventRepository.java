@@ -27,6 +27,6 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
 
     long countByStatus(EventStatus status);
 
-    @Query("SELECT e FROM Event e WHERE (:search IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', :search, '%')))")
+    @Query("SELECT e FROM Event e WHERE :search = '' OR LOWER(e.title) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Event> findAllBySearch(@Param("search") String search, Pageable pageable);
 }

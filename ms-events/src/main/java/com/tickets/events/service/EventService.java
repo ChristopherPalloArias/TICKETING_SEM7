@@ -261,7 +261,7 @@ public class EventService {
     public Map<String, Object> getAllEventsAdminPaged(String search, int page, int size) {
         Pageable pageable = PageRequest.of(page, Math.min(size, 100), Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Event> eventsPage = eventRepository.findAllBySearch(
-            (search != null && !search.isBlank()) ? search : null,
+            (search != null && !search.isBlank()) ? search.trim() : "",
             pageable
         );
 

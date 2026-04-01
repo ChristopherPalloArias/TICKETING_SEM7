@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, LayoutDashboard, FileText, Layers } from 'lucide-react';
+import { ChevronLeft, LayoutDashboard, Layers } from 'lucide-react';
 import { useState } from 'react';
 import styles from './AdminSidebar.module.css';
 
@@ -17,16 +17,10 @@ export default function AdminSidebar() {
 
   const navItems: NavItem[] = [
     {
-      label: 'Dashboard',
-      path: '/admin/events',
-      icon: <LayoutDashboard size={20} />,
-      isActive: (pathname) => pathname.includes('/admin/events'),
-    },
-    {
       label: 'Eventos',
       path: '/admin/events',
-      icon: <FileText size={20} />,
-      isActive: (pathname) => pathname.includes('/admin/events'),
+      icon: <LayoutDashboard size={20} />,
+      isActive: (pathname) => pathname.startsWith('/admin/events'),
     },
     {
       label: 'Salas',
@@ -56,7 +50,7 @@ export default function AdminSidebar() {
         <nav className={styles.nav}>
           {navItems.map((item) => (
             <button
-              key={item.path}
+              key={item.label}
               className={`${styles.navItem} ${
                 item.isActive(location.pathname) ? styles.active : ''
               }`}

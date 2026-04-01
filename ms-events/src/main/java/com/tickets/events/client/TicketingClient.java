@@ -31,11 +31,15 @@ public class TicketingClient {
     public Map<String, Long> getAdminSummary() {
         try {
             String url = ticketingBaseUrl + "/api/v1/tickets/admin/stats";
-            Map<String, Long> response = restTemplate.getForObject(url, Map.class);
-            if (response == null) {
+            Map<String, Object> raw = restTemplate.getForObject(url, Map.class);
+            if (raw == null) {
                 return Map.of("totalTicketsSold", 0L, "activeReservations", 0L);
             }
-            return response;
+            long ticketsSold = raw.containsKey("totalTicketsSold")
+                    ? ((Number) raw.get("totalTicketsSold")).longValue() : 0L;
+            long activeReservations = raw.containsKey("activeReservations")
+                    ? ((Number) raw.get("activeReservations")).longValue() : 0L;
+            return Map.of("totalTicketsSold", ticketsSold, "activeReservations", activeReservations);
         } catch (Exception e) {
             log.warn("Could not fetch ticket admin summary from ms-ticketing: {}", e.getMessage());
             return Map.of("totalTicketsSold", 0L, "activeReservations", 0L);
