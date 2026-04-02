@@ -61,6 +61,7 @@ public class ReservationService {
             .eventId(request.eventId())
             .tierId(request.tierId())
             .buyerId(buyerId)
+            .buyerEmail(request.buyerEmail())
             .status(ReservationStatus.PENDING)
             .tierType(tierResponse.tierType())
             .build();

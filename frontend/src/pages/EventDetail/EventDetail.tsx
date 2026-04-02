@@ -139,7 +139,11 @@ export default function EventDetail() {
       setScreen('payment');
       return;
     }
-    const reservation = await createReservation(event.id, selectedTierId);
+    const reservation = await createReservation(
+      event.id,
+      selectedTierId,
+      email || authEmail || 'guest@example.com',
+    );
     const tier = event.availableTiers.find((t) => t.id === selectedTierId)!;
     const tierPrice = parseFloat(tier.price);
     const total = tierPrice * quantity + 10;
@@ -180,7 +184,11 @@ export default function EventDetail() {
 
     setAddingToCart(true);
     try {
-      const reservation = await createReservation(event.id, selectedTierId);
+      const reservation = await createReservation(
+        event.id,
+        selectedTierId,
+        authEmail || 'guest@example.com',
+      );
       const newItem: CartItem = {
         id: crypto.randomUUID(),
         eventId: event.id,

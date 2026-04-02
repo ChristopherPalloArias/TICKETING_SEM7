@@ -32,8 +32,13 @@ export interface PaymentResponse {
 export async function createReservation(
   eventId: string,
   tierId: string,
+  buyerEmail: string,
 ): Promise<ReservationResponse> {
-  const res = await apiClient.post<ReservationResponse>('/api/v1/reservations', { eventId, tierId });
+  const res = await apiClient.post<ReservationResponse>('/api/v1/reservations', { 
+    eventId, 
+    tierId,
+    buyerEmail,
+  });
   return res.data;
 }
 

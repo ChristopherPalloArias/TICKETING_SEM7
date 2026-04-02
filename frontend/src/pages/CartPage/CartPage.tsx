@@ -6,12 +6,14 @@ import BottomNav from '../../components/NavBar/BottomNav';
 import CartItemCard from '../../components/Cart/CartItemCard';
 import CartSummary from '../../components/Cart/CartSummary';
 import { useCart } from '../../contexts/CartContext';
+import { useAuth } from '../../hooks/useAuth';
 import { createReservation } from '../../services/reservationService';
 import type { CartItem } from '../../types/cart.types';
 import styles from './CartPage.module.css';
 
 export default function CartPage() {
   const { items, removeItem, updateItem } = useCart();
+  const { email: authEmail } = useAuth();
   const navigate = useNavigate();
   const [renewingId, setRenewingId] = useState<string | null>(null);
 
@@ -31,7 +33,11 @@ export default function CartPage() {
   const handleRenew = async (item: CartItem) => {
     setRenewingId(item.id);
     try {
-      const reservation = await createReservation(item.eventId, item.tierId);
+      const reservation = await createReservation(
+        item.eventId,
+        item.tierId,
+        authEmail || item.email || 'guest@example.com',
+      );
       updateItem(item.id, {
         reservationId: reservation.id,
         validUntilAt: reservation.validUntilAt,
