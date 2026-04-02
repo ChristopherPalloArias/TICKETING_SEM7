@@ -14,6 +14,7 @@ import { useEventDetail } from '../../hooks/useEventDetail';
 import { createReservation, processPayment } from '../../services/reservationService';
 import { useNotifications } from '../../contexts/NotificationsContext';
 import { useCart } from '../../contexts/CartContext';
+import { useAuth } from '../../hooks/useAuth';
 import { addCartItem } from '../../services/cartService';
 import { saveTicket } from '../../services/ticketsStorage';
 import QuantitySelector from '../../components/QuantitySelector/QuantitySelector';
@@ -42,6 +43,7 @@ export default function EventDetail() {
   const { event, loading, error } = useEventDetail();
   const { addNotification, setPollingEnabled } = useNotifications();
   const { removeItem: removeCartItem, items: cartItems, addItem: addCartItemCtx } = useCart();
+  const { email: authEmail } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -198,7 +200,7 @@ export default function EventDetail() {
         expirationAlerted: false,
       };
 
-      const result = addCartItem(newItem);
+      const result = addCartItem(newItem, authEmail);
       if (result.success) {
         addCartItemCtx(newItem);
         alert('Agregado al carrito');
@@ -214,6 +216,22 @@ export default function EventDetail() {
 
   const handleSimulatePayment = async (type: 'success' | 'failure') => {
     if (!order) return;
+
+    // ✅ VALIDACIÓN: Email coherencia
+    if (authEmail && order.email !== authEmail) {
+      console.error(`🚨 Email mismatch: orden=${order.email}, auth=${authEmail}`);
+      addNotification('payment_error', 'Error en el email — por favor reintenta', order.reservationId, event?.id);
+      setScreen('failure');
+      return;
+    }
+
+    // ✅ VALIDACIÓN: No procesar si falta email válido
+    if (!order.email || !order.email.includes('@')) {
+      addNotification('payment_error', 'Falta email válido para procesar pago', order.reservationId, event?.id);
+      setScreen('failure');
+      return;
+    }
+
     let result;
     try {
       result = await processPayment(

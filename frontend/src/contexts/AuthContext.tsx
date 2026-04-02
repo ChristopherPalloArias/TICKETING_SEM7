@@ -61,6 +61,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.removeItem(ROLE_KEY);
     sessionStorage.removeItem(USER_ID_KEY);
     sessionStorage.removeItem(EMAIL_KEY);
+    
+    // ✅ LIMPIEZA ADICIONAL: Limpiar carrito en localStorage
+    // Elimina todas las claves de carrito (tanto anónimo como segmentado)
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('sem7_shopping_cart')) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+    if (keysToRemove.length > 0) {
+      console.log(`🧹 Limpiadas ${keysToRemove.length} claves de carrito en logout`);
+    }
   }
 
   return (

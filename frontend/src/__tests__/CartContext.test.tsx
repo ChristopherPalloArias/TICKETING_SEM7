@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { CartProvider, useCart } from '../contexts/CartContext';
+import { AuthProvider } from '../contexts/AuthContext';
+import { getCartStorageKey } from '../services/cartService';
 import type { CartItem } from '../types/cart.types';
 
 function buildCartItem(overrides: Partial<CartItem> = {}): CartItem {
@@ -27,7 +29,11 @@ function buildCartItem(overrides: Partial<CartItem> = {}): CartItem {
 }
 
 function wrapper({ children }: { children: ReactNode }) {
-  return <CartProvider>{children}</CartProvider>;
+  return (
+    <AuthProvider>
+      <CartProvider>{children}</CartProvider>
+    </AuthProvider>
+  );
 }
 
 describe('CartContext', () => {
@@ -119,17 +125,19 @@ describe('CartContext', () => {
       result.current.addItem(buildCartItem());
     });
 
-    // THEN: localStorage has the item
-    const stored = JSON.parse(localStorage.getItem('sem7_shopping_cart')!);
+    // THEN: localStorage has the item (using anonymous key since no email in tests)
+    const key = getCartStorageKey(null); // null = anonymous
+    const stored = JSON.parse(localStorage.getItem(key)!);
     expect(stored).toHaveLength(1);
     expect(stored[0].eventTitle).toBe('Hamlet');
   });
 
   // SPEC test: [CartContext] loads items from localStorage on mount
   it('loads items from localStorage on mount', () => {
-    // GIVEN: items already in localStorage
+    // GIVEN: items already in localStorage (using anonymous key)
     const items = [buildCartItem()];
-    localStorage.setItem('sem7_shopping_cart', JSON.stringify(items));
+    const key = getCartStorageKey(null); // null = anonymous
+    localStorage.setItem(key, JSON.stringify(items));
 
     // WHEN: mount CartProvider
     const { result } = renderHook(() => useCart(), { wrapper });
@@ -140,9 +148,10 @@ describe('CartContext', () => {
   });
 
   it('activeItemCount excludes expired items', () => {
-    // GIVEN: one active, one expired item
+    // GIVEN: one active, one expired item (using anonymous key)
+    const key = getCartStorageKey(null); // null = anonymous
     localStorage.setItem(
-      'sem7_shopping_cart',
+      key,
       JSON.stringify([
         buildCartItem({ id: 'active', expired: false }),
         buildCartItem({ id: 'expired', eventId: 'evt-2', tierId: 'tier-2', expired: true }),
