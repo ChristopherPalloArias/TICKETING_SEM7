@@ -27,6 +27,7 @@ public class ReservationService {
     private final TicketRepository ticketRepository;
     private final MsEventsIntegrationService msEventsIntegrationService;
     private final RabbitMQPublisherService rabbitMQPublisherService;
+    private final FraudService fraudService;
 
     private static final int MAX_PAYMENT_ATTEMPTS = 3;
 
@@ -61,6 +62,7 @@ public class ReservationService {
             .eventId(request.eventId())
             .tierId(request.tierId())
             .buyerId(buyerId)
+            .buyerEmail(request.buyerEmail())
             .status(ReservationStatus.PENDING)
             .tierType(tierResponse.tierType())
             .build();
@@ -92,6 +94,15 @@ public class ReservationService {
         );
 
         if (!reservation.getBuyerId().equals(buyerId)) {
+            // ✅ FRAUD ATTEMPT: Log and report
+            log.error("🚨 UNAUTHORIZED PAYMENT ATTEMPT: attempted_buyerId={}, owner={}, reservation={}", 
+                buyerId, reservation.getBuyerId(), reservationId);
+            fraudService.reportFraudAttempt(
+                buyerId.toString(),
+                reservation.getBuyerId().toString(),
+                reservationId,
+                paymentRequest.amount()
+            );
             throw new ForbiddenAccessException("You can only pay for your own reservations");
         }
 
@@ -141,6 +152,17 @@ public class ReservationService {
         ReservationStatus status = reservation.getStatus();
         if (status == null || (!status.equals(ReservationStatus.PENDING) && 
             !status.equals(ReservationStatus.PAYMENT_FAILED))) {
+            // ✅ DUPLICATE PAYMENT DETECTION: Already paid or expired
+            if (status.equals(ReservationStatus.CONFIRMED)) {
+                log.error("🚨 DUPLICATE PAYMENT ATTEMPT: email={}, reservation={}, currentStatus={}", 
+                    buyerId, reservationId, status);
+                fraudService.reportDuplicatePayment(
+                    reservation.getBuyerEmail() != null ? reservation.getBuyerEmail() : buyerId.toString(),
+                    reservationId,
+                    paymentRequest.amount()
+                );
+                throw new IllegalArgumentException("Reservation already paid - duplicate payment attempt blocked");
+            }
             throw new IllegalArgumentException("Reservation is not available for payment");
         }
 
@@ -218,6 +240,10 @@ public class ReservationService {
             .tierType(TierType.valueOf(reservation.getTierType() != null ? reservation.getTierType() : "GENERAL"))
             .price(paymentRequest.amount())
             .status(TicketStatus.VALID)
+            .buyerEmail(reservation.getBuyerEmail())
+            .paymentMethod(paymentRequest.paymentMethod().name())
+            .transactionId("TXN-" + UUID.randomUUID().toString())
+            .paidAt(LocalDateTime.now(ZoneOffset.UTC))
             .build();
 
         Ticket savedTicket = ticketRepository.save(ticket);

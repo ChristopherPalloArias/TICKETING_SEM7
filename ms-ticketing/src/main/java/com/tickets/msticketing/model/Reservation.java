@@ -55,6 +55,9 @@ public class Reservation {
     @Column(name = "tier_type", length = 20)
     private String tierType;
 
+    @Column(name = "buyer_email", length = 255)
+    private String buyerEmail;
+
     @Version
     @Column(name = "version", nullable = false)
     private Long version;

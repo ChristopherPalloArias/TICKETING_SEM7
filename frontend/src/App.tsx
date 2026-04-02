@@ -17,6 +17,7 @@ import AdminGuard from './components/admin/AdminGuard/AdminGuard';
 import AdminLayout from './components/admin/AdminLayout/AdminLayout';
 import Toast from './components/Toast/Toast';
 import { useCartExpirationWatcher } from './hooks/useCartExpirationWatcher';
+import { useCartCleanupOnLogout } from './hooks/useCartCleanupOnLogout';
 import './styles/global.css';
 
 function CartExpirationWatcher() {
@@ -24,10 +25,16 @@ function CartExpirationWatcher() {
   return null;
 }
 
+function CartCleanupOnLogout() {
+  useCartCleanupOnLogout();
+  return null;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <CartExpirationWatcher />
+      <CartCleanupOnLogout />
       <Toast />
       <Routes>
         {/* Rutas públicas del comprador */}

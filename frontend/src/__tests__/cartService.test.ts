@@ -6,8 +6,12 @@ import {
   removeCartItem,
   updateCartItem,
   clearCart,
+  getCartStorageKey,
+  migrateOldCartData,
 } from '../services/cartService';
 import type { CartItem } from '../types/cart.types';
+
+const TEST_EMAIL = 'buyer@test.com';
 
 function buildCartItem(overrides: Partial<CartItem> = {}): CartItem {
   return {
@@ -48,9 +52,10 @@ describe('cartService', () => {
 
   it('getCartItems returns empty array when localStorage has invalid JSON', () => {
     // GIVEN: corrupted data in localStorage
-    localStorage.setItem('sem7_shopping_cart', '{not-valid-json');
+    const key = getCartStorageKey(TEST_EMAIL);
+    localStorage.setItem(key, '{not-valid-json');
     // WHEN
-    const items = getCartItems();
+    const items = getCartItems(TEST_EMAIL);
     // THEN
     expect(items).toEqual([]);
   });
@@ -60,9 +65,10 @@ describe('cartService', () => {
     // GIVEN: an array with one cart item
     const item = buildCartItem();
     // WHEN
-    saveCartItems([item]);
+    saveCartItems([item], TEST_EMAIL);
     // THEN
-    const stored = JSON.parse(localStorage.getItem('sem7_shopping_cart')!);
+    const key = getCartStorageKey(TEST_EMAIL);
+    const stored = JSON.parse(localStorage.getItem(key)!);
     expect(stored).toHaveLength(1);
     expect(stored[0].id).toBe('item-1');
   });
@@ -71,55 +77,55 @@ describe('cartService', () => {
     // GIVEN: empty cart
     const item = buildCartItem();
     // WHEN
-    const result = addCartItem(item);
+    const result = addCartItem(item, TEST_EMAIL);
     // THEN
     expect(result.success).toBe(true);
-    expect(getCartItems()).toHaveLength(1);
+    expect(getCartItems(TEST_EMAIL)).toHaveLength(1);
   });
 
   it('addCartItem rejects duplicate eventId+tierId', () => {
     // GIVEN: cart already has item with eventId=evt-1 tierId=tier-1
-    addCartItem(buildCartItem());
+    addCartItem(buildCartItem(), TEST_EMAIL);
     // WHEN: try to add same eventId+tierId
     const dup = buildCartItem({ id: 'item-dup' });
-    const result = addCartItem(dup);
+    const result = addCartItem(dup, TEST_EMAIL);
     // THEN
     expect(result.success).toBe(false);
     expect(result.error).toBe('Ya tienes este tier en tu carrito');
-    expect(getCartItems()).toHaveLength(1);
+    expect(getCartItems(TEST_EMAIL)).toHaveLength(1);
   });
 
   it('addCartItem enforces max 5 items limit', () => {
     // GIVEN: 5 items already in cart
     for (let i = 0; i < 5; i++) {
-      addCartItem(buildCartItem({ id: `item-${i}`, eventId: `evt-${i}`, tierId: `tier-${i}` }));
+      addCartItem(buildCartItem({ id: `item-${i}`, eventId: `evt-${i}`, tierId: `tier-${i}` }), TEST_EMAIL);
     }
-    expect(getCartItems()).toHaveLength(5);
+    expect(getCartItems(TEST_EMAIL)).toHaveLength(5);
     // WHEN: attempt to add a 6th
-    const result = addCartItem(buildCartItem({ id: 'item-6', eventId: 'evt-6', tierId: 'tier-6' }));
+    const result = addCartItem(buildCartItem({ id: 'item-6', eventId: 'evt-6', tierId: 'tier-6' }), TEST_EMAIL);
     // THEN
     expect(result.success).toBe(false);
     expect(result.error).toBe('Máximo 5 reservas simultáneas permitidas');
-    expect(getCartItems()).toHaveLength(5);
+    expect(getCartItems(TEST_EMAIL)).toHaveLength(5);
   });
 
   it('removeCartItem removes item and returns updated list', () => {
     // GIVEN: two items in cart
-    addCartItem(buildCartItem({ id: 'item-1', eventId: 'evt-1', tierId: 'tier-1' }));
-    addCartItem(buildCartItem({ id: 'item-2', eventId: 'evt-2', tierId: 'tier-2' }));
+    addCartItem(buildCartItem({ id: 'item-1', eventId: 'evt-1', tierId: 'tier-1' }), TEST_EMAIL);
+    addCartItem(buildCartItem({ id: 'item-2', eventId: 'evt-2', tierId: 'tier-2' }), TEST_EMAIL);
     // WHEN
-    const updated = removeCartItem('item-1');
+    const updated = removeCartItem('item-1', TEST_EMAIL);
     // THEN
     expect(updated).toHaveLength(1);
     expect(updated[0].id).toBe('item-2');
-    expect(getCartItems()).toHaveLength(1);
+    expect(getCartItems(TEST_EMAIL)).toHaveLength(1);
   });
 
   it('updateCartItem updates specific fields', () => {
     // GIVEN: one item in cart
-    addCartItem(buildCartItem());
+    addCartItem(buildCartItem(), TEST_EMAIL);
     // WHEN
-    const updated = updateCartItem('item-1', { expired: true });
+    const updated = updateCartItem('item-1', { expired: true }, TEST_EMAIL);
     // THEN
     expect(updated[0].expired).toBe(true);
     expect(updated[0].eventTitle).toBe('Hamlet');
@@ -127,11 +133,12 @@ describe('cartService', () => {
 
   it('clearCart removes all items from localStorage', () => {
     // GIVEN: items in cart
-    addCartItem(buildCartItem());
+    addCartItem(buildCartItem(), TEST_EMAIL);
     // WHEN
-    clearCart();
+    clearCart(TEST_EMAIL);
     // THEN
-    expect(localStorage.getItem('sem7_shopping_cart')).toBeNull();
-    expect(getCartItems()).toEqual([]);
+    const key = getCartStorageKey(TEST_EMAIL);
+    expect(localStorage.getItem(key)).toBeNull();
+    expect(getCartItems(TEST_EMAIL)).toEqual([]);
   });
 });

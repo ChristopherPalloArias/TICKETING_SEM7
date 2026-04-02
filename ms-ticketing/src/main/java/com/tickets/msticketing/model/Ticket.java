@@ -61,6 +61,15 @@ public class Ticket {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "payment_method", length = 50)
+    private String paymentMethod;
+
+    @Column(name = "transaction_id", length = 255)
+    private String transactionId;
+
+    @Column(name = "paid_at")
+    private LocalDateTime paidAt;
+
     @PrePersist
     protected void onCreate() {
         if (this.id == null) {
