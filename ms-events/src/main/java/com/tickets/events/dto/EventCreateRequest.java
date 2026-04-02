@@ -41,5 +41,13 @@ public record EventCreateRequest(
     Boolean isLimited,
     Boolean isFeatured,
     @Size(max = 200, message = "author: size must be between 0 and 200")
-    String author
+    String author,
+    // --- seat configuration fields (optional) ---
+    Boolean enableSeats,
+    @Min(value = 1, message = "seatsPerTier: must be at least 1")
+    @Max(value = 200, message = "seatsPerTier: must not exceed 200")
+    Integer seatsPerTier,
+    @Min(value = 1, message = "seatsPerRow: must be at least 1")
+    @Max(value = 20, message = "seatsPerRow: must not exceed 20")
+    Integer seatsPerRow
 ) {}

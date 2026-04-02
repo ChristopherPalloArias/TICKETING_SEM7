@@ -13,9 +13,12 @@ import com.tickets.events.exception.*;
 import com.tickets.events.model.Event;
 import com.tickets.events.model.EventStatus;
 import com.tickets.events.model.Room;
+import com.tickets.events.model.Seat;
+import com.tickets.events.model.SeatStatus;
 import com.tickets.events.model.Tier;
 import com.tickets.events.repository.EventRepository;
 import com.tickets.events.repository.RoomRepository;
+import com.tickets.events.repository.SeatRepository;
 import com.tickets.events.repository.TierRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +47,8 @@ public class EventService {
     private final TierRepository tierRepository;
     private final TierService tierService;
     private final EventPublisherService eventPublisherService;
+    private final SeatRepository seatRepository;
+    private final SeatService seatService;
     
     public EventResponse createEvent(EventCreateRequest request, String role, String userId) {
         validateAdminRole(role);
@@ -76,6 +82,12 @@ public class EventService {
         event.setAuthor(request.author());
 
         Event savedEvent = eventRepository.save(event);
+        
+        // Create seats if enableSeats is true
+        if (request.enableSeats() != null && request.enableSeats() && 
+            request.seatsPerTier() != null && request.seatsPerRow() != null) {
+            createSeatsForEvent(savedEvent, request.seatsPerTier(), request.seatsPerRow());
+        }
         
         return convertToResponse(savedEvent);
     }
@@ -404,5 +416,43 @@ public class EventService {
             saved.getCancellationReason(),
             saved.getUpdatedAt()
         );
+    }
+
+    private void createSeatsForEvent(Event event, Integer seatsPerTier, Integer seatsPerRow) {
+        List<Tier> tiers = tierRepository.findByEventId(event.getId());
+        List<Seat> allSeats = new ArrayList<>();
+
+        for (Tier tier : tiers) {
+            int totalSeatsForTier = seatsPerTier;
+            int rowCount = (int) Math.ceil((double) totalSeatsForTier / seatsPerRow);
+
+            for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+                // Generate row letter: A, B, C, D, etc. (stored as numeric for DB)
+                int rowNumber = rowIndex + 1;
+
+                // Calculate number of seats in this row
+                int seatsInThisRow = Math.min(seatsPerRow, totalSeatsForTier - (rowIndex * seatsPerRow));
+
+                // Create seat for each seat number in the row
+                for (int seatNumber = 1; seatNumber <= seatsInThisRow; seatNumber++) {
+                    Seat seat = new Seat();
+                    seat.setEventId(event.getId());
+                    seat.setTierId(tier.getId());
+                    seat.setRowNumber(rowNumber);
+                    seat.setSeatNumber(seatNumber);
+                    seat.setStatus(SeatStatus.AVAILABLE);
+                    seat.setVersion(0L);
+                    seat.setCreatedAt(LocalDateTime.now(ZoneOffset.UTC));
+                    seat.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+
+                    allSeats.add(seat);
+                }
+            }
+        }
+
+        // Bulk insert all seats
+        if (!allSeats.isEmpty()) {
+            seatRepository.saveAll(allSeats);
+        }
     }
 }

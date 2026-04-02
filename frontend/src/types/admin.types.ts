@@ -116,6 +116,9 @@ export interface EventCreateFormData {
   isLimited: boolean;
   isFeatured: boolean;
   author?: string;
+  enableSeats?: boolean;
+  seatsPerTier?: number;
+  seatsPerRow?: number;
 }
 
 export interface EventStatusBadgeProps {

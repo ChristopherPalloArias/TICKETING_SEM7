@@ -33,12 +33,17 @@ export async function createReservation(
   eventId: string,
   tierId: string,
   buyerEmail: string,
+  seatIds?: string[],
 ): Promise<ReservationResponse> {
-  const res = await apiClient.post<ReservationResponse>('/api/v1/reservations', { 
+  const payload: any = { 
     eventId, 
     tierId,
     buyerEmail,
-  });
+  };
+  if (seatIds && seatIds.length > 0) {
+    payload.seatIds = seatIds;
+  }
+  const res = await apiClient.post<ReservationResponse>('/api/v1/reservations', payload);
   return res.data;
 }
 

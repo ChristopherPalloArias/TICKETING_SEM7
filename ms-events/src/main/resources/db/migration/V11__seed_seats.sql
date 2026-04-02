@@ -14,7 +14,7 @@ SELECT
     t.id,
     (ROW_NUMBER() OVER (PARTITION BY e.id, t.id ORDER BY e.id)) as row_number,
     (ROW_NUMBER() OVER (PARTITION BY e.id ORDER BY e.id) % 10) + 1 as seat_number,
-    'AVAILABLE'::seat_status,
+    'AVAILABLE',
     0,
     NOW() AT TIME ZONE 'UTC',
     NOW() AT TIME ZONE 'UTC'
@@ -40,7 +40,7 @@ SELECT
     t.id,
     (n - 1) / 4 + 1 as row_number,
     ((n - 1) % 4) + 1 as seat_number,
-    'AVAILABLE'::seat_status,
+    'AVAILABLE',
     0,
     NOW() AT TIME ZONE 'UTC',
     NOW() AT TIME ZONE 'UTC'

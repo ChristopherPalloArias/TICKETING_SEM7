@@ -10,6 +10,7 @@ import CheckoutScreen from './screens/CheckoutScreen';
 import PaymentScreen from './screens/PaymentScreen';
 import SuccessScreen from './screens/SuccessScreen';
 import FailureScreen from './screens/FailureScreen';
+import { SeatMap } from '../../components/SeatMap';
 import { useEventDetail } from '../../hooks/useEventDetail';
 import { createReservation, processPayment } from '../../services/reservationService';
 import { useNotifications } from '../../contexts/NotificationsContext';
@@ -43,7 +44,7 @@ export default function EventDetail() {
   const { event, loading, error } = useEventDetail();
   const { addNotification, setPollingEnabled } = useNotifications();
   const { removeItem: removeCartItem, items: cartItems, addItem: addCartItemCtx } = useCart();
-  const { email: authEmail } = useAuth();
+  const { email: authEmail, token } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -53,6 +54,7 @@ export default function EventDetail() {
 
   const [selectedTierId, setSelectedTierId] = useState<string | null>(cartItem?.tierId ?? null);
   const [quantity, setQuantity] = useState(cartItem?.quantity ?? 1);
+  const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
   const [screen, setScreen] = useState<Screen>(() => fromCart && cartItem ? 'checkout' : 'details');
   const [order, setOrder] = useState<Order | null>(() => {
     if (fromCart && cartItem) {
@@ -143,10 +145,13 @@ export default function EventDetail() {
       event.id,
       selectedTierId,
       email || authEmail || 'guest@example.com',
+      selectedSeatIds.length > 0 ? selectedSeatIds : undefined,
     );
     const tier = event.availableTiers.find((t) => t.id === selectedTierId)!;
     const tierPrice = parseFloat(tier.price);
-    const total = tierPrice * quantity + 10;
+    // If seats selected, use selectedSeatIds length as quantity; otherwise use quantity selector
+    const finalQuantity = selectedSeatIds.length > 0 ? selectedSeatIds.length : quantity;
+    const total = tierPrice * finalQuantity + 10;
     const reference = `#NE-${Math.floor(100000 + Math.random() * 900000)}`;
     setOrder({
       reservationId: reservation.id,
@@ -154,7 +159,7 @@ export default function EventDetail() {
       tierId: selectedTierId,
       tierType: tier.tierType,
       tierPrice,
-      quantity,
+      quantity: finalQuantity,
       email,
       total,
       reference,
@@ -188,7 +193,9 @@ export default function EventDetail() {
         event.id,
         selectedTierId,
         authEmail || 'guest@example.com',
+        selectedSeatIds.length > 0 ? selectedSeatIds : undefined,
       );
+      const finalQuantity = selectedSeatIds.length > 0 ? selectedSeatIds.length : quantity;
       const newItem: CartItem = {
         id: crypto.randomUUID(),
         eventId: event.id,
@@ -199,7 +206,7 @@ export default function EventDetail() {
         tierId: selectedTierId,
         tierType: tier.tierType,
         tierPrice: parseFloat(tier.price),
-        quantity,
+        quantity: finalQuantity,
         reservationId: reservation.id,
         validUntilAt: reservation.validUntilAt,
         email: '',
@@ -473,18 +480,32 @@ export default function EventDetail() {
                       onSelect={(tierId) => {
                         setSelectedTierId(tierId);
                         setQuantity(1);
+                        setSelectedSeatIds([]);
                       }}
                       onReservar={() => setScreen('checkout')}
                       onAddToCart={handleAddToCart}
                       addingToCart={addingToCart}
                       quantitySelector={
                         selectedTier && (
-                          <QuantitySelector
-                            value={quantity}
-                            min={1}
-                            max={selectedTier.quota}
-                            onChange={setQuantity}
-                          />
+                          <>
+                            <SeatMap
+                              eventId={event.id}
+                              tierId={selectedTierId!}
+                              tierPrice={parseFloat(selectedTier.price)}
+                              tierType={selectedTier.tierType}
+                              token={token}
+                              onSeatSelectionChange={setSelectedSeatIds}
+                              disabled={false}
+                            />
+                            {selectedSeatIds.length === 0 && (
+                              <QuantitySelector
+                                value={quantity}
+                                min={1}
+                                max={selectedTier.quota}
+                                onChange={setQuantity}
+                              />
+                            )}
+                          </>
                         )
                       }
                     />

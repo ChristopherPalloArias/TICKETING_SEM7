@@ -1,6 +1,6 @@
 ---
 id: SPEC-025
-status: DRAFT
+status: APPROVED
 feature: seat-map-frontend
 created: 2026-04-02
 updated: 2026-04-02
@@ -11,7 +11,7 @@ related-specs: [SPEC-024]
 
 # Spec: Interfaz de Selección de Asientos (SeatMap Frontend)
 
-> **Estado:** `DRAFT` → Requiere aprobación manual antes de iniciar FASE 3 (Frontend Implementation)
+> **Estado:** `APPROVED` → Implementación en progreso (FASE 3)
 > **Ciclo de vida:** DRAFT → APPROVED → IN_PROGRESS → IMPLEMENTED
 > **Stack:** React 19 + TypeScript + Vite + CSS Modules (no Tailwind)
 

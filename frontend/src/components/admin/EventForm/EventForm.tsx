@@ -49,6 +49,9 @@ export default function EventForm({
   const [isLimited, setIsLimited] = useState(initialData?.isLimited ?? false);
   const [isFeatured, setIsFeatured] = useState(initialData?.isFeatured ?? false);
   const [author, setAuthor] = useState(initialData?.author ?? '');
+  const [enableSeats, setEnableSeats] = useState(initialData?.enableSeats ?? false);
+  const [seatsPerTier, setSeatsPerTier] = useState(initialData?.seatsPerTier?.toString() ?? '20');
+  const [seatsPerRow, setSeatsPerRow] = useState(initialData?.seatsPerRow?.toString() ?? '5');
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -104,6 +107,9 @@ export default function EventForm({
       isLimited,
       isFeatured,
       author: author.trim() || undefined,
+      enableSeats: enableSeats || undefined,
+      seatsPerTier: enableSeats ? Number(seatsPerTier) : undefined,
+      seatsPerRow: enableSeats ? Number(seatsPerRow) : undefined,
     };
     await onSubmit(data);
   }
@@ -274,6 +280,58 @@ export default function EventForm({
           Evento Destacado
         </label>
       </div>
+
+      <h2 className={styles.sectionTitle}>Configuración de Asientos</h2>
+
+      <div className={styles.toggleRow}>
+        <label className={styles.toggleLabel}>
+          <input 
+            type="checkbox" 
+            checked={enableSeats} 
+            onChange={e => setEnableSeats(e.target.checked)} 
+          />
+          Habilitar Selección de Asientos
+        </label>
+      </div>
+
+      {enableSeats && (
+        <div className={styles.row}>
+          <div className={styles.field}>
+            <label htmlFor="ef-seatsPerTier" className={styles.label}>
+              Asientos por Tier
+              <span className={styles.hint} style={{ display: 'block', marginTop: '0.25rem' }}>
+                Total de asientos disponibles por nivel de precio
+              </span>
+            </label>
+            <input
+              id="ef-seatsPerTier"
+              type="number"
+              min={1}
+              max={200}
+              className={styles.input}
+              value={seatsPerTier}
+              onChange={e => setSeatsPerTier(e.target.value)}
+            />
+          </div>
+          <div className={styles.field}>
+            <label htmlFor="ef-seatsPerRow" className={styles.label}>
+              Asientos por Fila
+              <span className={styles.hint} style={{ display: 'block', marginTop: '0.25rem' }}>
+                Cantidad de asientos en cada fila
+              </span>
+            </label>
+            <input
+              id="ef-seatsPerRow"
+              type="number"
+              min={1}
+              max={20}
+              className={styles.input}
+              value={seatsPerRow}
+              onChange={e => setSeatsPerRow(e.target.value)}
+            />
+          </div>
+        </div>
+      )}
 
       {submitError && <p className={styles.submitError}>{submitError}</p>}
 
