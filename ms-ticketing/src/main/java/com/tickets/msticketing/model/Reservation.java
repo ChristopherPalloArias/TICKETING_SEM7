@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -61,6 +63,11 @@ public class Reservation {
     @Version
     @Column(name = "version", nullable = false)
     private Long version;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "reservation_id")
+    @Builder.Default
+    private List<SeatReservation> seatReservations = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

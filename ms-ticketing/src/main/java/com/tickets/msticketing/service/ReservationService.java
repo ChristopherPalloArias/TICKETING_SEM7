@@ -4,6 +4,7 @@ import com.tickets.msticketing.dto.*;
 import com.tickets.msticketing.exception.*;
 import com.tickets.msticketing.model.*;
 import com.tickets.msticketing.repository.ReservationRepository;
+import com.tickets.msticketing.repository.SeatReservationRepository;
 import com.tickets.msticketing.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -25,7 +27,9 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final TicketRepository ticketRepository;
+    private final SeatReservationRepository seatReservationRepository;
     private final MsEventsIntegrationService msEventsIntegrationService;
+    private final SeatIntegrationService seatIntegrationService;
     private final RabbitMQPublisherService rabbitMQPublisherService;
     private final FraudService fraudService;
 
@@ -33,7 +37,9 @@ public class ReservationService {
 
     @Transactional
     public ReservationResponse createReservation(CreateReservationRequest request, UUID buyerId) {
-        log.info("Creating reservation for buyer={}, eventId={}, tierId={}", buyerId, request.eventId(), request.tierId());
+        log.info("Creating reservation for buyer={}, eventId={}, tierId={}, hasSeatIds={}",
+            buyerId, request.eventId(), request.tierId(),
+            request.seatIds() != null && !request.seatIds().isEmpty());
 
         // Validate event is PUBLISHED
         EventDetailResponse eventDetail = msEventsIntegrationService.getEventDetail(request.eventId());
@@ -46,7 +52,69 @@ public class ReservationService {
             throw new EventNotPublishedException("Tier '" + request.tierId() + "' not found in event '" + request.eventId() + "'");
         }
 
-        // Pre-generate reservation ID to use as idempotency key
+        // BIFURCATION: Seat-based or quota-based
+        if (request.seatIds() != null && !request.seatIds().isEmpty()) {
+            return createSeatBasedReservation(request, buyerId, eventDetail);
+        } else {
+            return createQuotaBasedReservation(request, buyerId, eventDetail);
+        }
+    }
+
+    private ReservationResponse createSeatBasedReservation(CreateReservationRequest request, UUID buyerId, EventDetailResponse eventDetail) {
+        UUID reservationId = UUID.randomUUID();
+        
+        log.info("Creating seat-based reservation: reservationId={}, seats={}, event={}, tier={}",
+            reservationId, request.seatIds().size(), request.eventId(), request.tierId());
+
+        // Call ms-events to block seats (transactional, will fail if seats unavailable)
+        try {
+            seatIntegrationService.blockSeats(request.eventId(), request.seatIds(), reservationId);
+        } catch (Exception ex) {
+            log.error("Failed to block seats for reservation={}: {}", reservationId, ex.getMessage());
+            throw new SeatNotAvailableException("One or more seats are not available or already reserved");
+        }
+
+        // Get tier type from event details
+        String tierType = eventDetail.availableTiers().stream()
+            .filter(t -> request.tierId().equals(t.id()))
+            .map(t -> t.tierType())
+            .findFirst()
+            .orElse("GENERAL");
+
+        // Create reservation with seat-based flag
+        Reservation reservation = Reservation.builder()
+            .id(reservationId)
+            .eventId(request.eventId())
+            .tierId(request.tierId())
+            .buyerId(buyerId)
+            .buyerEmail(request.buyerEmail())
+            .status(ReservationStatus.PENDING)
+            .tierType(tierType)
+            .seatReservations(new ArrayList<>())
+            .build();
+
+        // Create SeatReservation records for temporal tracking
+        List<SeatReservation> seatReservations = request.seatIds().stream()
+            .map(seatId -> SeatReservation.builder()
+                .id(UUID.randomUUID())
+                .seatId(seatId)
+                .reservationId(reservationId)  // Set reservationId directly
+                .expiresAt(LocalDateTime.now(ZoneOffset.UTC).plusMinutes(10))
+                .build())
+            .toList();
+
+        Reservation saved = reservationRepository.save(reservation);
+        
+        // Save SeatReservations with their reservation IDs already set
+        seatReservationRepository.saveAll(seatReservations);
+
+        log.info("Seat-based reservation created: id={}, seats={}, expiresAt={}, status=PENDING",
+            saved.getId(), request.seatIds().size(), LocalDateTime.now(ZoneOffset.UTC).plusMinutes(10));
+
+        return mapToReservationResponse(Objects.requireNonNull(saved));
+    }
+
+    private ReservationResponse createQuotaBasedReservation(CreateReservationRequest request, UUID buyerId, EventDetailResponse eventDetail) {
         UUID reservationId = UUID.randomUUID();
 
         // Decrement quota (blocks inventory before creating reservation)
@@ -69,9 +137,9 @@ public class ReservationService {
 
         Reservation saved = reservationRepository.save(reservation);
 
-        log.info("Reservation created: id={}, status=PENDING, tierType={}", saved.getId(), saved.getTierType());
+        log.info("Quota-based reservation created: id={}, status=PENDING, tierType={}", saved.getId(), saved.getTierType());
 
-        return mapToReservationResponse(Objects.requireNonNull(saved, "Saved reservation must not be null"));
+        return mapToReservationResponse(Objects.requireNonNull(saved));
     }
 
     @Transactional(noRollbackFor = {ReservationExpiredException.class, PaymentFailedException.class})
@@ -123,15 +191,31 @@ public class ReservationService {
             reservation.setStatus(ReservationStatus.EXPIRED);
             reservationRepository.save(reservation);
 
-            // Return inventory since quota was decremented at reservation creation
-            try {
-                msEventsIntegrationService.incrementTierQuota(
-                    reservation.getEventId(),
-                    reservation.getTierId(),
-                    reservation.getId()
-                );
-            } catch (Exception ex) {
-                log.error("Failed to increment quota on time-expired reservation={}: {}", reservation.getId(), ex.getMessage());
+            // Check if seat-based or quota-based
+            boolean isSeatBased = reservation.getSeatReservations() != null && !reservation.getSeatReservations().isEmpty();
+            
+            if (isSeatBased) {
+                // Release seats back to inventory
+                List<UUID> seatIds = reservation.getSeatReservations().stream()
+                    .map(SeatReservation::getSeatId)
+                    .toList();
+                try {
+                    seatIntegrationService.releaseSeats(reservation.getEventId(), seatIds);
+                    log.info("Released {} seats for expired seat-based reservation={}", seatIds.size(), reservation.getId());
+                } catch (Exception ex) {
+                    log.error("Failed to release seats on expiration for reservation={}: {}", reservation.getId(), ex.getMessage());
+                }
+            } else {
+                // Return quota-based inventory
+                try {
+                    msEventsIntegrationService.incrementTierQuota(
+                        reservation.getEventId(),
+                        reservation.getTierId(),
+                        reservation.getId()
+                    );
+                } catch (Exception ex) {
+                    log.error("Failed to increment quota on time-expired reservation={}: {}", reservation.getId(), ex.getMessage());
+                }
             }
 
             TicketExpiredEvent expiredEvent = new TicketExpiredEvent(
@@ -171,15 +255,30 @@ public class ReservationService {
             reservation.setStatus(ReservationStatus.EXPIRED);
             reservationRepository.save(reservation);
 
-            // Return inventory since no further payment can succeed
-            try {
-                msEventsIntegrationService.incrementTierQuota(
-                    reservation.getEventId(),
-                    reservation.getTierId(),
-                    reservation.getId()
-                );
-            } catch (Exception ex) {
-                log.error("Failed to increment quota on max attempts for reservation={}: {}", reservation.getId(), ex.getMessage());
+            // Check if seat-based or quota-based
+            boolean isSeatBased = reservation.getSeatReservations() != null && !reservation.getSeatReservations().isEmpty();
+            
+            if (isSeatBased) {
+                // Release seats
+                List<UUID> seatIds = reservation.getSeatReservations().stream()
+                    .map(SeatReservation::getSeatId)
+                    .toList();
+                try {
+                    seatIntegrationService.releaseSeats(reservation.getEventId(), seatIds);
+                } catch (Exception ex) {
+                    log.error("Failed to release seats on max attempts for reservation={}: {}", reservation.getId(), ex.getMessage());
+                }
+            } else {
+                // Return quota-based inventory
+                try {
+                    msEventsIntegrationService.incrementTierQuota(
+                        reservation.getEventId(),
+                        reservation.getTierId(),
+                        reservation.getId()
+                    );
+                } catch (Exception ex) {
+                    log.error("Failed to increment quota on max attempts for reservation={}: {}", reservation.getId(), ex.getMessage());
+                }
             }
 
             TicketExpiredEvent maxAttemptsEvent = new TicketExpiredEvent(
@@ -226,11 +325,29 @@ public class ReservationService {
             throw new PaymentFailedException("Payment declined. Your reservation remains active for 10 minutes", reservation.getId().toString());
         }
 
-        // No decrementTierQuota here — quota was already decremented when reservation was created
-
         UUID buyerIdNonNull = Objects.requireNonNull(reservation.getBuyerId(), "Buyer ID must not be null");
         UUID eventIdNonNull = Objects.requireNonNull(reservation.getEventId(), "Event ID must not be null");
         UUID tierIdNonNull = Objects.requireNonNull(reservation.getTierId(), "Tier ID must not be null");
+
+        // Determine if seat-based or quota-based
+        boolean isSeatBased = reservation.getSeatReservations() != null && !reservation.getSeatReservations().isEmpty();
+        
+        if (isSeatBased) {
+            // Seat-based: confirm seats with ms-events
+            List<UUID> seatIds = reservation.getSeatReservations().stream()
+                .map(SeatReservation::getSeatId)
+                .toList();
+            try {
+                seatIntegrationService.sellSeats(reservation.getEventId(), seatIds);
+                log.info("Seats confirmed as SOLD for approved payment: reservation={}, seats={}", reservationId, seatIds.size());
+            } catch (Exception ex) {
+                log.error("Failed to confirm seats as sold for reservation={}: {}", reservationId, ex.getMessage());
+                throw new IllegalStateException("Could not confirm seat purchase");
+            }
+        } else {
+            // Quota-based: no additional quota operations (already decremented at creation)
+            log.info("Quota-based reservation payment confirmed: reservation={}", reservationId);
+        }
 
         Ticket ticket = Ticket.builder()
             .reservationId(reservation.getId())
@@ -244,6 +361,10 @@ public class ReservationService {
             .paymentMethod(paymentRequest.paymentMethod().name())
             .transactionId("TXN-" + UUID.randomUUID().toString())
             .paidAt(LocalDateTime.now(ZoneOffset.UTC))
+            // For seat-based: populate seat info from first SeatReservation (or from ms-events)
+            .seatId(isSeatBased && !reservation.getSeatReservations().isEmpty() 
+                ? reservation.getSeatReservations().get(0).getSeatId() 
+                : null)
             .build();
 
         Ticket savedTicket = ticketRepository.save(ticket);
@@ -263,7 +384,7 @@ public class ReservationService {
         );
         rabbitMQPublisherService.publishTicketPaidEvent(paidEvent);
 
-        log.info("Payment processed successfully: reservation={}, ticket={}", reservation.getId(), savedTicket.getId());
+        log.info("Payment processed successfully: reservation={}, ticket={}, seatBased={}", reservation.getId(), savedTicket.getId(), isSeatBased);
 
         return mapToPaymentResponse(reservation, savedTicket, "Payment approved. Ticket generated.");
     }

@@ -70,6 +70,15 @@ public class Ticket {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
+    @Column(name = "seat_id")
+    private UUID seatId;
+
+    @Column(name = "seat_row", length = 5)
+    private String seatRow;
+
+    @Column(name = "seat_number")
+    private Integer seatNumber;
+
     @PrePersist
     protected void onCreate() {
         if (this.id == null) {
