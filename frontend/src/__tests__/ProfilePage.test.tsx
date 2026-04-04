@@ -173,7 +173,7 @@ describe('ProfilePage', () => {
 
   it('calls changePassword with current, new password and token', async () => {
     // GIVEN
-    mockChangePassword.mockResolvedValue(undefined);
+    mockChangePassword.mockResolvedValue({ message: 'Contraseña actualizada' });
     renderPage();
     fillForm('Current1!', 'NewPass1!', 'NewPass1!');
 
@@ -188,7 +188,7 @@ describe('ProfilePage', () => {
 
   it('shows success toast after password change', async () => {
     // GIVEN
-    mockChangePassword.mockResolvedValue(undefined);
+    mockChangePassword.mockResolvedValue({ message: 'Contraseña actualizada' });
     renderPage();
     fillForm('Current1!', 'NewPass1!', 'NewPass1!');
 
@@ -235,9 +235,9 @@ describe('ProfilePage', () => {
 
   it('shows "Actualizando..." while changePassword is in-flight', async () => {
     // GIVEN — promise never resolves synchronously
-    let finishRequest!: (v: void) => void;
+    let finishRequest!: (v: { message: string }) => void;
     mockChangePassword.mockReturnValue(
-      new Promise<void>((resolve) => {
+      new Promise<{ message: string }>((resolve) => {
         finishRequest = resolve;
       })
     );
@@ -251,7 +251,7 @@ describe('ProfilePage', () => {
     await waitFor(() => expect(screen.getByText('Actualizando...')).toBeInTheDocument());
 
     // cleanup — resolve so React can finish and avoid act() warnings
-    finishRequest();
+    finishRequest({ message: 'Contraseña actualizada' });
     await waitFor(() => expect(screen.queryByText('Actualizando...')).not.toBeInTheDocument());
   });
 });

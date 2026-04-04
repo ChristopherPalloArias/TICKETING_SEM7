@@ -16,6 +16,7 @@ import com.tickets.events.model.Room;
 import com.tickets.events.model.Seat;
 import com.tickets.events.model.SeatStatus;
 import com.tickets.events.model.Tier;
+import com.tickets.events.model.TierType;
 import com.tickets.events.repository.EventRepository;
 import com.tickets.events.repository.RoomRepository;
 import com.tickets.events.repository.SeatRepository;
@@ -28,6 +29,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -79,14 +81,15 @@ public class EventService {
         event.setTag(request.tag());
         event.setIsLimited(request.isLimited() != null ? request.isLimited() : false);
         event.setIsFeatured(request.isFeatured() != null ? request.isFeatured() : false);
+        event.setEnableSeats(request.enableSeats() != null ? request.enableSeats() : false);
         event.setAuthor(request.author());
 
         Event savedEvent = eventRepository.save(event);
         
-        // Create seats if enableSeats is true
+        // Create default tiers and seats if enableSeats is true
         if (request.enableSeats() != null && request.enableSeats() && 
             request.seatsPerTier() != null && request.seatsPerRow() != null) {
-            createSeatsForEvent(savedEvent, request.seatsPerTier(), request.seatsPerRow());
+            createDefaultTiersAndSeats(savedEvent, request.seatsPerTier(), request.seatsPerRow());
         }
         
         return convertToResponse(savedEvent);
@@ -154,6 +157,7 @@ public class EventService {
             event.getTag(),
             event.getIsLimited(),
             event.getIsFeatured(),
+            event.getEnableSeats(),
             event.getAuthor()
         );
     }
@@ -222,6 +226,7 @@ public class EventService {
             event.getTag(),
             event.getIsLimited(),
             event.getIsFeatured(),
+            event.getEnableSeats(),
             event.getAuthor()
         );
     }
@@ -288,6 +293,12 @@ public class EventService {
         response.put("totalElements", eventsPage.getTotalElements());
         response.put("totalPages", eventsPage.getTotalPages());
         return response;
+    }
+
+    public AdminEventDetailResponse getAdminEventById(UUID eventId) {
+        Event event = eventRepository.findById(eventId)
+            .orElseThrow(() -> new EventNotFoundException("Event with id '" + eventId + "' does not exist"));
+        return convertToAdminEventDetailResponse(event);
     }
 
     private AdminEventDetailResponse convertToAdminEventDetailResponse(Event event) {
@@ -454,5 +465,40 @@ public class EventService {
         if (!allSeats.isEmpty()) {
             seatRepository.saveAll(allSeats);
         }
+    }
+
+    private void createDefaultTiersAndSeats(Event event, Integer seatsPerTier, Integer seatsPerRow) {
+        // Create default tiers if they don't exist
+        if (tierRepository.findByEventId(event.getId()).isEmpty()) {
+            // Calculate quotas based on event capacity
+            // VIP: 40% of capacity, GENERAL: 60% of capacity
+            int vipQuota = (int) Math.ceil(event.getCapacity() * 0.4);
+            int generalQuota = event.getCapacity() - vipQuota;
+
+            // Create and save default tiers
+            Tier vipTier = new Tier();
+            vipTier.setEventId(event.getId());
+            vipTier.setTierType(TierType.VIP);
+            vipTier.setPrice(BigDecimal.valueOf(100.00));
+            vipTier.setQuota(vipQuota);
+            vipTier.setVersion(0L);
+            vipTier.setCreatedAt(LocalDateTime.now(ZoneOffset.UTC));
+            vipTier.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+
+            Tier generalTier = new Tier();
+            generalTier.setEventId(event.getId());
+            generalTier.setTierType(TierType.GENERAL);
+            generalTier.setPrice(BigDecimal.valueOf(50.00));
+            generalTier.setQuota(generalQuota);
+            generalTier.setVersion(0L);
+            generalTier.setCreatedAt(LocalDateTime.now(ZoneOffset.UTC));
+            generalTier.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+
+            tierRepository.save(vipTier);
+            tierRepository.save(generalTier);
+        }
+
+        // Now create seats for the tiers
+        createSeatsForEvent(event, seatsPerTier, seatsPerRow);
     }
 }

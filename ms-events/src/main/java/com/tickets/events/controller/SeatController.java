@@ -79,7 +79,7 @@ public class SeatController {
         for (UUID seatId : request.seatIds()) {
             // In real scenario, fetch seat from repository
             // For now, simulate based on status
-            SeatDTO dto = new SeatDTO(seatId, "A", 1, SeatStatus.AVAILABLE);
+            SeatDTO dto = new SeatDTO(seatId, eventId, null, "A", 1, SeatStatus.AVAILABLE, LocalDateTime.now(ZoneOffset.UTC));
             available.add(dto);
         }
 
@@ -222,9 +222,12 @@ public class SeatController {
     private SeatDTO mapToSeatDTO(Seat seat) {
         return new SeatDTO(
                 seat.getId(),
+                seat.getEventId(),
+                seat.getTierId(),
                 seat.getRowNumber() != null ? "Row-" + seat.getRowNumber() : "A",
                 seat.getSeatNumber() != null ? seat.getSeatNumber() : 1,
-                seat.getStatus()
+                seat.getStatus(),
+                seat.getCreatedAt()
         );
     }
 

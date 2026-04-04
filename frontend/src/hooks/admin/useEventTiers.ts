@@ -13,13 +13,13 @@ interface UseEventTiersReturn {
 }
 
 export function useEventTiers(eventId: string): UseEventTiersReturn {
-  const { userId } = useAuth();
+  const { token } = useAuth();
   const [tiers, setTiers] = useState<AdminTierResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchTiers = useCallback(async () => {
-    if (!eventId) return;
+    if (!eventId || !token) return;
     try {
       setLoading(true);
       setError(null);
@@ -30,7 +30,7 @@ export function useEventTiers(eventId: string): UseEventTiersReturn {
     } finally {
       setLoading(false);
     }
-  }, [eventId]);
+  }, [eventId, token]);
 
   useEffect(() => {
     fetchTiers();
@@ -38,21 +38,21 @@ export function useEventTiers(eventId: string): UseEventTiersReturn {
 
   const addTier = useCallback(
     async (data: TierFormData): Promise<AdminTierResponse> => {
-      if (!userId) throw new Error('Usuario no autenticado');
+      if (!token) throw new Error('Usuario no autenticado');
       const newTier = await addTierService(eventId, data);
       setTiers((prev) => [...prev, newTier]);
       return newTier;
     },
-    [eventId, userId],
+    [eventId, token],
   );
 
   const deleteTier = useCallback(
     async (tierId: string): Promise<void> => {
-      if (!userId) throw new Error('Usuario no autenticado');
+      if (!token) throw new Error('Usuario no autenticado');
       await deleteTierService(eventId, tierId);
       setTiers((prev) => prev.filter((t) => t.id !== tierId));
     },
-    [eventId, userId],
+    [eventId, token],
   );
 
   const refresh = useCallback(async () => {

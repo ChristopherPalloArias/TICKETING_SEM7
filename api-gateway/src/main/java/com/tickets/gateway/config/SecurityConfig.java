@@ -46,6 +46,7 @@ public class SecurityConfig {
                         // requieren JWT — los bloquea JwtAuthenticationFilter.
                         .pathMatchers(HttpMethod.GET, "/api/v1/events").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/v1/events/{eventId:\\b[0-9a-fA-F\\-]{36}\\b}").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/v1/events/{eventId}/seats").permitAll()
 
                         // ── Infraestructura ───────────────────────────────────────────────────
                         .pathMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()

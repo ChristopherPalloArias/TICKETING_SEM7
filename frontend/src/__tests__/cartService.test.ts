@@ -7,7 +7,6 @@ import {
   updateCartItem,
   clearCart,
   getCartStorageKey,
-  migrateOldCartData,
 } from '../services/cartService';
 import type { CartItem } from '../types/cart.types';
 

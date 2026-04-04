@@ -12,14 +12,14 @@ interface UseAdminEventsResult {
 }
 
 export function useAdminEvents(): UseAdminEventsResult {
-  const { userId } = useAuth();
+  const { token } = useAuth();
   const [events, setEvents] = useState<AdminEventResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!token) return;
     let cancelled = false;
 
     async function fetchEvents() {
@@ -43,19 +43,19 @@ export function useAdminEvents(): UseAdminEventsResult {
 
     fetchEvents();
     return () => { cancelled = true; };
-  }, [userId, refreshTick]);
+  }, [token, refreshTick]);
 
   const refresh = useCallback(() => {
     setRefreshTick(t => t + 1);
   }, []);
 
   const publishEvent = useCallback(async (eventId: string) => {
-    if (!userId) return;
+    if (!token) return;
     await publishEventApi(eventId);
     setEvents(prev =>
       prev.map(e => e.id === eventId ? { ...e, status: 'PUBLISHED' as const } : e)
     );
-  }, [userId]);
+  }, [token]);
 
   return { events, loading, error, refresh, publishEvent };
 }

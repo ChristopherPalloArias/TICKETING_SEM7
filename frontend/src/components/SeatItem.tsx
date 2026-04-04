@@ -46,13 +46,10 @@ export function SeatItem({
       }`}
       onClick={onClick}
       disabled={!isClickable}
-      title={`Row ${seat.row} - Seat ${seat.number} (${seat.status})`}
-      aria-label={`Seat ${seat.row}-${seat.number} - ${seat.status}`}
+      title={`Fila ${seat.row.replace(/\D/g, '')} - Asiento ${seat.number} (${seat.status})`}
+      aria-label={`Asiento ${seat.row}-${seat.number} - ${seat.status}`}
     >
-      <span className={styles.seatLabel}>
-        {seat.row}
-        {seat.number}
-      </span>
+      <span className={styles.seatLabel}>{seat.number}</span>
     </button>
   );
 }

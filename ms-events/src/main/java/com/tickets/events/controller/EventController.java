@@ -149,6 +149,28 @@ public class EventController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/admin/{eventId}")
+    @Operation(
+        summary = "Obtener detalle de evento (admin)",
+        description = "Obtiene información completa de un evento específico en contexto admin (incluyendo DRAFT). Solo usuarios con rol ADMIN."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Evento obtenido exitosamente"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado - se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "404", description = "Evento no encontrado")
+    })
+    public ResponseEntity<AdminEventDetailResponse> getAdminEventById(
+        @PathVariable UUID eventId,
+        @RequestHeader(value = "X-Role", required = false) String role,
+        @RequestHeader(value = "X-User-Id", required = false) String userId
+    ) {
+        if (!"ADMIN".equals(role)) {
+            throw new ForbiddenAccessException("Only users with X-Role: ADMIN can access admin endpoints");
+        }
+        AdminEventDetailResponse response = eventService.getAdminEventById(eventId);
+        return ResponseEntity.ok(response);
+    }
+
     @PutMapping("/{eventId}")
     @Operation(
         summary = "Editar evento",

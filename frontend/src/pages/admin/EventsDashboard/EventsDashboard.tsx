@@ -3,14 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { TrendingUp } from 'lucide-react';
 import StatsCards from '../../../components/admin/StatsCards/StatsCards';
 import EventStatusBadge from '../../../components/admin/EventStatusBadge/EventStatusBadge';
-import { getAdminEventsWithMetrics, getAdminStats } from '../../../services/adminEventService';
+import { getAdminEventsWithMetrics } from '../../../services/adminEventService';
 import { useAdminStats } from '../../../hooks/useAdminStats';
+import { useAuth } from '../../../hooks/useAuth';
 import { showToast } from '../../../utils/toast';
-import type { AdminEventMetrics, AdminStatsResponse } from '../../../services/adminEventService';
+import type { AdminEventMetrics } from '../../../services/adminEventService';
 import styles from './EventsDashboard.module.css';
 
 export default function EventsDashboard() {
   const navigate = useNavigate();
+  const { token } = useAuth();
   const { stats, loading: statsLoading } = useAdminStats();
 
   const [events, setEvents] = useState<AdminEventMetrics[]>([]);
@@ -20,8 +22,8 @@ export default function EventsDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Debounce search
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
@@ -35,11 +37,11 @@ export default function EventsDashboard() {
   }, [search]);
 
   // Fetch events with metrics
-  useEffect(() => {
-    loadEvents();
-  }, [debouncedSearch, page]);
-
-  async function loadEvents() {
+  const loadEvents = useCallback(async () => {
+    if (!token) {
+      setError('No hay sesión activa');
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -54,10 +56,15 @@ export default function EventsDashboard() {
       const message = err instanceof Error ? err.message : 'Error al cargar eventos';
       setError(message);
       showToast(message, 'error');
+      console.error('Error cargando eventos:', err);
     } finally {
       setLoading(false);
     }
-  }
+  }, [token, debouncedSearch, page]);
+
+  useEffect(() => {
+    loadEvents();
+  }, [loadEvents]);
 
   function handleCapacityPercent(sold: number, capacity: number): string {
     if (capacity === 0) return '0%';

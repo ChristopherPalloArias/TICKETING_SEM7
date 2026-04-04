@@ -19,7 +19,7 @@ interface UseAdminEventDetailResult {
 
 export function useAdminEventDetail(): UseAdminEventDetailResult {
   const { id } = useParams<{ id: string }>();
-  const { userId } = useAuth();
+  const { token } = useAuth();
 
   const [result, setResult] = useState<FetchResult>({
     fetchedId: null,
@@ -28,7 +28,7 @@ export function useAdminEventDetail(): UseAdminEventDetailResult {
   });
 
   useEffect(() => {
-    if (!id || !userId) return;
+    if (!id || !token) return;
     let cancelled = false;
 
     getAdminEventById(id)
@@ -50,7 +50,7 @@ export function useAdminEventDetail(): UseAdminEventDetailResult {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, token]);
 
   if (!id) {
     return {

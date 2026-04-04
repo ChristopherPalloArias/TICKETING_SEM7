@@ -31,6 +31,8 @@ export interface EventResponse {
   created_at: string;
   tag?: string;
   isLimited?: boolean;
+  isFeatured?: boolean;
+  enableSeats?: boolean;
   director?: string;
   cast?: string;
   duration?: number;

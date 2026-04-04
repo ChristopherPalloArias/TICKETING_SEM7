@@ -16,11 +16,14 @@ const mockUseAuth = vi.mocked(useAuth);
 function buildAuthMock() {
   return {
     isAuthenticated: true,
+    token: 'mock-token',
     role: 'ADMIN' as const,
     userId: '550e8400-e29b-41d4-a716-446655440000',
     email: 'admin@sem7.com',
+    isLoading: false,
     login: vi.fn(),
     logout: vi.fn(),
+    registerBuyer: vi.fn(),
   };
 }
 

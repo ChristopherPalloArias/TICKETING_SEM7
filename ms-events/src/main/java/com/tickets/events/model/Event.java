@@ -81,6 +81,9 @@ public class Event {
     @Column(name = "is_featured", columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean isFeatured = false;
 
+    @Column(name = "enable_seats", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean enableSeats = false;
+
     @Column(name = "author", length = 200)
     private String author;
 

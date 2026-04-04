@@ -27,13 +27,13 @@ export interface AvailabilityDTO {
  * @param token - Token JWT del usuario autenticado
  * @returns Lista de asientos del tier
  */
-export async function getSeats(eventId: string, tierId: string, token: string): Promise<SeatDTO[]> {
+export async function getSeats(eventId: string, tierId: string, token: string | null): Promise<SeatDTO[]> {
   try {
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
     const res = await axios.get(
       `${API_BASE}/api/v1/events/${eventId}/seats?tierId=${tierId}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+      { headers }
     );
     return res.data || [];
   } catch (error) {

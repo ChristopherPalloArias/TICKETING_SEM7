@@ -25,6 +25,12 @@ apiClient.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
+  // Send X-Role header (authenticated user or empty for guest)
+  const role = sessionStorage.getItem(ROLE_KEY);
+  if (role) {
+    config.headers['X-Role'] = role;
+  }
+
   // Always send X-User-Id header (authenticated user or guest)
   const userId = sessionStorage.getItem(USER_ID_KEY);
   const buyerId = userId || getOrCreateGuestId();

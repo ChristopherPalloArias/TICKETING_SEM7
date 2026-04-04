@@ -23,5 +23,6 @@ public record EventDetailResponse(
     String tag,
     Boolean isLimited,
     Boolean isFeatured,
+    Boolean enableSeats,
     String author
 ) {}

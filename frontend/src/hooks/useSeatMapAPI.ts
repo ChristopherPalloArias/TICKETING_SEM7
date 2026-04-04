@@ -25,7 +25,7 @@ export function useSeatMapAPI(
   const [error, setError] = useState<string | null>(null);
 
   const fetchSeats = useCallback(async () => {
-    if (!token || !eventId || !tierId) {
+    if (!eventId || !tierId) {
       setError('Missing required parameters');
       setIsLoading(false);
       return;

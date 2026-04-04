@@ -20,11 +20,14 @@ describe('CreateEventPage', () => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({
       isAuthenticated: true,
+      token: 'mock-token',
       role: 'ADMIN',
       userId: 'user-1',
       email: 'admin@sem7.com',
+      isLoading: false,
       login: vi.fn(),
       logout: vi.fn(),
+      registerBuyer: vi.fn(),
     });
     mockUseCreateEvent.mockReturnValue({
       createEvent: vi.fn(),
@@ -41,6 +44,10 @@ describe('CreateEventPage', () => {
       ],
       loading: false,
       error: null,
+      createNewRoom: vi.fn(),
+      updateExistingRoom: vi.fn(),
+      deleteExistingRoom: vi.fn(),
+      refetch: vi.fn(),
     });
 
     render(<MemoryRouter><CreateEventPage /></MemoryRouter>);
@@ -50,7 +57,7 @@ describe('CreateEventPage', () => {
   });
 
   it('shows loading while rooms are loading', () => {
-    mockUseRooms.mockReturnValue({ rooms: [], loading: true, error: null });
+    mockUseRooms.mockReturnValue({ rooms: [], loading: true, error: null, createNewRoom: vi.fn(), updateExistingRoom: vi.fn(), deleteExistingRoom: vi.fn(), refetch: vi.fn() });
 
     render(<MemoryRouter><CreateEventPage /></MemoryRouter>);
 

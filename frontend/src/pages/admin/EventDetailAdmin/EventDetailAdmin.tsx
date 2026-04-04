@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAdminEventDetail } from '../../../hooks/admin/useAdminEventDetail';
 import { useEventTiers } from '../../../hooks/admin/useEventTiers';
 import { useBreadcrumbs } from '../../../hooks/admin/useBreadcrumbs';
-import { useAuth } from '../../../hooks/useAuth';
 import { publishEvent, cancelEvent } from '../../../services/adminEventService';
 import EventStatusBadge from '../../../components/admin/EventStatusBadge/EventStatusBadge';
 import TierCard from '../../../components/admin/TierCard/TierCard';
@@ -30,7 +29,6 @@ function formatDate(iso: string): string {
 export default function EventDetailAdmin() {
   const navigate = useNavigate();
   const { id: eventId } = useParams<{ id: string }>();
-  const { userId } = useAuth();
   const { event, loading: eventLoading, error: eventError, setEvent } = useAdminEventDetail();
   const { tiers, loading: tiersLoading, error: tiersError, deleteTier } = useEventTiers(
     eventId ?? '',

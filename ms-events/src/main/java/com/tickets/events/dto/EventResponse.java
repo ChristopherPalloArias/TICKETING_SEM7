@@ -25,5 +25,6 @@ public record EventResponse(
     String tag,
     Boolean isLimited,
     Boolean isFeatured,
+    Boolean enableSeats,
     String author
 ) {}

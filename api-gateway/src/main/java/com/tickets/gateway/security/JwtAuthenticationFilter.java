@@ -113,6 +113,10 @@ public class JwtAuthenticationFilter implements WebFilter {
             if (path.startsWith("/api/v1/events/") && isExactUuidTail(path, "/api/v1/events/".length())) {
                 return true;
             }
+            // Asientos por evento/tier: GET /api/v1/events/{uuid}/seats — público para ver disponibilidad
+            if (path.matches("/api/v1/events/" + UUID_PATTERN + "/seats")) {
+                return true;
+            }
             // Salas públicas: GET /api/v1/rooms/public
             if (path.equals("/api/v1/rooms/public")) {
                 return true;

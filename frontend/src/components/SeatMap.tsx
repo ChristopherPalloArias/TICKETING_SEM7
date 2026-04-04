@@ -43,18 +43,7 @@ export function SeatMap({
     totalSeats,
   } = useSeatMapAPI(eventId, tierId, token);
 
-  const [fallbackToQuota, setFallbackToQuota] = useState(false);
   const [uiError, setUiError] = useState<string | null>(null);
-
-  // Si no hay asientos, entrar en modo cuota (backward compatibility)
-  useEffect(() => {
-    if (!isLoading && totalSeats === 0) {
-      setFallbackToQuota(true);
-      onError?.('No seats available for this tier. Using quota mode.');
-    } else if (totalSeats > 0) {
-      setFallbackToQuota(false);
-    }
-  }, [totalSeats, isLoading, onError]);
 
   // Notificar cambios de selección al padre
   useEffect(() => {
@@ -63,11 +52,11 @@ export function SeatMap({
 
   // Manejar errores de API
   useEffect(() => {
-    if (apiError && !fallbackToQuota) {
+    if (apiError) {
       setUiError(apiError);
       onError?.(apiError);
     }
-  }, [apiError, fallbackToQuota, onError]);
+  }, [apiError, onError]);
 
   const handleContinue = () => {
     if (selectedSeatIds.length === 0) {
@@ -81,19 +70,6 @@ export function SeatMap({
     refetch();
     setUiError(null);
   };
-
-  // Modo cuota: fallback si no hay asientos
-  if (fallbackToQuota) {
-    return (
-      <div className={styles.seatMapContainer}>
-        <div className={styles.quotaFallback}>
-          <h3>Seleciona la cantidad de entradas</h3>
-          <p>Este evento usa modalidad de cuota (no tiene asientos específicos)</p>
-          {/* El padre (EventDetail) mostrará el selector de cantidad */}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className={styles.seatMapContainer}>
@@ -142,7 +118,7 @@ export function SeatMap({
         </>
       )}
 
-      {!isLoading && totalSeats === 0 && !fallbackToQuota && (
+      {!isLoading && totalSeats === 0 && (
         <div className={styles.noSeatsMessage}>
           <p>No hay asientos disponibles para este tier en este momento.</p>
           <button onClick={handleRefresh} className={styles.refreshButton}>

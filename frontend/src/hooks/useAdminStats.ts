@@ -10,13 +10,13 @@ interface UseAdminStatsResult {
 }
 
 export function useAdminStats(): UseAdminStatsResult {
-  const { userId } = useAuth();
+  const { token } = useAuth();
   const [stats, setStats] = useState<AdminStatsResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
-    if (!userId) return;
+    if (!token) return;
     setLoading(true);
     setError(null);
     try {
@@ -25,10 +25,11 @@ export function useAdminStats(): UseAdminStatsResult {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al cargar estadísticas';
       setError(message);
+      console.error('Error cargando estadísticas:', err);
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [token]);
 
   useEffect(() => {
     refetch();

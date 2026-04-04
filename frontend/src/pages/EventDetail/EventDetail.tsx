@@ -235,14 +235,14 @@ export default function EventDetail() {
     // ✅ VALIDACIÓN: Email coherencia
     if (authEmail && order.email !== authEmail) {
       console.error(`🚨 Email mismatch: orden=${order.email}, auth=${authEmail}`);
-      addNotification('payment_error', 'Error en el email — por favor reintenta', order.reservationId, event?.id);
+      addNotification('payment_rejected', 'Error en el email — por favor reintenta', order.reservationId, event?.id);
       setScreen('failure');
       return;
     }
 
     // ✅ VALIDACIÓN: No procesar si falta email válido
     if (!order.email || !order.email.includes('@')) {
-      addNotification('payment_error', 'Falta email válido para procesar pago', order.reservationId, event?.id);
+      addNotification('payment_rejected', 'Falta email válido para procesar pago', order.reservationId, event?.id);
       setScreen('failure');
       return;
     }
@@ -487,7 +487,7 @@ export default function EventDetail() {
                       addingToCart={addingToCart}
                       quantitySelector={
                         selectedTier && (
-                          <>
+                          event.enableSeats ? (
                             <SeatMap
                               eventId={event.id}
                               tierId={selectedTierId!}
@@ -497,15 +497,14 @@ export default function EventDetail() {
                               onSeatSelectionChange={setSelectedSeatIds}
                               disabled={false}
                             />
-                            {selectedSeatIds.length === 0 && (
-                              <QuantitySelector
-                                value={quantity}
-                                min={1}
-                                max={selectedTier.quota}
-                                onChange={setQuantity}
-                              />
-                            )}
-                          </>
+                          ) : (
+                            <QuantitySelector
+                              value={quantity}
+                              min={1}
+                              max={selectedTier.quota}
+                              onChange={setQuantity}
+                            />
+                          )
                         )
                       }
                     />

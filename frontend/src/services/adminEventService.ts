@@ -16,12 +16,8 @@ export async function getAllEvents(): Promise<AdminEventsListResponse> {
 }
 
 export async function getAdminEventById(eventId: string): Promise<AdminEventResponse> {
-  const res = await apiClient.get<{ events: AdminEventResponse[] }>('/api/v1/events/admin');
-  const event = res.data.events.find(e => e.id === eventId);
-  if (!event) {
-    throw new Error(`Evento ${eventId} no encontrado`);
-  }
-  return event;
+  const res = await apiClient.get<AdminEventResponse>(`/api/v1/events/admin/${eventId}`);
+  return res.data;
 }
 
 export async function publishEvent(eventId: string): Promise<AdminEventResponse> {
@@ -106,7 +102,7 @@ export interface AdminStatsResponse {
 export interface AdminEventMetrics {
   id: string;
   title: string;
-  status: string;
+  status: 'DRAFT' | 'PUBLISHED' | 'CANCELLED';
   date: string;
   capacity: number;
   ticketsSold: number;

@@ -16,11 +16,14 @@ describe('useAdminEvents', () => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({
       isAuthenticated: true,
+      token: 'mock-token',
       role: 'ADMIN',
       userId: 'user-1',
       email: 'admin@sem7.com',
+      isLoading: false,
       login: vi.fn(),
       logout: vi.fn(),
+      registerBuyer: vi.fn(),
     });
   });
 

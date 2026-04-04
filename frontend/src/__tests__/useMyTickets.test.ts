@@ -7,6 +7,7 @@ vi.mock('../hooks/useAuth');
 
 import * as ticketService from '../services/ticketService';
 import { useAuth } from '../hooks/useAuth';
+import type { MyTicketResponse } from '../services/ticketService';
 
 const mockGetMyTickets = vi.mocked(ticketService.getMyTickets);
 const mockUseAuth = vi.mocked(useAuth);
@@ -35,7 +36,7 @@ const makeTicket = (id: string) => ({
   buyerEmail: 'buyer@sem7.com',
 });
 
-const makePagedResponse = (tickets: typeof ticketService.MyTicketResponse[], total = 1) => ({
+const makePagedResponse = (tickets: MyTicketResponse[], total = 1) => ({
   content: tickets,
   page: 0,
   size: 10,

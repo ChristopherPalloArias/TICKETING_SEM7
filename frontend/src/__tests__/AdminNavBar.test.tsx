@@ -24,11 +24,14 @@ describe('AdminNavBar', () => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({
       isAuthenticated: true,
+      token: 'mock-token',
       role: 'ADMIN',
       userId: '550e8400-e29b-41d4-a716-446655440000',
       email: 'admin@sem7.com',
+      isLoading: false,
       login: vi.fn(),
       logout: vi.fn(),
+      registerBuyer: vi.fn(),
     });
   });
 
@@ -50,11 +53,14 @@ describe('AdminNavBar', () => {
     const mockLogout = vi.fn();
     mockUseAuth.mockReturnValue({
       isAuthenticated: true,
+      token: 'mock-token',
       role: 'ADMIN',
       userId: '550e8400-e29b-41d4-a716-446655440000',
       email: 'admin@sem7.com',
+      isLoading: false,
       login: vi.fn(),
       logout: mockLogout,
+      registerBuyer: vi.fn(),
     });
     const user = userEvent.setup();
     render(

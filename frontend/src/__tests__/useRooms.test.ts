@@ -64,7 +64,7 @@ describe('useRooms', () => {
     mockUseAuth.mockReturnValue({ ...mockAuthAdmin, userId: null });
 
     // WHEN
-    const { result } = renderHook(() => useRooms());
+    renderHook(() => useRooms());
 
     // THEN — loading stays true (early return without fetching)
     expect(mockListAllRooms).not.toHaveBeenCalled();

@@ -74,7 +74,7 @@ export default function TierForm({
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const newTier: AdminTierResponse = await addTier(eventId, data, userId);
+      const newTier: AdminTierResponse = await addTier(eventId, data);
       onTierAdded(newTier);
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
