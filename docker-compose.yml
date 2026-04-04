@@ -206,6 +206,19 @@ services:
       - tickets-network
     restart: unless-stopped
 
+  frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
+    container_name: frontend
+    depends_on:
+      - api-gateway
+    ports:
+      - "5173:80"
+    networks:
+      - tickets-network
+    restart: unless-stopped
+
 networks:
   tickets-network:
     driver: bridge
