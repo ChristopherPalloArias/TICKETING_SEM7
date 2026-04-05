@@ -13,6 +13,8 @@ interface SeatMapProps {
   tierType: string;
   token: string | null;
   onSeatSelectionChange: (selectedSeatIds: string[]) => void;
+  onSeatLabelsChange?: (labels: string[]) => void;
+  onContinueToPayment?: () => void;
   onError?: (error: string) => void;
   disabled?: boolean;
 }
@@ -29,6 +31,8 @@ export function SeatMap({
   tierType,
   token,
   onSeatSelectionChange,
+  onSeatLabelsChange,
+  onContinueToPayment,
   onError,
   disabled = false,
 }: SeatMapProps): React.JSX.Element {
@@ -48,7 +52,14 @@ export function SeatMap({
   // Notificar cambios de selección al padre
   useEffect(() => {
     onSeatSelectionChange(selectedSeatIds);
-  }, [selectedSeatIds, onSeatSelectionChange]);
+    if (onSeatLabelsChange) {
+      const labels = selectedSeatIds.map((id) => {
+        const seat = seats.find((s) => s.id === id);
+        return seat ? `${seat.row}${seat.number}` : id;
+      });
+      onSeatLabelsChange(labels);
+    }
+  }, [selectedSeatIds, onSeatSelectionChange, onSeatLabelsChange, seats]);
 
   // Manejar errores de API
   useEffect(() => {
@@ -60,10 +71,12 @@ export function SeatMap({
 
   const handleContinue = () => {
     if (selectedSeatIds.length === 0) {
-      setUiError('Please select at least one seat');
+      setUiError('Selecciona al menos 1 asiento para continuar');
       return;
     }
-    // El padre (EventDetail) manejará el flujo de pago
+    if (onContinueToPayment) {
+      onContinueToPayment();
+    }
   };
 
   const handleRefresh = () => {

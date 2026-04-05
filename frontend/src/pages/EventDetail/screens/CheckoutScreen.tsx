@@ -12,9 +12,11 @@ interface CheckoutScreenProps {
   onBack: () => void;
   onContinue: (email: string) => Promise<void>;
   initialEmail?: string;
+  seatLabels?: string[];
+  enableSeats?: boolean;
 }
 
-export default function CheckoutScreen({ event, tier, quantity, onBack, onContinue, initialEmail }: CheckoutScreenProps) {
+export default function CheckoutScreen({ event, tier, quantity, onBack, onContinue, initialEmail, seatLabels, enableSeats }: CheckoutScreenProps) {
   const [email, setEmail] = useState(initialEmail ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +63,7 @@ export default function CheckoutScreen({ event, tier, quantity, onBack, onContin
         <div className={styles.layout}>
           {/* Left column */}
           <div className={styles.leftCol}>
-            <OrderSummary event={event} tier={tier} quantity={quantity} />
+            <OrderSummary event={event} tier={tier} quantity={quantity} seatLabels={seatLabels} enableSeats={enableSeats} />
 
             {/* Email section */}
             <div className={styles.emailSection}>

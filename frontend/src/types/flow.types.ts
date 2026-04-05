@@ -10,6 +10,8 @@ export interface Order {
   email: string;
   total: number;
   reference: string;
+  seatLabels?: string[];
+  enableSeats?: boolean;
 }
 
 export interface TicketInfo {

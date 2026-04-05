@@ -6,12 +6,18 @@ interface OrderSummaryProps {
   event: EventResponse;
   tier: TierResponse;
   quantity: number;
+  seatLabels?: string[];
+  enableSeats?: boolean;
 }
 
-export default function OrderSummary({ event, tier, quantity }: OrderSummaryProps) {
+export default function OrderSummary({ event, tier, quantity, seatLabels, enableSeats }: OrderSummaryProps) {
   const eventDate = new Date(event.date);
   const dateStr = eventDate.toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
   const timeStr = eventDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+  const seatDisplay = enableSeats && seatLabels && seatLabels.length > 0
+    ? seatLabels.join(', ')
+    : null;
 
   return (
     <div className={styles.card}>
@@ -37,8 +43,10 @@ export default function OrderSummary({ event, tier, quantity }: OrderSummaryProp
           <span className={styles.infoValue}>{timeStr}</span>
         </div>
         <div className={styles.infoItem}>
-          <span className={styles.infoLabel}>ASIENTOS</span>
-          <span className={styles.infoValue}>B12, B13</span>
+          <span className={styles.infoLabel}>{enableSeats ? 'ASIENTOS' : 'TICKETS'}</span>
+          <span className={styles.infoValue}>
+            {seatDisplay ?? `${quantity} ticket${quantity !== 1 ? 's' : ''} — Sin silletería`}
+          </span>
         </div>
         <div className={styles.infoItem}>
           <span className={styles.infoLabel}>UBICACIÓN</span>

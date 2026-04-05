@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import AdminNavBar from '../components/admin/AdminNavBar/AdminNavBar';
+import { AdminProvider } from '../contexts/AdminContext';
 
 vi.mock('../hooks/useAuth');
 
@@ -39,7 +40,9 @@ describe('AdminNavBar', () => {
     // GIVEN / WHEN: navbar renderizado con sesión activa
     render(
       <MemoryRouter>
-        <AdminNavBar />
+        <AdminProvider>
+          <AdminNavBar />
+        </AdminProvider>
       </MemoryRouter>,
     );
 
@@ -65,7 +68,9 @@ describe('AdminNavBar', () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
-        <AdminNavBar />
+        <AdminProvider>
+          <AdminNavBar />
+        </AdminProvider>
       </MemoryRouter>,
     );
 

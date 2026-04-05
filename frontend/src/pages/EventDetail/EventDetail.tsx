@@ -55,6 +55,7 @@ export default function EventDetail() {
   const [selectedTierId, setSelectedTierId] = useState<string | null>(cartItem?.tierId ?? null);
   const [quantity, setQuantity] = useState(cartItem?.quantity ?? 1);
   const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
+  const [selectedSeatLabels, setSelectedSeatLabels] = useState<string[]>([]);
   const [screen, setScreen] = useState<Screen>(() => fromCart && cartItem ? 'checkout' : 'details');
   const [order, setOrder] = useState<Order | null>(() => {
     if (fromCart && cartItem) {
@@ -70,6 +71,8 @@ export default function EventDetail() {
         email: cartItem.email ?? '',
         total,
         reference,
+        seatLabels: cartItem.seatLabels,
+        enableSeats: cartItem.enableSeats,
       };
     }
     return null;
@@ -163,6 +166,8 @@ export default function EventDetail() {
       email,
       total,
       reference,
+      seatLabels: selectedSeatLabels.length > 0 ? selectedSeatLabels : undefined,
+      enableSeats: event.enableSeats,
     });
     setScreen('payment');
   };
@@ -213,6 +218,8 @@ export default function EventDetail() {
         addedAt: new Date().toISOString(),
         expired: false,
         expirationAlerted: false,
+        seatLabels: selectedSeatLabels.length > 0 ? selectedSeatLabels : undefined,
+        enableSeats: event.enableSeats,
       };
 
       const result = addCartItem(newItem, authEmail);
@@ -357,10 +364,12 @@ export default function EventDetail() {
             <CheckoutScreen
               event={event}
               tier={selectedTier}
-              quantity={quantity}
+              quantity={event.enableSeats ? selectedSeatIds.length : quantity}
               onBack={fromCart ? () => navigate('/carrito') : () => setScreen('details')}
               onContinue={handleContinueToPayment}
               initialEmail={fromCart && cartItem ? cartItem.email : undefined}
+              seatLabels={order?.seatLabels ?? selectedSeatLabels}
+              enableSeats={event.enableSeats}
             />
           </motion.div>
         )}
@@ -481,10 +490,13 @@ export default function EventDetail() {
                         setSelectedTierId(tierId);
                         setQuantity(1);
                         setSelectedSeatIds([]);
+                        setSelectedSeatLabels([]);
                       }}
                       onReservar={() => setScreen('checkout')}
                       onAddToCart={handleAddToCart}
                       addingToCart={addingToCart}
+                      enableSeats={event.enableSeats}
+                      hasSelectedSeats={selectedSeatIds.length > 0}
                       quantitySelector={
                         selectedTier && (
                           event.enableSeats ? (
@@ -495,6 +507,8 @@ export default function EventDetail() {
                               tierType={selectedTier.tierType}
                               token={token}
                               onSeatSelectionChange={setSelectedSeatIds}
+                              onSeatLabelsChange={setSelectedSeatLabels}
+                              onContinueToPayment={() => setScreen('checkout')}
                               disabled={false}
                             />
                           ) : (

@@ -17,6 +17,8 @@ export interface CartItem {
   addedAt: string;
   expired: boolean;
   expirationAlerted: boolean;
+  seatLabels?: string[];
+  enableSeats?: boolean;
 }
 
 export interface CartContextValue {

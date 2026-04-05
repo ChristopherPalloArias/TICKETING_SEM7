@@ -13,6 +13,8 @@ interface TicketPanelProps {
   onAddToCart?: () => void;
   addingToCart?: boolean;
   quantitySelector?: React.ReactNode;
+  enableSeats?: boolean;
+  hasSelectedSeats?: boolean;
 }
 
 export default function TicketPanel({
@@ -23,6 +25,8 @@ export default function TicketPanel({
   onAddToCart,
   addingToCart,
   quantitySelector,
+  enableSeats,
+  hasSelectedSeats,
 }: TicketPanelProps) {
   const hasAvailable = tiers.some((t) => t.isAvailable);
 
@@ -56,24 +60,26 @@ export default function TicketPanel({
 
       {quantitySelector}
 
-      <motion.button
-        className={`${styles.cta} ${!selectedTierId ? styles.ctaDisabled : ''}`}
-        disabled={!selectedTierId}
-        onClick={selectedTierId ? onReservar : undefined}
-        whileHover={selectedTierId ? { scale: 1.02 } : undefined}
-        whileTap={selectedTierId ? { scale: 0.98 } : undefined}
-        transition={{ duration: 0.15 }}
-        type="button"
-      >
-        <span>Reservar</span>
-        <ArrowRight size={18} />
-      </motion.button>
+      {!enableSeats && (
+        <motion.button
+          className={`${styles.cta} ${!selectedTierId ? styles.ctaDisabled : ''}`}
+          disabled={!selectedTierId}
+          onClick={selectedTierId ? onReservar : undefined}
+          whileHover={selectedTierId ? { scale: 1.02 } : undefined}
+          whileTap={selectedTierId ? { scale: 0.98 } : undefined}
+          transition={{ duration: 0.15 }}
+          type="button"
+        >
+          <span>Reservar</span>
+          <ArrowRight size={18} />
+        </motion.button>
+      )}
 
       {onAddToCart && (
         <motion.button
-          className={`${styles.cartCta} ${!selectedTierId || addingToCart ? styles.ctaDisabled : ''}`}
-          disabled={!selectedTierId || addingToCart}
-          onClick={selectedTierId && !addingToCart ? onAddToCart : undefined}
+          className={`${styles.cartCta} ${!selectedTierId || addingToCart || (enableSeats && !hasSelectedSeats) ? styles.ctaDisabled : ''}`}
+          disabled={!selectedTierId || addingToCart || (enableSeats === true && !hasSelectedSeats)}
+          onClick={selectedTierId && !addingToCart && (!enableSeats || hasSelectedSeats) ? onAddToCart : undefined}
           whileHover={selectedTierId && !addingToCart ? { scale: 1.02 } : undefined}
           whileTap={selectedTierId && !addingToCart ? { scale: 0.98 } : undefined}
           transition={{ duration: 0.15 }}

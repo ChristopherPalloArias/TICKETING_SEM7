@@ -14,6 +14,10 @@ export default function DigitalTicket({ event, ticket, order }: DigitalTicketPro
   const timeStr = eventDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: false });
   const ticketDisplayId = `${order.reference}-X9`;
 
+  const seatDisplay = order.enableSeats && order.seatLabels && order.seatLabels.length > 0
+    ? order.seatLabels.join(', ')
+    : null;
+
   return (
     <div className={styles.ticket}>
       {/* Image section */}
@@ -46,13 +50,15 @@ export default function DigitalTicket({ event, ticket, order }: DigitalTicketPro
             <span className={styles.infoValue}>{event.room?.name ?? 'Main Stage'}</span>
           </div>
           <div className={styles.infoItem}>
-            <span className={styles.infoLabel}>ASIENTOS</span>
-            <span className={styles.infoValue}>B12, B13</span>
+            <span className={styles.infoLabel}>{order.enableSeats ? 'ASIENTOS' : 'TICKETS'}</span>
+            <span className={styles.infoValue}>
+              {seatDisplay ?? `${order.quantity} ticket${order.quantity !== 1 ? 's' : ''} — Sin silletería`}
+            </span>
           </div>
         </div>
 
         <div className={styles.seatBadge}>
-          {order.tierType} — Platea Central
+          {order.tierType}{seatDisplay ? ` — ${seatDisplay}` : ''}
         </div>
       </div>
 

@@ -39,8 +39,12 @@ export default function FailureScreen({
           <h2 className={styles.orderTitle}>{event.title}</h2>
           <div className={styles.orderDetails}>
             <div className={styles.detailRow}>
-              <span className={styles.detailLabel}>ASIENTOS</span>
-              <span className={styles.detailValue}>B12, B13 — {order.tierType}</span>
+              <span className={styles.detailLabel}>{order.enableSeats ? 'ASIENTOS' : 'TICKETS'}</span>
+              <span className={styles.detailValue}>
+                {order.enableSeats && order.seatLabels && order.seatLabels.length > 0
+                  ? `${order.seatLabels.join(', ')} — ${order.tierType}`
+                  : `${order.quantity} ticket${order.quantity !== 1 ? 's' : ''} — ${order.tierType}`}
+              </span>
             </div>
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>TOTAL</span>
