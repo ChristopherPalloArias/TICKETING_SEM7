@@ -30,12 +30,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.setItem(EMAIL_KEY, profileEmail);
   }
 
-  async function login(inputEmail: string, inputPassword: string): Promise<void> {
+  async function login(inputEmail: string, inputPassword: string): Promise<AdminRole> {
     setIsLoading(true);
     try {
       const response = await authService.login(inputEmail, inputPassword);
       const profile = await authService.getProfile(response.token);
       persistSession(response.token, response.role, profile.id, profile.email);
+      return response.role as AdminRole;
     } finally {
       setIsLoading(false);
     }

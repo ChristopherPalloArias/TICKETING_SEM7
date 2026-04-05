@@ -13,7 +13,7 @@ export interface AuthContextValue {
   email: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<AdminRole>;
   logout: () => void;
   registerBuyer: (email: string, password: string) => Promise<void>;
 }

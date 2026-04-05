@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import styles from './BuyerLoginPage.module.css';
 
 export default function BuyerLoginPage() {
-  const { login, isAuthenticated, isLoading } = useAuth();
+  const { login, isAuthenticated, isLoading, role } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as { from?: string })?.from ?? '/eventos';
@@ -14,16 +14,19 @@ export default function BuyerLoginPage() {
   const [error, setError] = useState('');
 
   if (isAuthenticated) {
-    navigate(from, { replace: true });
-    return null;
+    return <Navigate to={role === 'ADMIN' ? '/admin/events' : from} replace />;
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError('');
     try {
-      await login(email, password);
-      navigate(from, { replace: true });
+      const role = await login(email, password);
+      if (role === 'ADMIN') {
+        navigate('/admin/events', { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
     } catch {
       setError('Credenciales inválidas. Verifica tu email y contraseña.');
       setPassword('');
