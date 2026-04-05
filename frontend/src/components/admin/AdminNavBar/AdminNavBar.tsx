@@ -1,12 +1,14 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
+import { useAdmin } from '../../../contexts/AdminContext';
 import styles from './AdminNavBar.module.css';
 
 export default function AdminNavBar() {
   const { email, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isSidebarCollapsed } = useAdmin();
 
   function handleLogout() {
     logout();
@@ -17,7 +19,7 @@ export default function AdminNavBar() {
   const isRoomsActive = location.pathname === '/admin/rooms';
 
   return (
-    <nav className={styles.nav}>
+    <nav className={`${styles.nav} ${isSidebarCollapsed ? styles.navCollapsed : ''}`}>
       <div className={styles.logo}>
         <span className={styles.logoSem7}>SEM7</span>
         <span className={styles.logoAdmin}> Admin</span>

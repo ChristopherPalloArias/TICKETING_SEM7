@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronLeft, LayoutDashboard, Layers } from 'lucide-react';
-import { useState } from 'react';
+import { useAdmin } from '../../../contexts/AdminContext';
 import styles from './AdminSidebar.module.css';
 
 interface NavItem {
@@ -13,7 +13,7 @@ interface NavItem {
 export default function AdminSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isSidebarCollapsed, setSidebarCollapsed } = useAdmin();
 
   const navItems: NavItem[] = [
     {
@@ -32,16 +32,16 @@ export default function AdminSidebar() {
 
   return (
     <>
-      <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}>
+      <aside className={`${styles.sidebar} ${isSidebarCollapsed ? styles.collapsed : ''}`}>
         <div className={styles.header}>
           <div className={styles.logo}>
             <span className={styles.logoSem7}>SEM7</span>
-            {!isCollapsed && <span className={styles.logoAdmin}>Admin</span>}
+            {!isSidebarCollapsed && <span className={styles.logoAdmin}>Admin</span>}
           </div>
           <button
             className={styles.collapseBtn}
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            aria-label={isCollapsed ? 'Expandir' : 'Contraer'}
+            onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
+            aria-label={isSidebarCollapsed ? 'Expandir' : 'Contraer'}
           >
             <ChevronLeft size={18} />
           </button>
@@ -55,15 +55,15 @@ export default function AdminSidebar() {
                 item.isActive(location.pathname) ? styles.active : ''
               }`}
               onClick={() => navigate(item.path)}
-              title={isCollapsed ? item.label : undefined}
+              title={isSidebarCollapsed ? item.label : undefined}
             >
               <span className={styles.icon}>{item.icon}</span>
-              {!isCollapsed && <span className={styles.label}>{item.label}</span>}
+              {!isSidebarCollapsed && <span className={styles.label}>{item.label}</span>}
             </button>
           ))}
         </nav>
       </aside>
-      <div className={`${styles.spacer} ${isCollapsed ? styles.spacerCollapsed : ''}`} />
+      <div className={`${styles.spacer} ${isSidebarCollapsed ? styles.spacerCollapsed : ''}`} />
     </>
   );
 }
