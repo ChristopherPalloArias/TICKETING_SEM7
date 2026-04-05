@@ -5,7 +5,6 @@ import VenuesPage from './pages/VenuesPage/VenuesPage';
 import MyTicketsPage from './pages/MyTicketsPage/MyTicketsPage';
 import CartPage from './pages/CartPage/CartPage';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
-import LoginPage from './pages/admin/LoginPage/LoginPage';
 import EventsDashboard from './pages/admin/EventsDashboard/EventsDashboard';
 import CreateEventPage from './pages/admin/CreateEventPage/CreateEventPage';
 import EventDetailAdmin from './pages/admin/EventDetailAdmin/EventDetailAdmin';
@@ -47,9 +46,6 @@ export default function App() {
         <Route path="/login" element={<BuyerLoginPage />} />
         <Route path="/registro" element={<BuyerRegisterPage />} />
         <Route path="/" element={<Navigate to="/eventos" replace />} />
-
-        {/* Rutas admin — login público */}
-        <Route path="/admin/login" element={<LoginPage />} />
 
         {/* Rutas admin — protegidas */}
         <Route path="/admin" element={<AdminGuard />}>

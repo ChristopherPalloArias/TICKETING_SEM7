@@ -42,7 +42,7 @@ function renderGuard(authOverrides: Partial<ReturnType<typeof useAuth>> = {}) {
         <Route path="/admin" element={<AdminGuard />}>
           <Route path="events" element={<div data-testid="protected">Contenido protegido</div>} />
         </Route>
-        <Route path="/admin/login" element={<div data-testid="login">Página de Login</div>} />
+        <Route path="/login" element={<div data-testid="login">Página de Login</div>} />
       </Routes>
     </MemoryRouter>,
   );
@@ -55,7 +55,7 @@ describe('AdminGuard', () => {
 
   // ─── casos base (existentes — actualizados con token en mock) ────────────────
 
-  it('redirige a /admin/login si no autenticado', () => {
+  it('redirige a /login si no autenticado', () => {
     // GIVEN: usuario no autenticado, sin token
     renderGuard({ isAuthenticated: false, token: null });
 
@@ -86,7 +86,7 @@ describe('AdminGuard', () => {
     expect(screen.queryByTestId('login')).not.toBeInTheDocument();
   });
 
-  it('AdminGuard_withExpiredToken_redirectsToLogin — token JWT expirado redirige a /admin/login', () => {
+  it('AdminGuard_withExpiredToken_redirectsToLogin — token JWT expirado redirige a /login', () => {
     // GIVEN: token expirado hace 1 hora
     const expiredToken = makeJWT(-3600);
     renderGuard({ isAuthenticated: true, token: expiredToken });
@@ -96,7 +96,7 @@ describe('AdminGuard', () => {
     expect(screen.queryByTestId('protected')).not.toBeInTheDocument();
   });
 
-  it('AdminGuard_withNoToken_redirectsToLogin — sin token redirige a /admin/login', () => {
+  it('AdminGuard_withNoToken_redirectsToLogin — sin token redirige a /login', () => {
     // GIVEN: isAuthenticated false, token null
     renderGuard({ isAuthenticated: false, token: null });
 
@@ -105,7 +105,7 @@ describe('AdminGuard', () => {
     expect(screen.queryByTestId('protected')).not.toBeInTheDocument();
   });
 
-  it('AdminGuard_withMalformedToken_redirectsToLogin — token malformado (no es JWT) redirige a /admin/login', () => {
+  it('AdminGuard_withMalformedToken_redirectsToLogin — token malformado (no es JWT) redirige a /login', () => {
     // GIVEN: token que no tiene estructura header.payload.signature
     // token.split('.')[1] es undefined → atob(undefined) lanza → isTokenExpired devuelve true
     renderGuard({ isAuthenticated: true, token: 'abc' });

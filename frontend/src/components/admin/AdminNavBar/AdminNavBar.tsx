@@ -12,7 +12,7 @@ export default function AdminNavBar() {
 
   function handleLogout() {
     logout();
-    navigate('/admin/login');
+    navigate('/eventos');
   }
 
   const isEventsActive = location.pathname.includes('/admin/events');

@@ -15,7 +15,7 @@ export default function AdminGuard() {
   const { isAuthenticated, token } = useAuth();
 
   if (!isAuthenticated || !token || isTokenExpired(token)) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return <Outlet />;

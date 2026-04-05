@@ -29,10 +29,6 @@ vi.mock('../pages/CartPage/CartPage', () => ({
   default: () => <div data-testid="cart-page">Cart</div>,
 }));
 
-vi.mock('../pages/admin/LoginPage/LoginPage', () => ({
-  default: () => <div data-testid="admin-login-page">Admin Login</div>,
-}));
-
 vi.mock('../pages/admin/EventsDashboard/EventsDashboard', () => ({
   default: () => <div data-testid="events-dashboard">Dashboard</div>,
 }));

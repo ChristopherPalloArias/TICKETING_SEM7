@@ -77,8 +77,8 @@ describe('AdminNavBar', () => {
     // WHEN: clic en botón cerrar sesión
     await user.click(screen.getByRole('button', { name: /cerrar sesión/i }));
 
-    // THEN: logout invocado una vez y navegación a /admin/login
+    // THEN: logout invocado una vez y navegación a /eventos
     expect(mockLogout).toHaveBeenCalledTimes(1);
-    expect(mockNavigate).toHaveBeenCalledWith('/admin/login');
+    expect(mockNavigate).toHaveBeenCalledWith('/eventos');
   });
 });
