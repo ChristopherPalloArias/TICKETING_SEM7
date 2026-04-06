@@ -63,10 +63,13 @@ export function SeatMap({
 
   // Manejar errores de API
   useEffect(() => {
-    if (apiError) {
+    if (!apiError) return;
+    // Use a microtask to avoid setState cascades inside the effect body
+    const id = setTimeout(() => {
       setUiError(apiError);
       onError?.(apiError);
-    }
+    }, 0);
+    return () => clearTimeout(id);
   }, [apiError, onError]);
 
   const handleContinue = () => {

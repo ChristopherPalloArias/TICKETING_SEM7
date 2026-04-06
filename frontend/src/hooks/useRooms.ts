@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   listAllRooms,
   createRoom,
@@ -24,7 +24,7 @@ export function useRooms(): UseRoomsResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const refetch = async () => {
+  const refetch = useCallback(async () => {
     if (!userId) return;
     try {
       setLoading(true);
@@ -37,11 +37,11 @@ export function useRooms(): UseRoomsResult {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     refetch();
-  }, [userId]);
+  }, [userId, refetch]);
 
   const createNewRoom = async (data: { name: string; maxCapacity: number }): Promise<RoomOption> => {
     try {

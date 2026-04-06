@@ -10,6 +10,7 @@ import com.tickets.events.exception.GlobalExceptionHandler;
 import com.tickets.events.exception.InvalidQuotaException;
 import com.tickets.events.model.EventStatus;
 import com.tickets.events.service.EventService;
+import com.tickets.events.service.EventStatsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -42,6 +43,9 @@ class EventControllerMutationTest {
 
     @MockBean
     private EventService eventService;
+
+    @MockBean
+    private EventStatsService eventStatsService;
 
     @Test
     void test_putUpdateEvent_draft_success_returns200() throws Exception {

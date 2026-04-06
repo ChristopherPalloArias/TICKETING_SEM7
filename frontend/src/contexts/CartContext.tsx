@@ -26,15 +26,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // ✅ DETECCIÓN DE CAMBIO DE USUARIO
   useEffect(() => {
     const prevEmail = prevEmailRef.current;
+    prevEmailRef.current = email;
 
     if (prevEmail && prevEmail !== email) {
-      // Usuario cambió (login/logout)
+      // Usuario cambió (login/logout) — defer to avoid setState cascade in effect body
       console.log(`🔄 Cambio de usuario detectado: ${prevEmail} → ${email ?? 'anónimo'}`);
-      clearCartStorage(prevEmail); // Limpiar carrito viejo
-      setItems(getCartItems(email)); // Cargar carrito nuevo
+      clearCartStorage(prevEmail);
+      const id = setTimeout(() => setItems(getCartItems(email)), 0);
+      return () => clearTimeout(id);
     }
-
-    prevEmailRef.current = email;
   }, [email]);
 
   // ✅ PERSISTENCIA: sincronizar cambios de items a localStorage
