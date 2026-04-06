@@ -36,13 +36,14 @@ export function useSeatMapAPI(
       setError(null);
       const data = await getSeats(eventId, tierId, token);
       setSeats(data);
-    } catch (err: any) {
-      if (err?.response?.status === 404) {
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { status?: number }; message?: string };
+      if (axiosErr?.response?.status === 404) {
         // Sin asientos configurados: modo cuota
         setSeats([]);
         setError(null);
       } else {
-        setError(err?.message || 'Error loading seats');
+        setError(axiosErr?.message || 'Error loading seats');
       }
     } finally {
       setIsLoading(false);

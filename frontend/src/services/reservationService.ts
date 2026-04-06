@@ -29,13 +29,20 @@ export interface PaymentResponse {
   timestamp: string;
 }
 
+interface ReservationPayload {
+  eventId: string;
+  tierId: string;
+  buyerEmail: string;
+  seatIds?: string[];
+}
+
 export async function createReservation(
   eventId: string,
   tierId: string,
   buyerEmail: string,
   seatIds?: string[],
 ): Promise<ReservationResponse> {
-  const payload: any = { 
+  const payload: ReservationPayload = { 
     eventId, 
     tierId,
     buyerEmail,

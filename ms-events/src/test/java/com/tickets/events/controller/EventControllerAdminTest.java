@@ -50,7 +50,10 @@ class EventControllerAdminTest {
             null, null, null, null, null, null, null, false, false, null,
             "admin-user",
             LocalDateTime.now(),
-            LocalDateTime.now()
+            LocalDateTime.now(),
+            0L,
+            0L,
+            null
         );
     }
 

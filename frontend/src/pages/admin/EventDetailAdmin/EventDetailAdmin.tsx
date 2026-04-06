@@ -58,7 +58,7 @@ export default function EventDetailAdmin() {
       await deleteTier(tierId);
       setLocalTiers((prev) => (prev ?? tiers).filter((t) => t.id !== tierId));
     } catch {
-      
+      // Tier deletion failed; UI state remains unchanged
     }
   }
 

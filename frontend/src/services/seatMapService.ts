@@ -96,8 +96,8 @@ export async function blockSeats(
       }
     );
     return res.data;
-  } catch (error: any) {
-    if (error.response?.status === 409) {
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response?.status === 409) {
       console.warn('Seats no longer available (409 Conflict)');
       throw new Error('One or more seats are no longer available');
     }
@@ -171,7 +171,7 @@ export async function getSeatMetrics(
   eventId: string,
   tierId: string,
   token: string
-): Promise<any | null> {
+): Promise<unknown> {
   try {
     const res = await axios.get(
       `${API_BASE}/api/v1/events/${eventId}/seats/metrics?tierId=${tierId}`,
