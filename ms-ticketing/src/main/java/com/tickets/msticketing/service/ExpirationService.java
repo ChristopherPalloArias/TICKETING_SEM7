@@ -63,7 +63,6 @@ public class ExpirationService {
      * Each item is processed via ReservationExpirationProcessor.expireSingle() which runs in
      * its own REQUIRES_NEW transaction, so individual failures do not roll back the batch.
      */
-    @Transactional
     public void processExpiredBatch() {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         List<Reservation> expired = reservationRepository.findExpiredReservations(

@@ -20,8 +20,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
 
     List<Reservation> findByStatusAndValidUntilAtBefore(ReservationStatus status, LocalDateTime dateTime);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2"))
     @Query("SELECT r FROM Reservation r WHERE r.status IN :statuses AND r.validUntilAt < :now")
     List<Reservation> findExpiredReservations(
         @Param("statuses") List<ReservationStatus> statuses,
