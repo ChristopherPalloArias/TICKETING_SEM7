@@ -126,7 +126,15 @@ export default function EventCard({ event, onReservar, variant = 'regular', inde
       transition={{ duration: 0.4, delay: index * 0.1 }}
       whileHover={{ scale: 1.02 }}
     >
-      <div className={styles.imageWrapper}>
+      <div 
+        className={styles.imageWrapper}
+        onClick={() => !isSoldOut && onReservar(event.id)}
+        role="button"
+        tabIndex={isSoldOut ? -1 : 0}
+        onKeyDown={(e) => e.key === 'Enter' && !isSoldOut && onReservar(event.id)}
+        aria-label={isSoldOut ? `${event.title} - Agotado` : `Ver ${event.title}`}
+        style={{ cursor: isSoldOut ? 'not-allowed' : 'pointer' }}
+      >
         <img
           src={event.imageUrl ?? PLACEHOLDER_IMAGE}
           alt={event.title}
