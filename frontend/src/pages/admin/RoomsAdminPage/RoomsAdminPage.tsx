@@ -82,7 +82,7 @@ export default function RoomsAdminPage() {
         <div>
           <h1 className={styles.title}>Salas</h1>
           <p className={styles.subtitle}>
-            {loading ? '\u00a0' : `${rooms.length} sala${rooms.length !== 1 ? 's' : ''} registrada${rooms.length !== 1 ? 's' : ''}`}
+            {loading ? '\u00a0' : <><span>{rooms.length}</span>{` sala${rooms.length !== 1 ? 's' : ''} registrada${rooms.length !== 1 ? 's' : ''}`}</>}
           </p>
         </div>
         <button className={styles.createBtn} onClick={openCreateModal}>
@@ -93,6 +93,7 @@ export default function RoomsAdminPage() {
 
       {loading ? (
         <div className={styles.skeletonGrid}>
+          <p className={styles.loadingText}>Cargando salas...</p>
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className={styles.skeleton} />
           ))}
@@ -137,6 +138,7 @@ export default function RoomsAdminPage() {
                   <div className={styles.cardActions}>
                     <button
                       className={styles.editBtn}
+                      title="Editar sala"
                       onClick={() => openEditModal(room)}
                     >
                       <Edit size={14} />
@@ -145,25 +147,26 @@ export default function RoomsAdminPage() {
 
                     {deleteConfirm === room.id ? (
                       <div className={styles.confirmDelete}>
-                        <span className={styles.confirmText}>¿Eliminar sala?</span>
+                        <span className={styles.confirmText}>¿Eliminar?</span>
                         <button
                           className={styles.confirmYes}
                           onClick={() => handleDelete(room.id)}
                           disabled={isDeleting}
                         >
-                          Sí, eliminar
+                          Sí
                         </button>
                         <button
                           className={styles.confirmNo}
                           onClick={() => setDeleteConfirm(null)}
                           disabled={isDeleting}
                         >
-                          Cancelar
+                          No
                         </button>
                       </div>
                     ) : (
                       <button
                         className={styles.deleteBtn}
+                        title="Eliminar sala"
                         onClick={() => setDeleteConfirm(room.id)}
                       >
                         <Trash2 size={14} />

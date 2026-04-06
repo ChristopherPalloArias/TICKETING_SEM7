@@ -10,13 +10,13 @@ interface UseAdminStatsResult {
 }
 
 export function useAdminStats(): UseAdminStatsResult {
-  const { token } = useAuth();
+  const { userId } = useAuth();
   const [stats, setStats] = useState<AdminStatsResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
-    if (!token) return;
+    if (!userId) return;
     setLoading(true);
     setError(null);
     try {
@@ -29,7 +29,7 @@ export function useAdminStats(): UseAdminStatsResult {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [userId]);
 
   useEffect(() => {
     refetch();

@@ -115,7 +115,7 @@ describe('EventDetailAdmin', () => {
     renderPage();
 
     // THEN: event title and tiers section heading visible
-    expect(screen.getByText('Bodas de Sangre')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Bodas de Sangre' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument();
   });
 

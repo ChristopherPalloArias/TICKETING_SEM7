@@ -5,6 +5,10 @@ vi.mock('../hooks/useCartExpirationWatcher', () => ({
   useCartExpirationWatcher: vi.fn(),
 }));
 
+vi.mock('../hooks/useCartCleanupOnLogout', () => ({
+  useCartCleanupOnLogout: vi.fn(),
+}));
+
 vi.mock('../components/Toast/Toast', () => ({
   default: () => null,
 }));
