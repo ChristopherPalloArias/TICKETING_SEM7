@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.tickets.events.util.SystemClock;
 import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.List;
@@ -220,7 +221,7 @@ public class TierService {
                 throw new InvalidEarlyBirdValidityException("Early Bird tier validFrom must be before validUntil");
             }
 
-            LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+            LocalDateTime now = SystemClock.now();
             if (!safeValidFrom.isAfter(now) || !safeValidUntil.isAfter(now)) {
                 throw new InvalidEarlyBirdValidityException("Early Bird validity dates must be in the future");
             }
@@ -347,7 +348,7 @@ public class TierService {
             return false;
         }
         
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = SystemClock.now();
         
         // Check validFrom: if null, no lower bound restriction
         if (tier.getValidFrom() != null && now.isBefore(tier.getValidFrom())) {
@@ -375,9 +376,9 @@ public class TierService {
         if (!available) {
             if (tier.getQuota() <= 0) {
                 reason = "SOLD_OUT";
-            } else if (tier.getValidUntil() != null && LocalDateTime.now(ZoneOffset.UTC).isAfter(tier.getValidUntil())) {
+            } else if (tier.getValidUntil() != null && SystemClock.now().isAfter(tier.getValidUntil())) {
                 reason = "EXPIRED";
-            } else if (tier.getValidFrom() != null && LocalDateTime.now(ZoneOffset.UTC).isBefore(tier.getValidFrom())) {
+            } else if (tier.getValidFrom() != null && SystemClock.now().isBefore(tier.getValidFrom())) {
                 reason = "NOT_YET_AVAILABLE";
             }
         }

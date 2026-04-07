@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import com.tickets.msticketing.util.SystemClock;
 import java.util.List;
 
 @Service
@@ -64,7 +65,7 @@ public class ExpirationService {
      * its own REQUIRES_NEW transaction, so individual failures do not roll back the batch.
      */
     public void processExpiredBatch() {
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = SystemClock.now();
         List<Reservation> expired = reservationRepository.findExpiredReservations(
             EXPIRABLE_STATUSES, now, PageRequest.of(0, BATCH_SIZE)
         );

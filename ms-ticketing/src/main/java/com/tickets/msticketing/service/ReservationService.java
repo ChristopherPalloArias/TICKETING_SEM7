@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import com.tickets.msticketing.util.SystemClock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -99,7 +100,7 @@ public class ReservationService {
                 .id(UUID.randomUUID())
                 .seatId(seatId)
                 .reservationId(reservationId)  // Set reservationId directly
-                .expiresAt(LocalDateTime.now(ZoneOffset.UTC).plusMinutes(10))
+                .expiresAt(SystemClock.now().plusMinutes(10))
                 .build())
             .toList();
 
@@ -109,7 +110,7 @@ public class ReservationService {
         seatReservationRepository.saveAll(seatReservations);
 
         log.info("Seat-based reservation created: id={}, seats={}, expiresAt={}, status=PENDING",
-            saved.getId(), request.seatIds().size(), LocalDateTime.now(ZoneOffset.UTC).plusMinutes(10));
+            saved.getId(), request.seatIds().size(), SystemClock.now().plusMinutes(10));
 
         return mapToReservationResponse(Objects.requireNonNull(saved));
     }
@@ -185,7 +186,7 @@ public class ReservationService {
             log.warn("Could not fetch eventName for reservation={}: {}", reservationId, ex.getMessage());
         }
 
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = SystemClock.now();
         LocalDateTime validUntil = reservation.getValidUntilAt();
         if (validUntil != null && now.isAfter(validUntil)) {
             reservation.setStatus(ReservationStatus.EXPIRED);
@@ -360,7 +361,7 @@ public class ReservationService {
             .buyerEmail(reservation.getBuyerEmail())
             .paymentMethod(paymentRequest.paymentMethod().name())
             .transactionId("TXN-" + UUID.randomUUID().toString())
-            .paidAt(LocalDateTime.now(ZoneOffset.UTC))
+            .paidAt(SystemClock.now())
             // For seat-based: populate seat info from first SeatReservation (or from ms-events)
             .seatId(isSeatBased && !reservation.getSeatReservations().isEmpty() 
                 ? reservation.getSeatReservations().get(0).getSeatId() 
@@ -461,7 +462,7 @@ public class ReservationService {
         List<Ticket> anonymousTickets = ticketRepository.findByBuyerEmailAndUserIdIsNull(email);
         for (Ticket ticket : anonymousTickets) {
             ticket.setUserId(userId);
-            ticket.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+            ticket.setUpdatedAt(SystemClock.now());
         }
         if (!anonymousTickets.isEmpty()) {
             ticketRepository.saveAll(anonymousTickets);
@@ -477,7 +478,7 @@ public class ReservationService {
             .toList();
         for (Reservation reservation : pending) {
             reservation.setStatus(ReservationStatus.EXPIRED);
-            reservation.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+            reservation.setUpdatedAt(SystemClock.now());
         }
         reservationRepository.saveAll(pending);
         log.info("Expired {} reservations for eventId={}", pending.size(), eventId);
@@ -524,7 +525,7 @@ public class ReservationService {
             ticket.getId(),
             message != null ? message : "Payment processed",
             mapToTicketResponse(ticket),
-            LocalDateTime.now(ZoneOffset.UTC)
+            SystemClock.now()
         );
     }
 
