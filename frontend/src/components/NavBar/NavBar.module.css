@@ -23,10 +23,10 @@
 }
 
 .logo {
-  font-size: 1.5rem;
-  font-weight: 900;
-  letter-spacing: -0.05em;
-  color: var(--color-on-surface);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
 }
 
 .links {
@@ -236,3 +236,158 @@
     display: flex;
   }
 }
+
+/* ── Logo image ───────────────────────────────────────────────── */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logoImg {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+
+.logoFallback {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  color: var(--color-on-surface);
+}
+
+/* When logo image loads successfully, hide the fallback text */
+.logo img:not([style*="display: none"]) + .logoFallback {
+  display: none;
+}
+
+/* ── Search overlay modal ─────────────────────────────────────── */
+.searchOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 8rem;
+}
+
+.searchBox {
+  width: 100%;
+  max-width: 600px;
+  background: var(--color-surface-low);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.searchInputWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.searchInputIcon {
+  color: var(--color-on-surface-variant);
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-on-surface);
+  font-size: 1rem;
+  font-family: inherit;
+  padding: 1rem 0;
+}
+
+.searchInput::placeholder {
+  color: var(--color-on-surface-variant);
+}
+
+.searchCloseBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  color: var(--color-on-surface-variant);
+  flex-shrink: 0;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.searchCloseBtn:hover {
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+}
+
+.searchResults {
+  list-style: none;
+  padding: 0.5rem 0;
+  margin: 0;
+}
+
+.searchResultItem {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.searchResultItem:hover {
+  background-color: var(--color-surface-container);
+}
+
+.searchResultThumb {
+  width: 48px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background-color: var(--color-surface-container);
+}
+
+.searchResultInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.searchResultTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.searchResultDate {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+}
+
+.searchEmpty {
+  padding: 1.5rem 1rem;
+  font-size: 0.85rem;
+  color: var(--color-on-surface-variant);
+  text-align: center;
+}
+
