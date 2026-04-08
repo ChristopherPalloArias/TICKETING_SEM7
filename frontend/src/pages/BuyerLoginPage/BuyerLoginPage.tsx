@@ -52,6 +52,18 @@ export default function BuyerLoginPage() {
 
       {/* Panel derecho — contenedor estático */}
       <div className={styles.formPanel}>
+        {/* Botón volver — fuera de la card, dentro del panel */}
+        <button
+          id="login-back-btn"
+          data-testid="login-back-btn"
+          className={styles.backBtn}
+          onClick={() => navigate(from)}
+          aria-label="Volver"
+        >
+          <ArrowLeft size={16} />
+          Volver
+        </button>
+
         <AnimatePresence mode="wait">
           <motion.div
             key="login-card"
@@ -62,18 +74,6 @@ export default function BuyerLoginPage() {
             transition={{ duration: 0.35, ease: 'easeInOut' }}
             style={{ transformPerspective: 1000 }}
           >
-            {/* Botón volver — absoluto en el panel del formulario */}
-            <button
-              id="login-back-btn"
-              data-testid="login-back-btn"
-              className={styles.backBtn}
-              onClick={() => navigate(from)}
-              aria-label="Volver"
-            >
-              <ArrowLeft size={16} />
-              Volver
-            </button>
-
             <h1 className={styles.title}>Iniciar Sesión</h1>
             <img src={logo} alt="SEM7" className={styles.cardLogo} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
             

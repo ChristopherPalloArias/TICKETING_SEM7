@@ -62,6 +62,18 @@ export default function BuyerRegisterPage() {
 
       {/* Panel derecho — contenedor estático */}
       <div className={styles.formPanel}>
+        {/* Botón volver — fuera de la card, dentro del panel */}
+        <button
+          id="register-back-btn"
+          data-testid="register-back-btn"
+          className={styles.backBtn}
+          onClick={() => navigate('/eventos')}
+          aria-label="Volver"
+        >
+          <ArrowLeft size={16} />
+          Volver
+        </button>
+
         <AnimatePresence mode="wait">
           <motion.div
             key="register-card"
@@ -73,17 +85,6 @@ export default function BuyerRegisterPage() {
             style={{ transformPerspective: 1000 }}
           >
             {/* Botón volver — absoluto en el panel del formulario */}
-            <button
-              id="register-back-btn"
-              data-testid="register-back-btn"
-              className={styles.backBtn}
-              onClick={() => navigate('/eventos')}
-              aria-label="Volver"
-            >
-              <ArrowLeft size={16} />
-              Volver
-            </button>
-
             <h1 className={styles.title}>Crear Cuenta</h1>
             <img src={logo} alt="SEM7" className={styles.cardLogo} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
             

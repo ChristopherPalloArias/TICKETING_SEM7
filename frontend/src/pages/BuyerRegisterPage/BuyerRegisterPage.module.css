@@ -8,8 +8,8 @@
 /* Botón volver — absoluto en el panel del formulario */
 .backBtn {
   position: absolute;
-  top: 24px;
-  left: 24px;
+  top: 28px;
+  left: 28px;
   z-index: 10;
   display: inline-flex;
   align-items: center;
@@ -19,16 +19,15 @@
   letter-spacing: 0.04em;
   color: #ffffff;
   border: none;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 8px 14px;
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: background 200ms ease;
 }
 
 .backBtn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.18);
 }
 
 /* Panel izquierdo — imagen de concierto */
