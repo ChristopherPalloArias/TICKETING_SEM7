@@ -133,10 +133,6 @@ export default function NavBar({ activeLink = 'eventos', isTransactional = false
                 </button>
                 <NotificationsPanel isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
               </div>
-              <Link to="/carrito" id="nav-btn-cart" data-testid="navbar-cart-icon" className={`${styles.iconBtn} ${styles.cartWrap}`} aria-label="Carrito de compras">
-                <ShoppingCart size={20} />
-                <CartBadge count={activeItemCount} />
-              </Link>
               {isAuthenticated && role === 'BUYER' ? (
                 <div className={styles.buyerMenu}>
                   <span className={styles.buyerEmail} id="nav-user-email">{email}</span>

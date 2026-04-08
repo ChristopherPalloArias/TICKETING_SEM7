@@ -29,6 +29,7 @@ export default function CheckoutScreen({ event, tier, quantity, onBack, onContin
     : null;
 
   const handleContinue = async () => {
+    if (!email || emailError) return;
     setLoading(true);
     setError(null);
     try {
