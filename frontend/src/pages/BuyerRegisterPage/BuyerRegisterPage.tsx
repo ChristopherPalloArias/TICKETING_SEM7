@@ -51,17 +51,7 @@ export default function BuyerRegisterPage() {
 
   return (
     <div className={styles.page}>
-      {/* Panel izquierdo — branding */}
-      <div className={styles.brandPanel} aria-hidden="true">
-        <div className={styles.brandOverlay} />
-        <div className={styles.brandContent}>
-          <img src={logo} alt="SEM7" className={styles.brandLogoImg} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
-          <span className={styles.brandLogo}>SEM7</span>
-          <p className={styles.brandTagline}>La experiencia de teatro<br />que esperabas.</p>
-        </div>
-      </div>
-
-      {/* Panel derecho — formulario */}
+      {/* Panel izquierdo — formulario sobre fondo oscuro */}
       <motion.div
         key="register"
         className={styles.formPanel}
@@ -71,81 +61,88 @@ export default function BuyerRegisterPage() {
         transition={{ duration: 0.35, ease: 'easeInOut' }}
         style={{ perspective: '1200px' }}
       >
-        <div className={styles.formCard}>
-          <button
-            id="register-back-btn"
-            data-testid="register-back-btn"
-            className={styles.backBtn}
-            onClick={() => navigate('/eventos')}
-            aria-label="Volver"
-          >
-            <ArrowLeft size={18} />
-            Volver
-          </button>
-          <img src={logo} alt="SEM7" style={{ height: '40px', marginBottom: '24px' }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
-          <h1 className={styles.title}>Crear Cuenta</h1>
-          <form className={styles.form} onSubmit={handleSubmit} noValidate>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="email">Correo electrónico</label>
+        <button
+          id="register-back-btn"
+          data-testid="register-back-btn"
+          className={styles.backBtn}
+          onClick={() => navigate('/eventos')}
+          aria-label="Volver"
+        >
+          <ArrowLeft size={18} />
+          Volver
+        </button>
+        <img src={logo} alt="SEM7" className={styles.formLogo} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+        <h1 className={styles.title}>Crear Cuenta</h1>
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="email">Correo electrónico</label>
+            <input
+              id="email"
+              data-testid="register-email-input"
+              className={styles.input}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
+          </div>
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="password">Contraseña</label>
+            <div className={styles.inputWrapper}>
               <input
-                id="email"
-                data-testid="register-email-input"
+                id="password"
+                data-testid="register-password-input"
                 className={styles.input}
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type={showPass ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
-                autoComplete="email"
+                autoComplete="new-password"
               />
+              <button type="button" className={styles.togglePass} onClick={() => setShowPass(!showPass)} aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
+                {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="password">Contraseña</label>
-              <div className={styles.inputWrapper}>
-                <input
-                  id="password"
-                  data-testid="register-password-input"
-                  className={styles.input}
-                  type={showPass ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                />
-                <button type="button" className={styles.togglePass} onClick={() => setShowPass(!showPass)} aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
-                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-              <span className={styles.hint}>Mínimo 8 caracteres, 1 mayúscula y 1 número</span>
+            <span className={styles.hint}>Mínimo 8 caracteres, 1 mayúscula y 1 número</span>
+          </div>
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="confirmPassword">Confirmar contraseña</label>
+            <div className={styles.inputWrapper}>
+              <input
+                id="confirmPassword"
+                data-testid="register-confirm-password"
+                className={styles.input}
+                type={showConfirm ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+              />
+              <button type="button" className={styles.togglePass} onClick={() => setShowConfirm(!showConfirm)} aria-label={showConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
+                {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="confirmPassword">Confirmar contraseña</label>
-              <div className={styles.inputWrapper}>
-                <input
-                  id="confirmPassword"
-                  data-testid="register-confirm-password"
-                  className={styles.input}
-                  type={showConfirm ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                />
-                <button type="button" className={styles.togglePass} onClick={() => setShowConfirm(!showConfirm)} aria-label={showConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
-                  {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-            {error && <p className={styles.error} id="register-error-msg">{error}</p>}
-            <button id="register-submit-btn" data-testid="register-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
-              {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
-            </button>
-          </form>
-          <p className={styles.footer}>
-            ¿Ya tienes cuenta?{' '}
-            <Link to="/login" id="register-login-link" data-testid="register-login-link" className={styles.link}>Inicia sesión</Link>
-          </p>
-        </div>
+          </div>
+          {error && <p className={styles.error} id="register-error-msg">{error}</p>}
+          <button id="register-submit-btn" data-testid="register-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
+            {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
+          </button>
+        </form>
+        <p className={styles.footer}>
+          ¿Ya tienes cuenta?{' '}
+          <Link to="/login" id="register-login-link" data-testid="register-login-link" className={styles.link}>Inicia sesión</Link>
+        </p>
       </motion.div>
+
+      {/* Panel derecho — imagen */}
+      <div className={styles.imagePanel} aria-hidden="true">
+        <img
+          src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800"
+          alt=""
+          className={styles.heroImage}
+        />
+      </div>
     </div>
   );
 }
