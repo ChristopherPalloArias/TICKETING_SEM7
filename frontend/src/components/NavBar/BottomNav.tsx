@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Search, MapPin, CreditCard, User } from 'lucide-react';
+import { Search, MapPin, CreditCard } from 'lucide-react';
 import styles from './BottomNav.module.css';
 
 type ActiveTab = 'catalog' | 'venues' | 'checkout' | 'payment' | 'failure' | 'success' | string;
@@ -11,16 +11,12 @@ interface BottomNavProps {
 function resolveActiveItem(
   pathname: string,
   activeTab?: ActiveTab,
-): 'explore' | 'venues' | 'payment' | 'profile' {
-  if (activeTab === 'checkout' || activeTab === 'payment' || activeTab === 'failure') {
+): 'explore' | 'venues' | 'payment' {
+  if (activeTab === 'checkout' || activeTab === 'payment' || activeTab === 'failure' || activeTab === 'success') {
     return 'payment';
-  }
-  if (activeTab === 'success') {
-    return 'profile';
   }
   if (pathname.startsWith('/venues')) return 'venues';
   if (pathname.startsWith('/mis-tickets')) return 'payment';
-  if (pathname.startsWith('/perfil')) return 'profile';
   return 'explore';
 }
 
