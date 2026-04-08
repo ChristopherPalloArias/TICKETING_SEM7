@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import CarteleraPage from './pages/CarteleraPage/CarteleraPage';
 import EventDetail from './pages/EventDetail/EventDetail';
 import VenuesPage from './pages/VenuesPage/VenuesPage';
@@ -29,13 +30,11 @@ function CartCleanupOnLogout() {
   return null;
 }
 
-export default function App() {
+function AppRoutes() {
+  const location = useLocation();
   return (
-    <BrowserRouter>
-      <CartExpirationWatcher />
-      <CartCleanupOnLogout />
-      <Toast />
-      <Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
         {/* Rutas públicas del comprador */}
         <Route path="/eventos" element={<CarteleraPage />} />
         <Route path="/eventos/:id" element={<EventDetail />} />
@@ -59,6 +58,17 @@ export default function App() {
           <Route index element={<Navigate to="events" replace />} />
         </Route>
       </Routes>
+    </AnimatePresence>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <CartExpirationWatcher />
+      <CartCleanupOnLogout />
+      <Toast />
+      <AppRoutes />
     </BrowserRouter>
   );
 }
