@@ -81,15 +81,13 @@
   transform: translateY(-2px);
 }
 
-/* ── Visual (colored strip) ──────────────────────────────────── */
+/* ── Visual (image strip) ───────────────────────────────── */
 .cardVisual {
   position: relative;
   height: 200px;
-  background: linear-gradient(
-    135deg,
-    hsl(var(--hue), 40%, 20%) 0%,
-    hsl(var(--hue), 30%, 10%) 100%
-  );
+  background-size: cover;
+  background-position: center;
+  border-radius: 1rem 1rem 0 0;
 }
 
 .cardGradient {

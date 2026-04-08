@@ -9,30 +9,30 @@ import type { RoomResponse, EventResponse } from '../../types/event.types';
 import styles from './VenuesPage.module.css';
 
 // Descriptive data augmentation keyed by room name (stable across restarts)
-const VENUE_META: Record<string, { city: string; description: string; imageHue: number }> = {
+const VENUE_META: Record<string, { city: string; description: string; imageUrl: string }> = {
   'Teatro Real': {
     city: 'Madrid, España',
     description:
       'Icónico coliseo del siglo XIX en el corazón de Madrid. Sede de las producciones más ambiciosas de ópera y teatro contemporáneo en la Península.',
-    imageHue: 30,
+    imageUrl: 'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=800&q=80',
   },
   'Grand Opera House': {
     city: 'Londres, Reino Unido',
     description:
       'Sala de referencia para la ópera alternativa y el teatro experimental. Famosa por su acústica perfecta y su arquitectura neogótica rehabilitada.',
-    imageHue: 200,
+    imageUrl: 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=800&q=80',
   },
   'The Velvet Lounge': {
     city: 'Nueva York, EE. UU.',
     description:
       'Espacio íntimo y atmosférico diseñado para experiencias de jazz y música en vivo en formato reducido. Cada noche es única.',
-    imageHue: 280,
+    imageUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&q=80',
   },
   'Arts Center': {
     city: 'Chicago, EE. UU.',
     description:
       'Centro multidisciplinar que alberga danza contemporánea, performance y teatro físico. Pionero en la integración de arte y tecnología.',
-    imageHue: 140,
+    imageUrl: 'https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=800&q=80',
   },
 };
 
@@ -78,7 +78,7 @@ export default function VenuesPage() {
 
       <main className={styles.main}>
         <header className={styles.hero}>
-          <h1 className={styles.heroTitle}>Venues</h1>
+          <h1 className={styles.heroTitle}>Salas</h1>
           <p className={styles.heroSubtitle}>
             Los escenarios más destacados de nuestra temporada. Espacios únicos donde el arte toma vida.
           </p>
@@ -101,12 +101,19 @@ export default function VenuesPage() {
         {!loading && !error && (
           <div className={styles.grid}>
             {venues.map((venue) => {
-              const meta = VENUE_META[venue.name] ?? { city: 'Ubicación', description: '', imageHue: 0 };
+              const meta = VENUE_META[venue.name] ?? {
+                city: 'Ubicación',
+                description: '',
+                imageUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&q=80',
+              };
+              const venueImage = (venue as unknown as Record<string, string>).imageUrl
+                || (venue as unknown as Record<string, string>).image
+                || meta.imageUrl;
               return (
                 <article key={venue.id} className={styles.card}>
                   <div
                     className={styles.cardVisual}
-                    style={{ '--hue': meta.imageHue } as React.CSSProperties}
+                    style={{ backgroundImage: `url(${venueImage})` }}
                   >
                     <div className={styles.cardGradient} />
                     <span className={styles.cardCapacityBadge}>
