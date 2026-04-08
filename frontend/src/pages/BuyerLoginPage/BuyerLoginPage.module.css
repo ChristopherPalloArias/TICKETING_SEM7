@@ -8,7 +8,7 @@
 /* Panel izquierdo — branding */
 .brandPanel {
   position: relative;
-  background-image: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=900&auto=format&fit=crop&q=60');
+  background-image: url('https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800');
   background-size: cover;
   background-position: center;
   display: flex;
@@ -59,9 +59,15 @@
   padding: 3rem 2rem;
 }
 
-.formInner {
+.formInner,
+.formCard {
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
+  background: #1C1C1C;
+  border: 1px solid #3A3A3A;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
 }
 
 .header {
@@ -73,23 +79,23 @@
 }
 
 .backBtn {
-  position: absolute;
-  left: 0;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
   border: none;
   background: transparent;
-  color: var(--color-on-surface-variant);
-  transition: background-color 150ms ease, color 150ms ease;
   cursor: pointer;
+  margin-bottom: 1.25rem;
+  padding: 0;
+  transition: color 150ms ease;
 }
 
 .backBtn:hover {
-  background-color: var(--color-surface-container);
   color: var(--color-primary);
 }
 
@@ -98,8 +104,7 @@
   font-weight: 900;
   letter-spacing: 0.05em;
   color: var(--color-primary);
-  text-align: center;
-  margin: 0;
+  margin: 0 0 1.5rem 0;
 }
 
 .form {

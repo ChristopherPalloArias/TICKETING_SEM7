@@ -59,18 +59,26 @@ export default function BuyerRegisterPage() {
 
       {/* Panel derecho — formulario */}
       <motion.div
+        key="register"
         className={styles.formPanel}
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+        initial={{ opacity: 0, rotateY: 90 }}
+        animate={{ opacity: 1, rotateY: 0 }}
+        exit={{ opacity: 0, rotateY: -90 }}
+        transition={{ duration: 0.35, ease: 'easeInOut' }}
+        style={{ perspective: '1200px' }}
       >
-        <div className={styles.formInner}>
-          <div className={styles.header}>
-            <button id="register-back-btn" data-testid="register-back-btn" className={styles.backBtn} onClick={() => navigate('/eventos')} aria-label="Volver">
-              <ArrowLeft size={20} />
-            </button>
-            <h1 className={styles.title}>Crear Cuenta</h1>
-          </div>
+        <div className={styles.formCard}>
+          <button
+            id="register-back-btn"
+            data-testid="register-back-btn"
+            className={styles.backBtn}
+            onClick={() => navigate('/eventos')}
+            aria-label="Volver"
+          >
+            <ArrowLeft size={18} />
+            Volver
+          </button>
+          <h1 className={styles.title}>Crear Cuenta</h1>
           <form className={styles.form} onSubmit={handleSubmit} noValidate>
             <div className={styles.field}>
               <label className={styles.label} htmlFor="email">Correo electrónico</label>
