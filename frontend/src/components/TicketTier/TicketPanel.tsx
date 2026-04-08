@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, ShoppingCart } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import type { TierResponse } from '../../types/event.types';
 import TicketTier from './TicketTier';
 import styles from './TicketPanel.module.css';
@@ -10,11 +10,8 @@ interface TicketPanelProps {
   selectedTierId: string | null;
   onSelect: (tierId: string) => void;
   onReservar: () => void;
-  onAddToCart?: () => void;
-  addingToCart?: boolean;
   quantitySelector?: React.ReactNode;
   enableSeats?: boolean;
-  hasSelectedSeats?: boolean;
 }
 
 export default function TicketPanel({
@@ -22,11 +19,8 @@ export default function TicketPanel({
   selectedTierId,
   onSelect,
   onReservar,
-  onAddToCart,
-  addingToCart,
   quantitySelector,
   enableSeats,
-  hasSelectedSeats,
 }: TicketPanelProps) {
   const hasAvailable = tiers.some((t) => t.isAvailable);
 
@@ -72,21 +66,6 @@ export default function TicketPanel({
         >
           <span>Reservar</span>
           <ArrowRight size={18} />
-        </motion.button>
-      )}
-
-      {onAddToCart && (
-        <motion.button
-          className={`${styles.cartCta} ${!selectedTierId || addingToCart || (enableSeats && !hasSelectedSeats) ? styles.ctaDisabled : ''}`}
-          disabled={!selectedTierId || addingToCart || (enableSeats === true && !hasSelectedSeats)}
-          onClick={selectedTierId && !addingToCart && (!enableSeats || hasSelectedSeats) ? onAddToCart : undefined}
-          whileHover={selectedTierId && !addingToCart ? { scale: 1.02 } : undefined}
-          whileTap={selectedTierId && !addingToCart ? { scale: 0.98 } : undefined}
-          transition={{ duration: 0.15 }}
-          type="button"
-        >
-          <ShoppingCart size={16} />
-          <span>{addingToCart ? 'Agregando…' : 'Agregar al carrito'}</span>
         </motion.button>
       )}
 

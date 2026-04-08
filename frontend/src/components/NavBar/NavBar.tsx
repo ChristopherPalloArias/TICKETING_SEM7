@@ -1,11 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Bell, ShoppingCart, Timer, LogOut, Search, X } from 'lucide-react';
+import { Bell, Timer, LogOut, Search, X } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import NotificationsPanel from './NotificationsPanel';
-import CartBadge from '../Cart/CartBadge';
 import { useNotifications } from '../../contexts/NotificationsContext';
-import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useEvents } from '../../hooks/useEvents';
 import logo from '../../assets/logo.png';
@@ -32,7 +30,6 @@ export default function NavBar({ activeLink = 'eventos', isTransactional = false
   const bellWrapRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { unreadCount } = useNotifications();
-  const { activeItemCount } = useCart();
   const { isAuthenticated, role, email, logout } = useAuth();
   const { events } = useEvents();
   const navigate = useNavigate();

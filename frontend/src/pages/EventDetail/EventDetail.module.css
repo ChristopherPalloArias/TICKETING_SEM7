@@ -21,7 +21,7 @@
 
 @media (min-width: 1024px) {
   .main {
-    padding: 3rem 4rem 4rem;
+    padding: 48px 80px 4rem;
   }
 }
 
@@ -36,9 +36,9 @@
 
 @media (min-width: 1024px) {
   .layout {
-    grid-template-columns: 7fr 5fr;
+    grid-template-columns: 1.2fr 1fr;
     align-items: start;
-    gap: 3rem;
+    gap: 48px;
   }
 }
 

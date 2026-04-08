@@ -87,6 +87,25 @@
   border-color: var(--color-primary);
 }
 
+.inputReadOnly {
+  padding: 0.75rem 1rem;
+  background-color: var(--color-surface-container);
+  border: 1px solid #3A3A3A;
+  border-radius: 0.5rem;
+  color: var(--color-on-surface);
+  font-size: 0.95rem;
+  width: 100%;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.fieldError {
+  color: #FF6B47;
+  font-size: 0.78rem;
+  margin-top: 4px;
+  display: block;
+}
+
 .emailInput::placeholder {
   color: var(--color-on-surface-variant);
   opacity: 0.6;

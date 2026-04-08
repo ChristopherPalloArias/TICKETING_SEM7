@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import OrderSummary from '../../../components/Checkout/OrderSummary';
 import PaymentPanel from '../../../components/Checkout/PaymentPanel';
+import { useAuth } from '../../../hooks/useAuth';
 import type { EventResponse, TierResponse } from '../../../types/event.types';
 import styles from './CheckoutScreen.module.css';
 
@@ -17,9 +18,15 @@ interface CheckoutScreenProps {
 }
 
 export default function CheckoutScreen({ event, tier, quantity, onBack, onContinue, initialEmail, seatLabels, enableSeats }: CheckoutScreenProps) {
-  const [email, setEmail] = useState(initialEmail ?? '');
+  const { email: authEmail } = useAuth();
+  const [email, setEmail] = useState(initialEmail ?? authEmail ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isReadOnly = !!authEmail;
+  const emailError = !isReadOnly && email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    ? 'Ingresa un correo válido (ej: nombre@dominio.com)'
+    : null;
 
   const handleContinue = async () => {
     setLoading(true);
@@ -74,12 +81,14 @@ export default function CheckoutScreen({ event, tier, quantity, onBack, onContin
               <input
                 id="checkout-email"
                 type="email"
-                className={styles.emailInput}
+                className={isReadOnly ? styles.inputReadOnly : styles.emailInput}
                 placeholder="tu@email.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                readOnly={isReadOnly}
+                onChange={!isReadOnly ? (e) => setEmail(e.target.value) : undefined}
                 autoComplete="email"
               />
+              {emailError && <span className={styles.fieldError}>{emailError}</span>}
               <p className={styles.emailHint}>
                 Enviaremos tus e-tickets y el código QR de acceso a esta dirección inmediatamente después del pago.
               </p>

@@ -493,10 +493,7 @@ export default function EventDetail() {
                         setSelectedSeatLabels([]);
                       }}
                       onReservar={() => setScreen('checkout')}
-                      onAddToCart={handleAddToCart}
-                      addingToCart={addingToCart}
                       enableSeats={event.enableSeats}
-                      hasSelectedSeats={selectedSeatIds.length > 0}
                       quantitySelector={
                         selectedTier && (
                           event.enableSeats ? (
