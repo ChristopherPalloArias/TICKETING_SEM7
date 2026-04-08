@@ -1,89 +1,37 @@
 /* ── Split layout ──────────────────────────────────────────────── */
 .page {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1.5fr;
   min-height: 100vh;
 }
 
-/* Panel izquierdo — branding */
-.brandPanel {
-  position: relative;
-  background-image: url('https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800');
-  background-size: cover;
-  background-position: center;
+/* Panel izquierdo — formulario directo sobre fondo oscuro */
+.formPanel {
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  justify-content: center;
+  background-color: #0E0E0E;
+  padding: 80px 64px;
+}
+
+.formLogo {
+  display: block;
+  height: 56px;
+  width: auto;
+  margin-bottom: 48px;
+}
+
+/* Panel derecho — imagen */
+.imagePanel {
+  position: relative;
   overflow: hidden;
 }
 
-.brandOverlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(14, 14, 14, 0.92) 0%,
-    rgba(14, 14, 14, 0.45) 60%,
-    rgba(14, 14, 14, 0.2) 100%
-  );
-}
-
-.brandContent {
-  position: relative;
-  z-index: 1;
-  padding: 3rem;
-}
-
-.brandLogo {
-  display: block;
-  font-size: 3rem;
-  font-weight: 900;
-  letter-spacing: -0.05em;
-  color: var(--color-primary);
-  margin-bottom: 1rem;
-}
-
-.brandLogoImg {
-  display: block;
-  height: 48px;
-  width: auto;
-  margin-bottom: 1rem;
-}
-
-.brandTagline {
-  font-size: 1.25rem;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.75);
-  line-height: 1.5;
-}
-
-/* Panel derecho — formulario */
-.formPanel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: var(--color-surface-lowest);
-  padding: 3rem 2rem;
-}
-
-.formInner,
-.formCard {
+.heroImage {
   width: 100%;
-  min-width: 480px;
-  max-width: 520px;
-  background: #1C1C1C;
-  border: 1px solid #3A3A3A;
-  border-radius: 16px;
-  padding: 56px;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  position: relative;
-  margin-bottom: 2rem;
-  justify-content: center;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .backBtn {
@@ -108,11 +56,10 @@
 }
 
 .title {
-  font-size: 1.5rem;
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  color: var(--color-primary);
-  margin: 0 0 1.5rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 32px 0;
 }
 
 .form {
@@ -220,7 +167,6 @@
 .footer {
   margin-top: 1.5rem;
   font-size: 0.85rem;
-  text-align: center;
   color: var(--color-on-surface-variant);
 }
 
@@ -235,7 +181,7 @@
     grid-template-columns: 1fr;
   }
 
-  .brandPanel {
+  .imagePanel {
     display: none;
   }
 
