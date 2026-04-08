@@ -43,42 +43,14 @@ export default function EventGrid({ events, loading, loadingMore, error, hasMore
     );
   }
 
-  const [featured, tall, ...regulars] = events;
-
   return (
     <>
-      <div className={styles.bentoGrid}>
-        {featured && (
-          <div className={styles.colFeatured}>
-            <EventCard
-              key={featured.id}
-              event={featured}
-              variant="featured"
-              index={0}
-              onReservar={(id) => navigate(`/eventos/${id}`)}
-            />
-          </div>
-        )}
-        {tall && (
-          <div className={styles.colTall}>
-            <EventCard
-              key={tall.id}
-              event={tall}
-              variant="tall"
-              index={1}
-              onReservar={(id) => navigate(`/eventos/${id}`)}
-            />
-          </div>
-        )}
-      </div>
-
       <div className={styles.regularGrid}>
-        {regulars.map((event, i) => (
+        {events.map((event, i) => (
           <EventCard
             key={event.id}
             event={event}
-            variant="regular"
-            index={i + 2}
+            index={i}
             onReservar={(id) => navigate(`/eventos/${id}`)}
           />
         ))}
