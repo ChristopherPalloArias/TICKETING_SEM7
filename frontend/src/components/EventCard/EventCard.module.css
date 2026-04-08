@@ -23,7 +23,7 @@
 .imageWrapper {
   position: relative;
   aspect-ratio: unset;
-  height: 200px;
+  height: 220px;
   overflow: hidden;
   background-color: var(--color-surface-container);
 }

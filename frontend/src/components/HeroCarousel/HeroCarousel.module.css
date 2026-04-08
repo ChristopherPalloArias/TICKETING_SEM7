@@ -2,7 +2,7 @@
 .section {
   position: relative;
   width: 100%;
-  min-height: 680px;
+  min-height: 780px;
   display: flex;
   align-items: stretch;
   overflow: hidden;
@@ -40,7 +40,7 @@
   align-items: center;
   justify-content: center;
   padding: 80px 80px;
-  gap: 64px;
+  gap: 80px;
 }
 
 /* ── Columna izquierda ─────────────────────────────────── */
@@ -49,7 +49,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 20px;
-  max-width: 460px;
+  max-width: 400px;
   flex-shrink: 0;
   min-width: 0;
 }
@@ -75,6 +75,8 @@
   color: #ffffff;
   letter-spacing: -0.02em;
   margin: 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .metaList {
@@ -193,8 +195,8 @@
 
 /* Poster central */
 .posterMain {
-  width: 460px;
-  height: 580px;
+  width: 500px;
+  height: 640px;
   flex-shrink: 0;
   border-radius: 16px;
   overflow: hidden;
@@ -221,8 +223,8 @@
 }
 
 .posterPeekCard {
-  width: 200px;
-  height: 580px;
+  width: 210px;
+  height: 640px;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);

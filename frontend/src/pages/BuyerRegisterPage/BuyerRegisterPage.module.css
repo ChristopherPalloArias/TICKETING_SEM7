@@ -1,12 +1,36 @@
 /* ── Split layout ──────────────────────────────────────────────── */
 .page {
+  position: relative;
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   min-height: 100vh;
 }
 
-/* Panel izquierdo — imagen de concierto */
-.imagePanel {
+/* Botón volver — flotante sobre la página */
+.backBtn {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.8);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 150ms ease;
+}
+
+.backBtn:hover {
+  opacity: 1;
+  color: #fff;
+}
   position: relative;
   overflow: hidden;
 }
@@ -69,38 +93,21 @@
 
 .cardLogo {
   display: block;
-  height: 36px;
+  height: 64px;
   width: auto;
-  margin-bottom: 20px;
-}
-
-.backBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--color-on-surface-variant);
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  margin-bottom: 1.25rem;
-  padding: 0;
-  transition: color 150ms ease;
-}
-
-.backBtn:hover {
-  color: var(--color-primary);
+  margin-top: 12px;
+  margin-bottom: 24px;
 }
 
 .title {
   font-size: 2rem;
   font-weight: 700;
   color: #fff;
-  margin: 0 0 32px 0;
+  margin: 0;
 }
+
+/* Panel izquierdo — imagen de concierto */
+.imagePanel {
 
 .form {
   display: flex;
