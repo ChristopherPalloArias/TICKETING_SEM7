@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, MotionConfig } from 'framer-motion';
 import CarteleraPage from './pages/CarteleraPage/CarteleraPage';
 import EventDetail from './pages/EventDetail/EventDetail';
 import VenuesPage from './pages/VenuesPage/VenuesPage';
@@ -62,13 +62,17 @@ function AppRoutes() {
   );
 }
 
+const isE2E = import.meta.env.VITE_E2E_MODE === 'true';
+
 export default function App() {
   return (
     <BrowserRouter>
-      <CartExpirationWatcher />
-      <CartCleanupOnLogout />
-      <Toast />
-      <AppRoutes />
+      <MotionConfig transition={isE2E ? { duration: 0 } : undefined}>
+        <CartExpirationWatcher />
+        <CartCleanupOnLogout />
+        <Toast />
+        <AppRoutes />
+      </MotionConfig>
     </BrowserRouter>
   );
 }

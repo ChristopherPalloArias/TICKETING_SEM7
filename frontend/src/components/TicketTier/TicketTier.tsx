@@ -33,6 +33,7 @@ export default function TicketTier({ tier, selected, onClick }: TicketTierProps)
 
   return (
     <motion.div
+      data-testid={`tier-${tier.tierType}`}
       className={cardClass}
       onClick={disabled ? undefined : onClick}
       whileHover={disabled ? undefined : { scale: 1.02 }}

@@ -61,6 +61,7 @@ export default function FailureScreen({
 
         {/* Retry button */}
         <button
+          data-testid="failure-retry-btn"
           className={styles.retryBtn}
           onClick={onRetry}
           disabled={!canRetry}

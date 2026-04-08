@@ -12,6 +12,7 @@ export default function MockPaymentOption({ type, onClick, loading }: MockPaymen
 
   return (
     <button
+      data-testid={`mock-payment-${type}`}
       className={`${styles.card} ${isSuccess ? styles.cardSuccess : styles.cardFailure}`}
       onClick={onClick}
       disabled={loading}

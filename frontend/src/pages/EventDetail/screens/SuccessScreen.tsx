@@ -37,7 +37,7 @@ export default function SuccessScreen({ event, ticket, order, onBackToCatalog }:
           <div className={styles.iconCircle}>
             <CheckCircle2 size={40} className={styles.checkIcon} />
           </div>
-          <h1 className={styles.title}>¡Pago aprobado!</h1>
+          <h1 data-testid="success-title" className={styles.title}>¡Pago aprobado!</h1>
           <p className={styles.subtitle}>Tu lugar está asegurado para una noche inolvidable.</p>
         </div>
 
@@ -52,7 +52,7 @@ export default function SuccessScreen({ event, ticket, order, onBackToCatalog }:
             <Download size={18} />
             <span>Descargar Ticket</span>
           </button>
-          <button className={styles.catalogBtn} onClick={handleBackToCatalog} type="button">
+          <button data-testid="success-catalog-btn" className={styles.catalogBtn} onClick={handleBackToCatalog} type="button">
             Volver al Catálogo
           </button>
         </div>

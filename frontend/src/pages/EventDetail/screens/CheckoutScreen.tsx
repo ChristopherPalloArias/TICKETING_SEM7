@@ -87,6 +87,7 @@ export default function CheckoutScreen({ event, tier, quantity, onBack, onContin
               </label>
               <input
                 id="checkout-email"
+                data-testid="checkout-email-input"
                 type="email"
                 className={isReadOnly ? styles.inputReadOnly : styles.emailInput}
                 placeholder="tu@email.com"

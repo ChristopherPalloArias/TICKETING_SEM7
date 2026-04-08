@@ -62,6 +62,7 @@ export default function PaymentPanel({
 
       {/* CTA */}
       <button
+        data-testid="payment-continue-btn"
         className={styles.ctaBtn}
         onClick={onContinue}
         disabled={!isEmailValid || loading}

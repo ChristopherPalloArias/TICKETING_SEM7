@@ -56,6 +56,7 @@ export default function TicketPanel({
 
       {!enableSeats && (
         <motion.button
+          data-testid="reserve-tier-btn"
           className={`${styles.cta} ${!selectedTierId ? styles.ctaDisabled : ''}`}
           disabled={!selectedTierId}
           onClick={selectedTierId ? onReservar : undefined}
