@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import logo from '../../assets/logo.png';
 import styles from './BuyerRegisterPage.module.css';
@@ -60,92 +60,97 @@ export default function BuyerRegisterPage() {
         />
       </div>
 
-      {/* Panel derecho — formulario con card */}
-      <motion.div
-        key="register"
-        className={styles.formPanel}
-        initial={{ opacity: 0, rotateY: 90 }}
-        animate={{ opacity: 1, rotateY: 0 }}
-        exit={{ opacity: 0, rotateY: -90 }}
-        transition={{ duration: 0.35, ease: 'easeInOut' }}
-        style={{ perspective: '1200px' }}
-      >
-        {/* Botón volver — absoluto en el panel del formulario */}
-        <button
-          id="register-back-btn"
-          data-testid="register-back-btn"
-          className={styles.backBtn}
-          onClick={() => navigate('/eventos')}
-          aria-label="Volver"
-        >
-          <ArrowLeft size={16} />
-          Volver
-        </button>
-        <div className={styles.formCard}>
-          <h1 className={styles.title}>Crear Cuenta</h1>
-          <img src={logo} alt="SEM7" className={styles.cardLogo} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
-          <form className={styles.form} onSubmit={handleSubmit} noValidate>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="email">Correo electrónico</label>
-              <input
-                id="email"
-                data-testid="register-email-input"
-                className={styles.input}
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="password">Contraseña</label>
-              <div className={styles.inputWrapper}>
-                <input
-                  id="password"
-                  data-testid="register-password-input"
-                  className={styles.input}
-                  type={showPass ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                />
-                <button type="button" className={styles.togglePass} onClick={() => setShowPass(!showPass)} aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
-                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-              <span className={styles.hint}>Mínimo 8 caracteres, 1 mayúscula y 1 número</span>
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="confirmPassword">Confirmar contraseña</label>
-              <div className={styles.inputWrapper}>
-                <input
-                  id="confirmPassword"
-                  data-testid="register-confirm-password"
-                  className={styles.input}
-                  type={showConfirm ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                />
-                <button type="button" className={styles.togglePass} onClick={() => setShowConfirm(!showConfirm)} aria-label={showConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
-                  {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-            {error && <p className={styles.error} id="register-error-msg">{error}</p>}
-            <button id="register-submit-btn" data-testid="register-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
-              {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
+      {/* Panel derecho — contenedor estático */}
+      <div className={styles.formPanel}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key="register-card"
+            className={styles.formCard}
+            initial={{ opacity: 0, rotateY: 90 }}
+            animate={{ opacity: 1, rotateY: 0 }}
+            exit={{ opacity: 0, rotateY: -90 }}
+            transition={{ duration: 0.35, ease: 'easeInOut' }}
+            style={{ transformPerspective: 1000 }}
+          >
+            {/* Botón volver — absoluto en el panel del formulario */}
+            <button
+              id="register-back-btn"
+              data-testid="register-back-btn"
+              className={styles.backBtn}
+              onClick={() => navigate('/eventos')}
+              aria-label="Volver"
+            >
+              <ArrowLeft size={16} />
+              Volver
             </button>
-          </form>
-          <p className={styles.footer}>
-            ¿Ya tienes cuenta?{' '}
-            <Link to="/login" id="register-login-link" data-testid="register-login-link" className={styles.link}>Inicia sesión</Link>
-          </p>
-        </div>
-      </motion.div>
+
+            <h1 className={styles.title}>Crear Cuenta</h1>
+            <img src={logo} alt="SEM7" className={styles.cardLogo} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+            
+            <form className={styles.form} onSubmit={handleSubmit} noValidate>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="email">Correo electrónico</label>
+                <input
+                  id="email"
+                  data-testid="register-email-input"
+                  className={styles.input}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="password">Contraseña</label>
+                <div className={styles.inputWrapper}>
+                  <input
+                    id="password"
+                    data-testid="register-password-input"
+                    className={styles.input}
+                    type={showPass ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="new-password"
+                  />
+                  <button type="button" className={styles.togglePass} onClick={() => setShowPass(!showPass)} aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
+                    {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                <span className={styles.hint}>Mínimo 8 caracteres, 1 mayúscula y 1 número</span>
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="confirmPassword">Confirmar contraseña</label>
+                <div className={styles.inputWrapper}>
+                  <input
+                    id="confirmPassword"
+                    data-testid="register-confirm-password"
+                    className={styles.input}
+                    type={showConfirm ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    autoComplete="new-password"
+                  />
+                  <button type="button" className={styles.togglePass} onClick={() => setShowConfirm(!showConfirm)} aria-label={showConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
+                    {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+              {error && <p className={styles.error} id="register-error-msg">{error}</p>}
+              <button id="register-submit-btn" data-testid="register-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
+                {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
+              </button>
+            </form>
+
+            <p className={styles.footer}>
+              ¿Ya tienes cuenta?{' '}
+              <Link to="/login" id="register-login-link" data-testid="register-login-link" className={styles.link}>Inicia sesión</Link>
+            </p>
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

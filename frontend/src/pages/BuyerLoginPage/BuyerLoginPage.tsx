@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import logo from '../../assets/logo.png';
 import styles from './BuyerLoginPage.module.css';
@@ -50,73 +50,78 @@ export default function BuyerLoginPage() {
         />
       </div>
 
-      {/* Panel derecho — formulario con card */}
-      <motion.div
-        key="login"
-        className={styles.formPanel}
-        initial={{ opacity: 0, rotateY: 90 }}
-        animate={{ opacity: 1, rotateY: 0 }}
-        exit={{ opacity: 0, rotateY: -90 }}
-        transition={{ duration: 0.35, ease: 'easeInOut' }}
-        style={{ perspective: '1200px' }}
-      >
-        {/* Botón volver — absoluto en el panel del formulario */}
-        <button
-          id="login-back-btn"
-          data-testid="login-back-btn"
-          className={styles.backBtn}
-          onClick={() => navigate(from)}
-          aria-label="Volver"
-        >
-          <ArrowLeft size={16} />
-          Volver
-        </button>
-        <div className={styles.formCard}>
-          <h1 className={styles.title}>Iniciar Sesión</h1>
-          <img src={logo} alt="SEM7" className={styles.cardLogo} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
-          <form className={styles.form} onSubmit={handleSubmit} noValidate>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="email">Correo electrónico</label>
-              <input
-                id="email"
-                data-testid="login-email-input"
-                className={styles.input}
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="password">Contraseña</label>
-              <div className={styles.inputWrapper}>
-                <input
-                  id="password"
-                  data-testid="login-password-input"
-                  className={styles.input}
-                  type={showPass ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                />
-                <button type="button" className={styles.togglePass} onClick={() => setShowPass(!showPass)} aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
-                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-            {error && <p className={styles.error} id="login-error-msg">{error}</p>}
-            <button id="login-submit-btn" data-testid="login-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
-              {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+      {/* Panel derecho — contenedor estático */}
+      <div className={styles.formPanel}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key="login-card"
+            className={styles.formCard}
+            initial={{ opacity: 0, rotateY: 90 }}
+            animate={{ opacity: 1, rotateY: 0 }}
+            exit={{ opacity: 0, rotateY: -90 }}
+            transition={{ duration: 0.35, ease: 'easeInOut' }}
+            style={{ transformPerspective: 1000 }}
+          >
+            {/* Botón volver — absoluto en el panel del formulario */}
+            <button
+              id="login-back-btn"
+              data-testid="login-back-btn"
+              className={styles.backBtn}
+              onClick={() => navigate(from)}
+              aria-label="Volver"
+            >
+              <ArrowLeft size={16} />
+              Volver
             </button>
-          </form>
-          <p className={styles.footer}>
-            ¿No tienes cuenta?{' '}
-            <Link to="/registro" id="login-register-link" data-testid="login-register-link" className={styles.link}>Regístrate</Link>
-          </p>
-        </div>
-      </motion.div>
+
+            <h1 className={styles.title}>Iniciar Sesión</h1>
+            <img src={logo} alt="SEM7" className={styles.cardLogo} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+            
+            <form className={styles.form} onSubmit={handleSubmit} noValidate>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="email">Correo electrónico</label>
+                <input
+                  id="email"
+                  data-testid="login-email-input"
+                  className={styles.input}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="password">Contraseña</label>
+                <div className={styles.inputWrapper}>
+                  <input
+                    id="password"
+                    data-testid="login-password-input"
+                    className={styles.input}
+                    type={showPass ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                  />
+                  <button type="button" className={styles.togglePass} onClick={() => setShowPass(!showPass)} aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
+                    {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+              {error && <p className={styles.error} id="login-error-msg">{error}</p>}
+              <button id="login-submit-btn" data-testid="login-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
+                {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+              </button>
+            </form>
+
+            <p className={styles.footer}>
+              ¿No tienes cuenta?{' '}
+              <Link to="/registro" id="login-register-link" data-testid="login-register-link" className={styles.link}>Regístrate</Link>
+            </p>
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 
