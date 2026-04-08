@@ -51,7 +51,7 @@
   align-items: center;
   justify-content: center;
   background-color: #0E0E0E;
-  padding: 64px 48px;
+  padding: 80px 64px;
 }
 
 /* Card del formulario */
@@ -93,21 +93,23 @@
 }
 
 .label {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-on-surface-variant);
+  color: #aaa;
+  margin-bottom: 8px;
 }
 
 .input {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: 6px;
+  background-color: #2A2A2A;
+  border: 1px solid #3A3A3A;
+  border-radius: 10px;
   color: var(--color-on-surface);
-  font-size: 0.9rem;
-  padding: 0.75rem;
+  font-size: 1rem;
+  padding: 14px 16px;
   outline: none;
+  margin-bottom: 4px;
   transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
@@ -157,15 +159,15 @@
 }
 
 .submitBtn {
-  margin-top: 0.5rem;
-  padding: 0.875rem 1rem;
+  margin-top: 8px;
+  padding: 16px;
   background-color: var(--color-primary);
   color: var(--color-on-primary);
   border: none;
-  border-radius: 8px;
-  font-size: 0.85rem;
+  border-radius: 10px;
+  font-size: 1rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
   transition: opacity 150ms ease, transform 100ms ease;

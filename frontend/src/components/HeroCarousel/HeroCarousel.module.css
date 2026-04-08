@@ -1,11 +1,12 @@
 /* Sección completa edge-to-edge */
 .section {
   position: relative;
-  width: 100%;
-  min-height: 860px;
+  width: 100vw;
+  min-height: 100vh;
   display: flex;
   align-items: stretch;
   overflow: hidden;
+  box-sizing: border-box;
   /* Compensa NavBar fijo */
   padding-top: var(--navbar-height);
 }
@@ -195,8 +196,9 @@
 
 /* Poster central */
 .posterMain {
-  width: 560px;
-  height: 720px;
+  width: 580px;
+  height: 75vh;
+  max-height: 720px;
   flex-shrink: 0;
   border-radius: 16px;
   overflow: hidden;
@@ -223,8 +225,9 @@
 }
 
 .posterPeekCard {
-  width: 230px;
-  height: 720px;
+  width: 240px;
+  height: 75vh;
+  max-height: 720px;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -282,6 +285,24 @@
 
 .arrowRight {
   right: -1.5rem;
+}
+
+/* Scroll indicator */
+.scrollIndicator {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #888;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  z-index: 2;
+  pointer-events: none;
 }
 
 /* ── Responsive ────────────────────────────────────────── */

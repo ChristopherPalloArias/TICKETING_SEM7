@@ -44,7 +44,7 @@ export default function BuyerLoginPage() {
       {/* Panel izquierdo — imagen de concierto */}
       <div className={styles.imagePanel} aria-hidden="true">
         <img
-          src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800"
+          src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200&q=90"
           alt=""
           className={styles.heroImage}
         />

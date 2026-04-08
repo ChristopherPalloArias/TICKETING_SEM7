@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { MapPin, Calendar, ChevronRight, ChevronLeft, Ticket } from 'lucide-react';
+import { MapPin, Calendar, ChevronRight, ChevronLeft, Ticket, ChevronDown } from 'lucide-react';
 import type { EventViewModel } from '../../types/event.types';
 import styles from './HeroCarousel.module.css';
 
@@ -199,6 +199,17 @@ export default function HeroCarousel({ events }: HeroCarouselProps) {
             </>
           )}
         </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <div className={styles.scrollIndicator}>
+        <motion.div
+          animate={{ y: [0, 10, 0] }}
+          transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+        >
+          <ChevronDown size={28} color="#FF6B47" />
+        </motion.div>
+        <span>Explorar eventos</span>
       </div>
     </section>
   );
