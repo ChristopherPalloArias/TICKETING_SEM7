@@ -41,18 +41,6 @@ export default function BuyerLoginPage() {
 
   return (
     <div className={styles.page}>
-      {/* Botón volver — flotante absoluto sobre la página */}
-      <button
-        id="login-back-btn"
-        data-testid="login-back-btn"
-        className={styles.backBtn}
-        onClick={() => navigate(from)}
-        aria-label="Volver"
-      >
-        <ArrowLeft size={16} />
-        Volver
-      </button>
-
       {/* Panel izquierdo — imagen de concierto */}
       <div className={styles.imagePanel} aria-hidden="true">
         <img
@@ -72,6 +60,17 @@ export default function BuyerLoginPage() {
         transition={{ duration: 0.35, ease: 'easeInOut' }}
         style={{ perspective: '1200px' }}
       >
+        {/* Botón volver — absoluto en el panel del formulario */}
+        <button
+          id="login-back-btn"
+          data-testid="login-back-btn"
+          className={styles.backBtn}
+          onClick={() => navigate(from)}
+          aria-label="Volver"
+        >
+          <ArrowLeft size={16} />
+          Volver
+        </button>
         <div className={styles.formCard}>
           <h1 className={styles.title}>Iniciar Sesión</h1>
           <img src={logo} alt="SEM7" className={styles.cardLogo} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />

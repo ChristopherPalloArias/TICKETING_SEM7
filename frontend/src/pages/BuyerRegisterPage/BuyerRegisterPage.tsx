@@ -51,18 +51,6 @@ export default function BuyerRegisterPage() {
 
   return (
     <div className={styles.page}>
-      {/* Botón volver — flotante absoluto sobre la página */}
-      <button
-        id="register-back-btn"
-        data-testid="register-back-btn"
-        className={styles.backBtn}
-        onClick={() => navigate('/eventos')}
-        aria-label="Volver"
-      >
-        <ArrowLeft size={16} />
-        Volver
-      </button>
-
       {/* Panel izquierdo — imagen de concierto */}
       <div className={styles.imagePanel} aria-hidden="true">
         <img
@@ -82,6 +70,17 @@ export default function BuyerRegisterPage() {
         transition={{ duration: 0.35, ease: 'easeInOut' }}
         style={{ perspective: '1200px' }}
       >
+        {/* Botón volver — absoluto en el panel del formulario */}
+        <button
+          id="register-back-btn"
+          data-testid="register-back-btn"
+          className={styles.backBtn}
+          onClick={() => navigate('/eventos')}
+          aria-label="Volver"
+        >
+          <ArrowLeft size={16} />
+          Volver
+        </button>
         <div className={styles.formCard}>
           <h1 className={styles.title}>Crear Cuenta</h1>
           <img src={logo} alt="SEM7" className={styles.cardLogo} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
