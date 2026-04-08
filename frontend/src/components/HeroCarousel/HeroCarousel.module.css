@@ -1,0 +1,330 @@
+/* Sección completa edge-to-edge */
+.section {
+  position: relative;
+  width: 100%;
+  min-height: 520px;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  /* Compensa NavBar fijo */
+  padding-top: 5rem;
+}
+
+/* Fondo desenfocado desde la imagen del evento activo */
+.bgBlur {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(60px) saturate(1.4) brightness(0.35);
+  transform: scale(1.15);
+  transition: background-image 600ms ease;
+}
+
+.bgOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.85) 0%,
+    rgba(0, 0, 0, 0.55) 50%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+}
+
+/* Layout interior */
+.inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 3rem 4rem;
+  gap: 3rem;
+}
+
+/* ── Columna izquierda ─────────────────────────────────── */
+.leftCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.tag {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 0.3rem 0.85rem;
+  background: rgba(255, 107, 71, 0.2);
+  border: 1px solid rgba(255, 107, 71, 0.5);
+  color: #FF6B47;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border-radius: 9999px;
+}
+
+.title {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 900;
+  line-height: 1.05;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.fadeIn {
+  animation: fadeSlideIn 0.5s ease forwards;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.metaList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.metaItem svg {
+  color: #FF6B47;
+  flex-shrink: 0;
+}
+
+.priceLabel {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+}
+
+.priceLabel strong {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #fff;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  background: linear-gradient(135deg, #FF6B47 0%, #ff8f6b 100%);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: opacity 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+  box-shadow: 0 4px 20px rgba(255, 107, 71, 0.5);
+}
+
+.btnPrimary:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(255, 107, 71, 0.7);
+}
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: background 200ms ease, border-color 200ms ease;
+}
+
+.btnSecondary:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Dots */
+.dots {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  cursor: pointer;
+  transition: background 200ms ease, width 200ms ease;
+  padding: 0;
+}
+
+.dotActive {
+  background: #FF6B47;
+  width: 24px;
+}
+
+/* ── Área de pósters ───────────────────────────────────── */
+.postersArea {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+/* Poster central */
+.posterMain {
+  width: 260px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  transition: transform 200ms ease;
+}
+
+.posterMain:hover {
+  transform: scale(1.02);
+}
+
+.posterImg {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+/* Pósters asomando */
+.posterPeek {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.posterPeekCard {
+  width: 140px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  opacity: 0.55;
+  filter: brightness(0.7);
+  transition: opacity 200ms ease, filter 200ms ease;
+  flex-shrink: 0;
+}
+
+.posterPeekCard:hover {
+  opacity: 0.8;
+  filter: brightness(0.9);
+}
+
+.posterPeekCardFar {
+  width: 100px;
+  opacity: 0.3;
+  filter: brightness(0.5);
+}
+
+.posterPeekImg {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+/* Flechas de navegación */
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 200ms ease;
+  z-index: 2;
+}
+
+.arrow:hover {
+  background: rgba(255, 107, 71, 0.4);
+  border-color: #FF6B47;
+}
+
+.arrowLeft {
+  left: -1.5rem;
+}
+
+.arrowRight {
+  right: -1.5rem;
+}
+
+/* ── Responsive ────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .inner {
+    padding: 2rem 2rem;
+    gap: 2rem;
+  }
+
+  .posterPeekCardFar {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .section {
+    min-height: unset;
+    padding-top: 4rem;
+  }
+
+  .inner {
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+
+  .postersArea {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .posterMain {
+    width: 200px;
+  }
+
+  .posterPeek {
+    display: none;
+  }
+
+  .arrowLeft { left: 0; }
+  .arrowRight { right: 0; }
+}

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import styles from './BuyerLoginPage.module.css';
 
@@ -28,7 +29,9 @@ export default function BuyerLoginPage() {
         navigate(from, { replace: true });
       }
     } catch {
-      setError('Credenciales inválidas. Verifica tu email y contraseña.');
+      const errorMessage = 'Credenciales inválidas. Verifica tu email y contraseña.';
+      setError(errorMessage);
+      window.dispatchEvent(new CustomEvent('app:toast', { detail: { id: Date.now(), type: 'error', message: errorMessage } }));
       setPassword('');
     }
   }
@@ -36,12 +39,18 @@ export default function BuyerLoginPage() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <h1 className={styles.title}>Iniciar Sesión</h1>
+        <div className={styles.header}>
+          <button id="login-back-btn" data-testid="login-back-btn" className={styles.backBtn} onClick={() => navigate(from)} aria-label="Volver">
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className={styles.title}>Iniciar Sesión</h1>
+        </div>
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.field}>
             <label className={styles.label} htmlFor="email">Correo electrónico</label>
             <input
               id="email"
+              data-testid="login-email-input"
               className={styles.input}
               type="email"
               value={email}
@@ -54,6 +63,7 @@ export default function BuyerLoginPage() {
             <label className={styles.label} htmlFor="password">Contraseña</label>
             <input
               id="password"
+              data-testid="login-password-input"
               className={styles.input}
               type="password"
               value={password}
@@ -62,14 +72,14 @@ export default function BuyerLoginPage() {
               autoComplete="current-password"
             />
           </div>
-          {error && <p className={styles.error}>{error}</p>}
-          <button className={styles.submitBtn} type="submit" disabled={isLoading}>
+          {error && <p className={styles.error} id="login-error-msg">{error}</p>}
+          <button id="login-submit-btn" data-testid="login-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
             {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
         </form>
         <p className={styles.footer}>
           ¿No tienes cuenta?{' '}
-          <Link to="/registro" className={styles.link}>Regístrate</Link>
+          <Link to="/registro" id="login-register-link" data-testid="login-register-link" className={styles.link}>Regístrate</Link>
         </p>
       </div>
     </div>

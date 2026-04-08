@@ -38,18 +38,23 @@ export default function NavBar({ activeLink = 'eventos', isTransactional = false
             <div className={styles.links}>
               <Link
                 to="/eventos"
+                id="nav-link-eventos"
+                data-testid="navbar-link-events"
                 className={`${styles.link} ${activeLink === 'eventos' ? styles.linkActive : ''}`}
               >
                 EVENTOS
               </Link>
               <Link
                 to="/venues"
+                id="nav-link-venues"
                 className={`${styles.link} ${activeLink === 'venues' ? styles.linkActive : ''}`}
               >
                 VENUES
               </Link>
               <Link
                 to="/mis-tickets"
+                id="nav-link-tickets"
+                data-testid="navbar-link-tickets"
                 className={`${styles.link} ${activeLink === 'tickets' ? styles.linkActive : ''}`}
               >
                 MY TICKETS
@@ -80,21 +85,21 @@ export default function NavBar({ activeLink = 'eventos', isTransactional = false
                 </button>
                 <NotificationsPanel isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
               </div>
-              <Link to="/carrito" className={`${styles.iconBtn} ${styles.cartWrap}`} aria-label="Carrito de compras">
+              <Link to="/carrito" id="nav-btn-cart" data-testid="navbar-cart-icon" className={`${styles.iconBtn} ${styles.cartWrap}`} aria-label="Carrito de compras">
                 <ShoppingCart size={20} />
                 <CartBadge count={activeItemCount} />
               </Link>
               {isAuthenticated && role === 'BUYER' ? (
                 <div className={styles.buyerMenu}>
-                  <span className={styles.buyerEmail}>{email}</span>
-                  <button className={styles.logoutBtn} onClick={handleLogout} aria-label="Cerrar sesión">
+                  <span className={styles.buyerEmail} id="nav-user-email">{email}</span>
+                  <button id="nav-btn-logout" data-testid="navbar-logout-btn" className={styles.logoutBtn} onClick={handleLogout} aria-label="Cerrar sesión">
                     <LogOut size={16} />
                   </button>
                 </div>
               ) : !isAuthenticated ? (
                 <div className={styles.authButtons}>
-                  <Link to="/login" className={styles.authBtnSecondary}>Iniciar Sesión</Link>
-                  <Link to="/registro" className={styles.authBtnPrimary}>Registrarse</Link>
+                  <Link to="/login" id="nav-btn-login" data-testid="navbar-login-btn" className={styles.authBtnSecondary}>Iniciar Sesión</Link>
+                  <Link to="/registro" id="nav-btn-register" data-testid="navbar-register-btn" className={styles.authBtnPrimary}>Registrarse</Link>
                 </div>
               ) : (
                 <div className={styles.avatar}>

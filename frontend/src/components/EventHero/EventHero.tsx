@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { MapPin, Clock } from 'lucide-react';
+import { MapPin, Clock, Ticket } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import type { EventResponse } from '../../types/event.types';
 import styles from './EventHero.module.css';
 
@@ -89,6 +90,23 @@ export default function EventHero({ event }: EventHeroProps) {
               </span>
             </>
           )}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 1.1 }}
+          className={styles.actions}
+        >
+          <Link
+            to={`/eventos/${event.id}`}
+            id="hero-reservar-btn"
+            data-testid="hero-reservar-btn"
+            className={styles.ctaBtn}
+          >
+            <Ticket size={16} />
+            Comprar ahora
+          </Link>
         </motion.div>
       </div>
     </div>

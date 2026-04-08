@@ -5,9 +5,18 @@
   background-color: var(--color-surface-lowest);
 }
 
+/* Hero fullscreen — SIN padding lateral, edge to edge */
+.heroWrapper {
+  width: 100%;
+  position: relative;
+  /* Compensa el NavBar fijo de 5rem */
+  padding-top: 5rem;
+}
+
+/* Sección principal con eventos */
 .main {
   flex: 1;
-  padding-top: 8rem;
+  padding-top: 3rem;
   padding-bottom: 5rem;
   padding-left: 3rem;
   padding-right: 3rem;
@@ -17,8 +26,15 @@
 }
 
 @media (max-width: 767px) {
+  .heroWrapper {
+    padding-top: 4rem;
+  }
+
   .main {
-    padding-bottom: 8rem; /* extra space for BottomNav */
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-top: 2rem;
+    padding-bottom: 8rem;
   }
 }
 
@@ -44,7 +60,7 @@
 }
 
 .filters {
-  margin-bottom: 4rem;
+  margin-bottom: 3rem;
 }
 
 /* Footer */
@@ -100,12 +116,6 @@
 }
 
 @media (max-width: 767px) {
-  .main {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-    padding-top: 7rem;
-  }
-
   .footerInner {
     flex-direction: column;
     text-align: center;

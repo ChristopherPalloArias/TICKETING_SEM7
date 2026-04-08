@@ -2,6 +2,7 @@ import NavBar from '../../components/NavBar/NavBar';
 import BottomNav from '../../components/NavBar/BottomNav';
 import FilterBar from '../../components/FilterBar/FilterBar';
 import EventGrid from '../../components/EventGrid/EventGrid';
+import HeroCarousel from '../../components/HeroCarousel/HeroCarousel';
 import { useEvents } from '../../hooks/useEvents';
 import { useEventFilters } from '../../hooks/useEventFilters';
 import styles from './CarteleraPage.module.css';
@@ -22,15 +23,12 @@ export default function CarteleraPage() {
     <div className={styles.page}>
       <NavBar activeLink="eventos" isTransactional={false} />
 
-      <main className={styles.main}>
-        <header className={styles.hero}>
-          <h1 className={styles.heroTitle}>Cartelera</h1>
-          <p className={styles.heroSubtitle}>
-            Selección curada de las obras más destacadas de la temporada.
-            Experimenta el arte desde el primer asiento.
-          </p>
-        </header>
+      {/* HeroCarousel: todos los eventos, edge-to-edge */}
+      {!loading && filteredEvents.length > 0 && (
+        <HeroCarousel events={filteredEvents} />
+      )}
 
+      <main className={styles.main}>
         <section className={styles.filters}>
           <FilterBar
             searchQuery={searchQuery}

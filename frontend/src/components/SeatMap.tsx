@@ -88,7 +88,7 @@ export function SeatMap({
   };
 
   return (
-    <div className={styles.seatMapContainer}>
+    <div className={styles.seatMapContainer} data-testid="seatmap-container">
       <div className={styles.header}>
         <h2>Selecciona tus asientos</h2>
         <p>

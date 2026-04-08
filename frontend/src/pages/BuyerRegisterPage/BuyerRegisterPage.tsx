@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import styles from './BuyerRegisterPage.module.css';
 
@@ -29,26 +30,36 @@ export default function BuyerRegisterPage() {
 
     try {
       await registerBuyer(email, password);
+      window.dispatchEvent(new CustomEvent('app:toast', { detail: { id: Date.now(), type: 'success', message: '¡Registro exitoso! Iniciando sesión...' } }));
       navigate('/eventos', { replace: true });
     } catch (err: unknown) {
       const axiosErr = err as { response?: { status?: number; data?: { message?: string } } };
+      let errorMsg = 'Error al crear la cuenta. Intenta de nuevo.';
       if (axiosErr?.response?.status === 409) {
-        setError('El email ya está registrado. Intenta iniciar sesión.');
-      } else {
-        setError(axiosErr?.response?.data?.message ?? 'Error al crear la cuenta. Intenta de nuevo.');
+        errorMsg = 'El email ya está registrado. Intenta iniciar sesión.';
+      } else if (axiosErr?.response?.data?.message) {
+        errorMsg = axiosErr.response.data.message;
       }
+      setError(errorMsg);
+      window.dispatchEvent(new CustomEvent('app:toast', { detail: { id: Date.now(), type: 'error', message: errorMsg } }));
     }
   }
 
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <h1 className={styles.title}>Crear Cuenta</h1>
+        <div className={styles.header}>
+          <button id="register-back-btn" data-testid="register-back-btn" className={styles.backBtn} onClick={() => navigate('/eventos')} aria-label="Volver">
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className={styles.title}>Crear Cuenta</h1>
+        </div>
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.field}>
             <label className={styles.label} htmlFor="email">Correo electrónico</label>
             <input
               id="email"
+              data-testid="register-email-input"
               className={styles.input}
               type="email"
               value={email}
@@ -61,6 +72,7 @@ export default function BuyerRegisterPage() {
             <label className={styles.label} htmlFor="password">Contraseña</label>
             <input
               id="password"
+              data-testid="register-password-input"
               className={styles.input}
               type="password"
               value={password}
@@ -74,6 +86,7 @@ export default function BuyerRegisterPage() {
             <label className={styles.label} htmlFor="confirmPassword">Confirmar contraseña</label>
             <input
               id="confirmPassword"
+              data-testid="register-confirm-password"
               className={styles.input}
               type="password"
               value={confirmPassword}
@@ -82,14 +95,14 @@ export default function BuyerRegisterPage() {
               autoComplete="new-password"
             />
           </div>
-          {error && <p className={styles.error}>{error}</p>}
-          <button className={styles.submitBtn} type="submit" disabled={isLoading}>
+          {error && <p className={styles.error} id="register-error-msg">{error}</p>}
+          <button id="register-submit-btn" data-testid="register-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
             {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
           </button>
         </form>
         <p className={styles.footer}>
           ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className={styles.link}>Inicia sesión</Link>
+          <Link to="/login" id="register-login-link" data-testid="register-login-link" className={styles.link}>Inicia sesión</Link>
         </p>
       </div>
     </div>

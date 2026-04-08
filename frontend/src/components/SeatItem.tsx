@@ -41,6 +41,8 @@ export function SeatItem({
 
   return (
     <button
+      id={`seat-${seat.row}${seat.number}`}
+      data-testid={`seat-${seat.row}${seat.number}`}
       className={`${styles.seat} ${getStatusClass()} ${
         isClickable ? styles.seatHover : ''
       }`}

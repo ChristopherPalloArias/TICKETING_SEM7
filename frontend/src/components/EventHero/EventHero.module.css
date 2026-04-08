@@ -119,3 +119,35 @@
 .metaIcon {
   flex-shrink: 0;
 }
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  background: linear-gradient(135deg, #FF6B47 0%, #ff8f6b 100%);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+  box-shadow: 0 4px 20px rgba(255, 107, 71, 0.5);
+  text-decoration: none;
+}
+
+.ctaBtn:hover {
+  opacity: 0.92;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(255, 107, 71, 0.7);
+}
