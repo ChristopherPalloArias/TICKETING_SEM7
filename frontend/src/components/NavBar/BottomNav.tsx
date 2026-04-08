@@ -19,6 +19,8 @@ function resolveActiveItem(
     return 'profile';
   }
   if (pathname.startsWith('/venues')) return 'venues';
+  if (pathname.startsWith('/mis-tickets')) return 'payment';
+  if (pathname.startsWith('/perfil')) return 'profile';
   return 'explore';
 }
 
@@ -32,6 +34,7 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
         to="/eventos"
         className={`${styles.item} ${active === 'explore' ? styles.itemActive : ''}`}
         aria-label="Explorar"
+        data-testid="bottom-nav-explore"
       >
         <Search size={22} className={styles.icon} />
         <span className={styles.label}>Explore</span>
@@ -41,6 +44,7 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
         to="/venues"
         className={`${styles.item} ${active === 'venues' ? styles.itemActive : ''}`}
         aria-label="Venues"
+        data-testid="bottom-nav-venues"
       >
         <MapPin size={22} className={styles.icon} />
         <span className={styles.label}>Venues</span>
@@ -50,19 +54,13 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
         to="/mis-tickets"
         className={`${styles.item} ${active === 'payment' ? styles.itemActive : ''}`}
         aria-label="Mis tickets"
+        data-testid="bottom-nav-tickets"
       >
         <CreditCard size={22} className={styles.icon} />
         <span className={styles.label}>My Tickets</span>
       </Link>
 
-      <Link
-        to="/profile"
-        className={`${styles.item} ${active === 'profile' ? styles.itemActive : ''}`}
-        aria-label="Perfil"
-      >
-        <User size={22} className={styles.icon} />
-        <span className={styles.label}>Profile</span>
-      </Link>
+
     </nav>
   );
 }

@@ -124,3 +124,15 @@
 .card:hover .title {
   color: var(--color-primary);
 }
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 639px) {
+  .imageWrapper {
+    height: 300px;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .imageWrapper {
+    height: 360px;
+  }
+}

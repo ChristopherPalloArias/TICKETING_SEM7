@@ -335,21 +335,34 @@
 
   .inner {
     flex-direction: column;
-    padding: 2rem 1.5rem;
+    padding: 2rem 1.5rem 4rem;
     gap: 1.5rem;
     align-items: flex-start;
   }
 
-  .postersArea {
+  .leftCol {
+    max-width: 100%;
+    flex-shrink: 1;
+    width: 100%;
+  }
+
+  .title {
+    font-size: clamp(2rem, 8vw, 3rem);
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .btnPrimary,
+  .btnSecondary {
     width: 100%;
     justify-content: center;
   }
 
-  .posterMain {
-    width: 200px;
-  }
-
-  .posterPeek {
+  .postersArea {
     display: none;
   }
 

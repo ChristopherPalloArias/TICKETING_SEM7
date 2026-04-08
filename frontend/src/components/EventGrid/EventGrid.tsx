@@ -45,7 +45,7 @@ export default function EventGrid({ events, loading, loadingMore, error, hasMore
 
   return (
     <>
-      <div className={styles.regularGrid}>
+      <div className={styles.regularGrid} data-testid="event-grid">
         {events.map((event, i) => (
           <EventCard
             key={event.id}

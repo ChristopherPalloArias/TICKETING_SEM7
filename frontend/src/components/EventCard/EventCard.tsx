@@ -37,6 +37,7 @@ export default function EventCard({ event, onReservar, index = 0 }: EventCardPro
       tabIndex={isSoldOut ? -1 : 0}
       onKeyDown={(e) => e.key === 'Enter' && !isSoldOut && onReservar(event.id)}
       aria-label={isSoldOut ? `${event.title} — Agotado` : `Ver ${event.title}`}
+      data-testid={`event-card-${event.id}`}
     >
       {/* Image area */}
       <div className={styles.imageWrapper}>
