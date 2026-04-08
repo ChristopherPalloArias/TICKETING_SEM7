@@ -61,6 +61,13 @@
   }
 }
 
+/* Full-width seat map section below the two-column layout */
+.seatMapSection {
+  max-width: 1280px;
+  margin: 2.5rem auto 0;
+  width: 100%;
+}
+
 /* Synopsis */
 .sectionLabel {
   font-size: 0.65rem;

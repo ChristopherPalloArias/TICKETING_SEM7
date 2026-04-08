@@ -433,33 +433,36 @@ export default function EventDetail() {
                       onReservar={() => setScreen('checkout')}
                       enableSeats={event.enableSeats}
                       quantitySelector={
-                        selectedTier && (
-                          event.enableSeats ? (
-                            <SeatMap
-                              eventId={event.id}
-                              tierId={selectedTierId!}
-                              tierPrice={parseFloat(selectedTier.price)}
-                              tierType={selectedTier.tierType}
-                              token={token}
-                              onSeatSelectionChange={setSelectedSeatIds}
-                              onSeatLabelsChange={setSelectedSeatLabels}
-                              onContinueToPayment={() => setScreen('checkout')}
-                              disabled={false}
-                            />
-                          ) : (
-                            <QuantitySelector
-                              value={quantity}
-                              min={1}
-                              max={selectedTier.quota}
-                              onChange={setQuantity}
-                            />
-                          )
-                        )
+                        selectedTier && !event.enableSeats ? (
+                          <QuantitySelector
+                            value={quantity}
+                            min={1}
+                            max={selectedTier.quota}
+                            onChange={setQuantity}
+                          />
+                        ) : undefined
                       }
                     />
                   </div>
                 </div>
               </div>
+
+              {/* Full-width seat map for events with seat selection */}
+              {event.enableSeats && selectedTier && selectedTierId && (
+                <div className={styles.seatMapSection}>
+                  <SeatMap
+                    eventId={event.id}
+                    tierId={selectedTierId}
+                    tierPrice={parseFloat(selectedTier.price)}
+                    tierType={selectedTier.tierType}
+                    token={token}
+                    onSeatSelectionChange={setSelectedSeatIds}
+                    onSeatLabelsChange={setSelectedSeatLabels}
+                    onContinueToPayment={() => setScreen('checkout')}
+                    disabled={false}
+                  />
+                </div>
+              )}
             </main>
           </motion.div>
         )}

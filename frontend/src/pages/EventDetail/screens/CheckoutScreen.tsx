@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import OrderSummary from '../../../components/Checkout/OrderSummary';
 import PaymentPanel from '../../../components/Checkout/PaymentPanel';
@@ -28,12 +28,18 @@ export default function CheckoutScreen({ event, tier, quantity, onBack, onContin
     ? 'Ingresa un correo válido (ej: nombre@dominio.com)'
     : null;
 
+  // Sync email state if authEmail arrives after initial mount (auth loading race)
+  useEffect(() => {
+    if (authEmail) setEmail(authEmail);
+  }, [authEmail]);
+
   const handleContinue = async () => {
-    if (!email || emailError) return;
+    const emailToSend = authEmail || email;
+    if (!emailToSend || emailError) return;
     setLoading(true);
     setError(null);
     try {
-      await onContinue(email);
+      await onContinue(emailToSend);
     } catch (err: unknown) {
       if (
         err !== null &&
