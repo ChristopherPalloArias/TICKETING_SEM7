@@ -16,7 +16,7 @@ import { createReservation, processPayment } from '../../services/reservationSer
 import { useNotifications } from '../../contexts/NotificationsContext';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../hooks/useAuth';
-import { addCartItem } from '../../services/cartService';
+
 import { saveTicket } from '../../services/ticketsStorage';
 import QuantitySelector from '../../components/QuantitySelector/QuantitySelector';
 import type { Screen, Order, TicketInfo } from '../../types/flow.types';
@@ -43,7 +43,7 @@ const screenTransition = { duration: 0.4, ease: [0.22, 1, 0.36, 1] as [number, n
 export default function EventDetail() {
   const { event, loading, error } = useEventDetail();
   const { addNotification, setPollingEnabled } = useNotifications();
-  const { removeItem: removeCartItem, items: cartItems, addItem: addCartItemCtx } = useCart();
+  const { removeItem: removeCartItem } = useCart();
   const { email: authEmail, token } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -88,7 +88,7 @@ export default function EventDetail() {
     return TIMER_INIT;
   });
   const [retryCount, setRetryCount] = useState(0);
-  const [addingToCart, setAddingToCart] = useState(false);
+
   const timerNotifiedRef = useRef(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -172,69 +172,7 @@ export default function EventDetail() {
     setScreen('payment');
   };
 
-  const handleAddToCart = async () => {
-    if (!event || !selectedTierId) return;
-    const tier = event.availableTiers.find((t) => t.id === selectedTierId);
-    if (!tier) return;
 
-    // Validate duplicates before creating reservation
-    const duplicate = cartItems.find(
-      (i) => i.eventId === event.id && i.tierId === selectedTierId,
-    );
-    if (duplicate) {
-      alert('Ya tienes este tier en tu carrito');
-      return;
-    }
-
-    // Validate max items
-    if (cartItems.length >= 5) {
-      alert('Máximo 5 reservas simultáneas permitidas');
-      return;
-    }
-
-    setAddingToCart(true);
-    try {
-      const reservation = await createReservation(
-        event.id,
-        selectedTierId,
-        authEmail || 'guest@example.com',
-        selectedSeatIds.length > 0 ? selectedSeatIds : undefined,
-      );
-      const finalQuantity = selectedSeatIds.length > 0 ? selectedSeatIds.length : quantity;
-      const newItem: CartItem = {
-        id: crypto.randomUUID(),
-        eventId: event.id,
-        eventTitle: event.title,
-        eventDate: event.date,
-        eventRoom: event.room?.name ?? '',
-        eventImageUrl: event.imageUrl ?? '',
-        tierId: selectedTierId,
-        tierType: tier.tierType,
-        tierPrice: parseFloat(tier.price),
-        quantity: finalQuantity,
-        reservationId: reservation.id,
-        validUntilAt: reservation.validUntilAt,
-        email: '',
-        addedAt: new Date().toISOString(),
-        expired: false,
-        expirationAlerted: false,
-        seatLabels: selectedSeatLabels.length > 0 ? selectedSeatLabels : undefined,
-        enableSeats: event.enableSeats,
-      };
-
-      const result = addCartItem(newItem, authEmail);
-      if (result.success) {
-        addCartItemCtx(newItem);
-        alert('Agregado al carrito');
-      } else {
-        alert(result.error ?? 'Error al agregar al carrito');
-      }
-    } catch {
-      alert('Error al crear la reserva. Inténtalo nuevamente.');
-    } finally {
-      setAddingToCart(false);
-    }
-  };
 
   const handleSimulatePayment = async (type: 'success' | 'failure') => {
     if (!order) return;
