@@ -7,7 +7,7 @@
   align-items: stretch;
   overflow: hidden;
   /* Compensa NavBar fijo */
-  padding-top: 5rem;
+  padding-top: var(--navbar-height);
 }
 
 /* Fondo desenfocado desde la imagen del evento activo */
@@ -18,7 +18,6 @@
   background-position: center;
   filter: blur(60px) saturate(1.4) brightness(0.35);
   transform: scale(1.15);
-  transition: background-image 600ms ease;
 }
 
 .bgOverlay {
@@ -73,15 +72,6 @@
   color: #ffffff;
   letter-spacing: -0.02em;
   margin: 0;
-}
-
-.fadeIn {
-  animation: fadeSlideIn 0.5s ease forwards;
-}
-
-@keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
 }
 
 .metaList {

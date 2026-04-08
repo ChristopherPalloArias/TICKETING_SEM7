@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import styles from './BuyerLoginPage.module.css';
 
@@ -38,50 +39,67 @@ export default function BuyerLoginPage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.card}>
-        <div className={styles.header}>
-          <button id="login-back-btn" data-testid="login-back-btn" className={styles.backBtn} onClick={() => navigate(from)} aria-label="Volver">
-            <ArrowLeft size={20} />
-          </button>
-          <h1 className={styles.title}>Iniciar Sesión</h1>
+      {/* Panel izquierdo — branding */}
+      <div className={styles.brandPanel} aria-hidden="true">
+        <div className={styles.brandOverlay} />
+        <div className={styles.brandContent}>
+          <span className={styles.brandLogo}>SEM7</span>
+          <p className={styles.brandTagline}>La experiencia de teatro<br />que esperabas.</p>
         </div>
-        <form className={styles.form} onSubmit={handleSubmit} noValidate>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="email">Correo electrónico</label>
-            <input
-              id="email"
-              data-testid="login-email-input"
-              className={styles.input}
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
-          </div>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="password">Contraseña</label>
-            <input
-              id="password"
-              data-testid="login-password-input"
-              className={styles.input}
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-            />
-          </div>
-          {error && <p className={styles.error} id="login-error-msg">{error}</p>}
-          <button id="login-submit-btn" data-testid="login-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
-            {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-          </button>
-        </form>
-        <p className={styles.footer}>
-          ¿No tienes cuenta?{' '}
-          <Link to="/registro" id="login-register-link" data-testid="login-register-link" className={styles.link}>Regístrate</Link>
-        </p>
       </div>
+
+      {/* Panel derecho — formulario */}
+      <motion.div
+        className={styles.formPanel}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div className={styles.formInner}>
+          <div className={styles.header}>
+            <button id="login-back-btn" data-testid="login-back-btn" className={styles.backBtn} onClick={() => navigate(from)} aria-label="Volver">
+              <ArrowLeft size={20} />
+            </button>
+            <h1 className={styles.title}>Iniciar Sesión</h1>
+          </div>
+          <form className={styles.form} onSubmit={handleSubmit} noValidate>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="email">Correo electrónico</label>
+              <input
+                id="email"
+                data-testid="login-email-input"
+                className={styles.input}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="password">Contraseña</label>
+              <input
+                id="password"
+                data-testid="login-password-input"
+                className={styles.input}
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+              />
+            </div>
+            {error && <p className={styles.error} id="login-error-msg">{error}</p>}
+            <button id="login-submit-btn" data-testid="login-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
+              {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            </button>
+          </form>
+          <p className={styles.footer}>
+            ¿No tienes cuenta?{' '}
+            <Link to="/registro" id="login-register-link" data-testid="login-register-link" className={styles.link}>Regístrate</Link>
+          </p>
+        </div>
+      </motion.div>
     </div>
   );
 }

@@ -1,19 +1,67 @@
+/* ── Split layout ──────────────────────────────────────────────── */
 .page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   min-height: 100vh;
+}
+
+/* Panel izquierdo — branding */
+.brandPanel {
+  position: relative;
+  background-image: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=900&auto=format&fit=crop&q=60');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.brandOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(14, 14, 14, 0.92) 0%,
+    rgba(14, 14, 14, 0.45) 60%,
+    rgba(14, 14, 14, 0.2) 100%
+  );
+}
+
+.brandContent {
+  position: relative;
+  z-index: 1;
+  padding: 3rem;
+}
+
+.brandLogo {
+  display: block;
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+}
+
+.brandTagline {
+  font-size: 1.25rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.5;
+}
+
+/* Panel derecho — formulario */
+.formPanel {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 100vh;
   background-color: var(--color-surface-lowest);
+  padding: 3rem 2rem;
 }
 
-.card {
+.formInner {
   width: 100%;
   max-width: 400px;
-  background-color: var(--color-surface-low);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: 12px;
-  padding: 2.5rem 2rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .header {
@@ -87,7 +135,7 @@
 
 .input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3); /* Purple/var(--color-primary) glow */
+  box-shadow: 0 0 0 2px rgba(255, 107, 71, 0.25);
 }
 
 .error {
@@ -98,26 +146,28 @@
 
 .submitBtn {
   margin-top: 0.5rem;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   background-color: var(--color-primary);
   color: var(--color-on-primary);
   border: none;
-  border-radius: 4px;
-  font-size: 0.8rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: opacity 150ms ease;
+  transition: opacity 150ms ease, transform 100ms ease;
 }
 
 .submitBtn:hover {
   opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .submitBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .footer {
@@ -130,4 +180,19 @@
 .link {
   color: var(--color-primary);
   text-decoration: underline;
+}
+
+/* Responsive — single column on mobile */
+@media (max-width: 767px) {
+  .page {
+    grid-template-columns: 1fr;
+  }
+
+  .brandPanel {
+    display: none;
+  }
+
+  .formPanel {
+    padding: 2rem 1.5rem;
+  }
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { MapPin, Calendar, ChevronRight, ChevronLeft, Ticket } from 'lucide-react';
 import type { EventViewModel } from '../../types/event.types';
 import styles from './HeroCarousel.module.css';
@@ -21,14 +22,10 @@ function formatDate(isoDate: string): string {
 
 export default function HeroCarousel({ events }: HeroCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [animating, setAnimating] = useState(false);
 
   const goTo = useCallback((index: number) => {
-    if (animating) return;
-    setAnimating(true);
     setActiveIndex(index);
-    setTimeout(() => setAnimating(false), 500);
-  }, [animating]);
+  }, []);
 
   const prev = () => goTo((activeIndex - 1 + events.length) % events.length);
   const next = () => goTo((activeIndex + 1) % events.length);
@@ -50,93 +47,114 @@ export default function HeroCarousel({ events }: HeroCarouselProps) {
 
   return (
     <section className={styles.section} data-testid="hero-carousel">
-      {/* Background blur from active image */}
-      <div
-        className={styles.bgBlur}
-        style={{ backgroundImage: `url(${active.imageUrl ?? PLACEHOLDER})` }}
-      />
+      {/* Background blur — animated per slide */}
+      <AnimatePresence mode="sync">
+        <motion.div
+          key={`bg-${activeIndex}`}
+          className={styles.bgBlur}
+          style={{ backgroundImage: `url(${active.imageUrl ?? PLACEHOLDER})` }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6, ease: 'easeInOut' }}
+        />
+      </AnimatePresence>
       <div className={styles.bgOverlay} />
 
       <div className={styles.inner}>
         {/* LEFT — Texto del evento activo */}
-        <div className={styles.leftCol}>
-          {active.tag && (
-            <span className={styles.tag}>{active.tag}</span>
-          )}
-          <h1
-            key={`title-${activeIndex}`}
-            className={`${styles.title} ${animating ? styles.fadeIn : ''}`}
-            data-testid="hero-event-title"
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`left-${activeIndex}`}
+            className={styles.leftCol}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.6, ease: 'easeInOut' }}
           >
-            {active.title}
-          </h1>
-
-          <div className={styles.metaList}>
-            <div className={styles.metaItem}>
-              <MapPin size={14} />
-              <span>{active.room?.name}</span>
-            </div>
-            <div className={styles.metaItem}>
-              <Calendar size={14} />
-              <span>{formatDate(active.date)}</span>
-            </div>
-          </div>
-
-          {active.minPrice !== null && (
-            <p className={styles.priceLabel}>
-              Desde <strong>${active.minPrice}</strong>
-            </p>
-          )}
-
-          <div className={styles.actions}>
-            <Link
-              to={`/eventos/${active.id}`}
-              id="hero-buy-btn"
-              data-testid="hero-buy-btn"
-              className={styles.btnPrimary}
+            {active.tag && (
+              <span className={styles.tag}>{active.tag}</span>
+            )}
+            <h1
+              className={styles.title}
+              data-testid="hero-event-title"
             >
-              <Ticket size={16} />
-              Comprar ahora
-            </Link>
-            <Link
-              to={`/eventos/${active.id}`}
-              data-testid="hero-detail-btn"
-              className={styles.btnSecondary}
-            >
-              Ver detalle
-            </Link>
-          </div>
+              {active.title}
+            </h1>
 
-          {/* Dots de navegación */}
-          {events.length > 1 && (
-            <div className={styles.dots}>
-              {events.map((_, i) => (
-                <button
-                  key={i}
-                  className={`${styles.dot} ${i === activeIndex ? styles.dotActive : ''}`}
-                  onClick={() => goTo(i)}
-                  aria-label={`Ir al evento ${i + 1}`}
-                />
-              ))}
+            <div className={styles.metaList}>
+              <div className={styles.metaItem}>
+                <MapPin size={14} />
+                <span>{active.room?.name}</span>
+              </div>
+              <div className={styles.metaItem}>
+                <Calendar size={14} />
+                <span>{formatDate(active.date)}</span>
+              </div>
             </div>
-          )}
-        </div>
+
+            {active.minPrice !== null && (
+              <p className={styles.priceLabel}>
+                Desde <strong>${active.minPrice}</strong>
+              </p>
+            )}
+
+            <div className={styles.actions}>
+              <Link
+                to={`/eventos/${active.id}`}
+                id="hero-buy-btn"
+                data-testid="hero-buy-btn"
+                className={styles.btnPrimary}
+              >
+                <Ticket size={16} />
+                Comprar ahora
+              </Link>
+              <Link
+                to={`/eventos/${active.id}`}
+                data-testid="hero-detail-btn"
+                className={styles.btnSecondary}
+              >
+                Ver detalle
+              </Link>
+            </div>
+
+            {/* Dots de navegación — dentro del hero, en leftCol */}
+            {events.length > 1 && (
+              <div className={styles.dots}>
+                {events.map((_, i) => (
+                  <button
+                    key={i}
+                    className={`${styles.dot} ${i === activeIndex ? styles.dotActive : ''}`}
+                    onClick={() => goTo(i)}
+                    aria-label={`Ir al evento ${i + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
 
         {/* CENTER + RIGHT — Pósters en carrusel */}
         <div className={styles.postersArea}>
           {/* Poster activo */}
-          <div
-            className={`${styles.posterMain} ${animating ? styles.fadeIn : ''}`}
-            key={`poster-${activeIndex}`}
-          >
-            <Link to={`/eventos/${active.id}`} data-testid={`hero-poster-${activeIndex}`}>
-              <img
-                src={active.imageUrl ?? PLACEHOLDER}
-                alt={active.title}
-                className={styles.posterImg}
-              />
-            </Link>
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`poster-${activeIndex}`}
+              className={styles.posterMain}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              transition={{ duration: 0.6, ease: 'easeInOut' }}
+            >
+              <Link to={`/eventos/${active.id}`} data-testid={`hero-poster-${activeIndex}`}>
+                <img
+                  src={active.imageUrl ?? PLACEHOLDER}
+                  alt={active.title}
+                  className={styles.posterImg}
+                />
+              </Link>
+            </motion.div>
+          </AnimatePresence>
 
           {/* Siguientes posters (asomando) */}
           {events.length > 1 && (

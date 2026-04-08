@@ -9,8 +9,8 @@
 .heroWrapper {
   width: 100%;
   position: relative;
-  /* Compensa el NavBar fijo de 5rem */
-  padding-top: 5rem;
+  /* Compensa el NavBar fijo */
+  padding-top: var(--navbar-height);
 }
 
 /* Sección principal con eventos */

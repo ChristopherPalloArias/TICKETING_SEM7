@@ -72,19 +72,17 @@ export default function EventGrid({ events, loading, loadingMore, error, hasMore
         )}
       </div>
 
-      {regulars.length > 0 && (
-        <div className={styles.regularGrid}>
-          {regulars.map((event, i) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              variant="regular"
-              index={i + 2}
-              onReservar={(id) => navigate(`/eventos/${id}`)}
-            />
-          ))}
-        </div>
-      )}
+      <div className={styles.regularGrid}>
+        {regulars.map((event, i) => (
+          <EventCard
+            key={event.id}
+            event={event}
+            variant="regular"
+            index={i + 2}
+            onReservar={(id) => navigate(`/eventos/${id}`)}
+          />
+        ))}
+      </div>
 
       {hasMore && (
         <LoadMoreButton onClick={onLoadMore} loading={loadingMore} />

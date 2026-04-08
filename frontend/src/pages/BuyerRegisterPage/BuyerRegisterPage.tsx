@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import styles from './BuyerRegisterPage.module.css';
 
@@ -47,64 +48,81 @@ export default function BuyerRegisterPage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.card}>
-        <div className={styles.header}>
-          <button id="register-back-btn" data-testid="register-back-btn" className={styles.backBtn} onClick={() => navigate('/eventos')} aria-label="Volver">
-            <ArrowLeft size={20} />
-          </button>
-          <h1 className={styles.title}>Crear Cuenta</h1>
+      {/* Panel izquierdo — branding */}
+      <div className={styles.brandPanel} aria-hidden="true">
+        <div className={styles.brandOverlay} />
+        <div className={styles.brandContent}>
+          <span className={styles.brandLogo}>SEM7</span>
+          <p className={styles.brandTagline}>La experiencia de teatro<br />que esperabas.</p>
         </div>
-        <form className={styles.form} onSubmit={handleSubmit} noValidate>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="email">Correo electrónico</label>
-            <input
-              id="email"
-              data-testid="register-email-input"
-              className={styles.input}
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
-          </div>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="password">Contraseña</label>
-            <input
-              id="password"
-              data-testid="register-password-input"
-              className={styles.input}
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="new-password"
-            />
-            <span className={styles.hint}>Mínimo 8 caracteres, 1 mayúscula y 1 número</span>
-          </div>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="confirmPassword">Confirmar contraseña</label>
-            <input
-              id="confirmPassword"
-              data-testid="register-confirm-password"
-              className={styles.input}
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              autoComplete="new-password"
-            />
-          </div>
-          {error && <p className={styles.error} id="register-error-msg">{error}</p>}
-          <button id="register-submit-btn" data-testid="register-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
-            {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
-          </button>
-        </form>
-        <p className={styles.footer}>
-          ¿Ya tienes cuenta?{' '}
-          <Link to="/login" id="register-login-link" data-testid="register-login-link" className={styles.link}>Inicia sesión</Link>
-        </p>
       </div>
+
+      {/* Panel derecho — formulario */}
+      <motion.div
+        className={styles.formPanel}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div className={styles.formInner}>
+          <div className={styles.header}>
+            <button id="register-back-btn" data-testid="register-back-btn" className={styles.backBtn} onClick={() => navigate('/eventos')} aria-label="Volver">
+              <ArrowLeft size={20} />
+            </button>
+            <h1 className={styles.title}>Crear Cuenta</h1>
+          </div>
+          <form className={styles.form} onSubmit={handleSubmit} noValidate>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="email">Correo electrónico</label>
+              <input
+                id="email"
+                data-testid="register-email-input"
+                className={styles.input}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="password">Contraseña</label>
+              <input
+                id="password"
+                data-testid="register-password-input"
+                className={styles.input}
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+              />
+              <span className={styles.hint}>Mínimo 8 caracteres, 1 mayúscula y 1 número</span>
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="confirmPassword">Confirmar contraseña</label>
+              <input
+                id="confirmPassword"
+                data-testid="register-confirm-password"
+                className={styles.input}
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+              />
+            </div>
+            {error && <p className={styles.error} id="register-error-msg">{error}</p>}
+            <button id="register-submit-btn" data-testid="register-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
+              {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
+            </button>
+          </form>
+          <p className={styles.footer}>
+            ¿Ya tienes cuenta?{' '}
+            <Link to="/login" id="register-login-link" data-testid="register-login-link" className={styles.link}>Inicia sesión</Link>
+          </p>
+        </div>
+      </motion.div>
     </div>
   );
 }

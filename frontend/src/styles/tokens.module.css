@@ -9,4 +9,7 @@
   --color-primary:            #FF6B47;
   --color-on-primary:         #1C0A04;
   --color-outline-variant:    #3A3A3A;
+
+  /* Layout */
+  --navbar-height: 5rem;
 }
