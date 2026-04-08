@@ -18,6 +18,10 @@ export default function CarteleraPage() {
       )}
 
       <main className={styles.main}>
+        <div className={styles.sectionHeader}>
+          <h2>En tendencia por Ticketing</h2>
+          <p>No te pierdas estos grandes eventos, ¡conoce cuáles están por llegar!</p>
+        </div>
         <EventGrid
           events={events as any}
           loading={loading}

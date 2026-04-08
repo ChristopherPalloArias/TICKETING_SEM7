@@ -1,27 +1,11 @@
 /* ── Split layout ──────────────────────────────────────────────── */
 .page {
   display: grid;
-  grid-template-columns: 1fr 1.5fr;
+  grid-template-columns: 1.2fr 1fr;
   min-height: 100vh;
 }
 
-/* Panel izquierdo — formulario directo sobre fondo oscuro */
-.formPanel {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background-color: #0E0E0E;
-  padding: 80px 64px;
-}
-
-.formLogo {
-  display: block;
-  height: 56px;
-  width: auto;
-  margin-bottom: 48px;
-}
-
-/* Panel derecho — imagen */
+/* Panel izquierdo — imagen de concierto */
 .imagePanel {
   position: relative;
   overflow: hidden;
@@ -32,6 +16,62 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.imageOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(10, 10, 10, 0.88) 0%,
+    rgba(10, 10, 10, 0.3) 60%,
+    transparent 100%
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 32px;
+}
+
+.overlayLogo {
+  height: 40px;
+  width: auto;
+  margin-bottom: 12px;
+}
+
+.overlayTagline {
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Panel derecho — formulario */
+.formPanel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0E0E0E;
+  padding: 48px;
+}
+
+/* Card del formulario */
+.formCard {
+  background: #1C1C1C;
+  border: 1px solid #3A3A3A;
+  border-radius: 16px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7);
+}
+
+.cardLogo {
+  display: block;
+  height: 36px;
+  width: auto;
+  margin-bottom: 20px;
 }
 
 .backBtn {
@@ -187,5 +227,10 @@
 
   .formPanel {
     padding: 2rem 1.5rem;
+  }
+
+  .formCard {
+    padding: 32px 24px;
+    max-width: 100%;
   }
 }

@@ -19,10 +19,11 @@
   opacity: 0.65;
 }
 
-/* Image wrapper — portrait aspect ratio */
+/* Image wrapper — compact fixed height */
 .imageWrapper {
   position: relative;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: unset;
+  height: 200px;
   overflow: hidden;
   background-color: var(--color-surface-container);
 }
