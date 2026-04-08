@@ -1,13 +1,22 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Bell, ShoppingCart, Timer, LogOut } from 'lucide-react';
+import { Bell, ShoppingCart, Timer, LogOut, Search, X } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import NotificationsPanel from './NotificationsPanel';
 import CartBadge from '../Cart/CartBadge';
 import { useNotifications } from '../../contexts/NotificationsContext';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../hooks/useAuth';
+import { useEvents } from '../../hooks/useEvents';
+import logo from '../../assets/logo.png';
 import styles from './NavBar.module.css';
+
+const SEARCH_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%2248%22 height%3D%2264%22 viewBox%3D%220 0 48 64%22%3E%3Crect width%3D%2248%22 height%3D%2264%22 fill%3D%22%23242424%22%2F%3E%3C%2Fsvg%3E';
+
+function formatSearchDate(isoDate: string): string {
+  const d = new Date(isoDate);
+  return d.toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+}
 
 interface NavBarProps {
   activeLink?: 'eventos' | 'venues' | 'tickets';
@@ -18,11 +27,35 @@ interface NavBarProps {
 export default function NavBar({ activeLink = 'eventos', isTransactional = false, timeLeft }: NavBarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const bellWrapRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const { unreadCount } = useNotifications();
   const { activeItemCount } = useCart();
   const { isAuthenticated, role, email, logout } = useAuth();
+  const { events } = useEvents();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') closeSearch();
+    }
+    if (searchOpen) {
+      document.addEventListener('keydown', handleKey);
+      setTimeout(() => searchInputRef.current?.focus(), 50);
+    }
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [searchOpen]);
+
+  function openSearch() { setSearchQuery(''); setSearchOpen(true); }
+  function closeSearch() { setSearchOpen(false); setSearchQuery(''); }
+
+  const searchResults = searchQuery.trim().length > 1
+    ? events.filter(e => e.title.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 6)
+    : [];
+
+  function handleResultClick(id: string) { closeSearch(); navigate(`/eventos/${id}`); }
 
   function handleLogout() {
     logout();
@@ -33,7 +66,15 @@ export default function NavBar({ activeLink = 'eventos', isTransactional = false
     <>
       <nav className={styles.nav}>
         <div className={styles.left}>
-          <Link to="/eventos" className={styles.logo}>SEM7</Link>
+          <Link to="/eventos" className={styles.logo}>
+            <img
+              src={logo}
+              alt="SEM7"
+              className={styles.logoImg}
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            />
+            <span className={styles.logoFallback}>SEM7</span>
+          </Link>
           {!isTransactional && (
             <div className={styles.links}>
               <Link
@@ -49,7 +90,7 @@ export default function NavBar({ activeLink = 'eventos', isTransactional = false
                 id="nav-link-venues"
                 className={`${styles.link} ${activeLink === 'venues' ? styles.linkActive : ''}`}
               >
-                VENUES
+                SALAS
               </Link>
               <Link
                 to="/mis-tickets"
@@ -72,6 +113,16 @@ export default function NavBar({ activeLink = 'eventos', isTransactional = false
           )}
           {!isTransactional && (
             <>
+              {/* Search button */}
+              <button
+                className={styles.iconBtn}
+                aria-label="Buscar eventos"
+                onClick={openSearch}
+                data-testid="navbar-search-btn"
+              >
+                <Search size={20} />
+              </button>
+
               <div ref={bellWrapRef} className={styles.bellWrap}>
                 <button
                   className={styles.iconBtn}
@@ -135,6 +186,64 @@ export default function NavBar({ activeLink = 'eventos', isTransactional = false
           </button>
         </div>
       </nav>
+
+      {/* Search overlay modal */}
+      {searchOpen && (
+        <div
+          className={styles.searchOverlay}
+          onClick={(e) => { if (e.target === e.currentTarget) closeSearch(); }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Búsqueda de eventos"
+        >
+          <div className={styles.searchBox}>
+            <div className={styles.searchInputWrap}>
+              <Search size={20} className={styles.searchInputIcon} />
+              <input
+                ref={searchInputRef}
+                type="text"
+                className={styles.searchInput}
+                placeholder="Buscar eventos..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Buscar evento por nombre"
+              />
+              <button className={styles.searchCloseBtn} onClick={closeSearch} aria-label="Cerrar búsqueda">
+                <X size={18} />
+              </button>
+            </div>
+
+            {searchResults.length > 0 && (
+              <ul className={styles.searchResults}>
+                {searchResults.map((event) => (
+                  <li key={event.id}>
+                    <button
+                      className={styles.searchResultItem}
+                      onClick={() => handleResultClick(event.id)}
+                    >
+                      <img
+                        src={event.imageUrl ?? SEARCH_PLACEHOLDER}
+                        alt={event.title}
+                        className={styles.searchResultThumb}
+                      />
+                      <div className={styles.searchResultInfo}>
+                        <span className={styles.searchResultTitle}>{event.title}</span>
+                        <span className={styles.searchResultDate}>
+                          {formatSearchDate(event.date)} · {event.room.name}
+                        </span>
+                      </div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {searchQuery.trim().length > 1 && searchResults.length === 0 && (
+              <p className={styles.searchEmpty}>No se encontraron eventos para "{searchQuery}"</p>
+            )}
+          </div>
+        </div>
+      )}
 
       <MobileMenu isOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
     </>
