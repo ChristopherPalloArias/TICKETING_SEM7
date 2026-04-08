@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import java.util.Map;
 
+import org.springframework.jdbc.core.JdbcTemplate;
+
 @RestController
 @RequestMapping("/api/v1/testability")
 @ConditionalOnProperty(name = "testability.enabled", havingValue = "true")
@@ -14,6 +16,7 @@ import java.util.Map;
 public class TestabilityController {
 
     private final ExpirationService expirationService;
+    private final JdbcTemplate jdbcTemplate;
 
     @PostMapping("/clock/advance")
     public Map<String, String> advanceClock(@RequestParam long minutes) {
@@ -31,5 +34,11 @@ public class TestabilityController {
     public Map<String, String> triggerExpirationJob() {
         expirationService.processExpiredBatch();
         return Map.of("status", "Triggered processExpiredBatch");
+    }
+
+    @PostMapping("/performance/reset")
+    public Map<String, String> resetPerformanceReservations() {
+        int deleted = jdbcTemplate.update("DELETE FROM reservation");
+        return Map.of("status", "reservations_reset", "records_deleted", String.valueOf(deleted));
     }
 }
