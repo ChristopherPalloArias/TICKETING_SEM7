@@ -2,7 +2,7 @@
 .section {
   position: relative;
   width: 100%;
-  min-height: 780px;
+  min-height: 860px;
   display: flex;
   align-items: stretch;
   overflow: hidden;
@@ -39,7 +39,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 80px 80px;
+  padding: 100px 80px;
   gap: 80px;
 }
 
@@ -195,8 +195,8 @@
 
 /* Poster central */
 .posterMain {
-  width: 500px;
-  height: 640px;
+  width: 560px;
+  height: 720px;
   flex-shrink: 0;
   border-radius: 16px;
   overflow: hidden;
@@ -223,8 +223,8 @@
 }
 
 .posterPeekCard {
-  width: 210px;
-  height: 640px;
+  width: 230px;
+  height: 720px;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
