@@ -22,8 +22,7 @@
 /* Image wrapper — portrait aspect ratio */
 .imageWrapper {
   position: relative;
-  aspect-ratio: 4 / 5;
-  max-height: 260px;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
   background-color: var(--color-surface-container);
 }
@@ -90,7 +89,7 @@
 
 /* Info section — below image */
 .info {
-  padding: 10px 4px 4px;
+  padding: 12px 8px 8px;
   display: flex;
   flex-direction: column;
   gap: 4px;

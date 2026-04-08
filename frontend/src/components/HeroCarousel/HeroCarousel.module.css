@@ -39,16 +39,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 64px;
-  gap: 48px;
+  padding: 60px 80px;
+  gap: 64px;
 }
 
 /* ── Columna izquierda ─────────────────────────────────── */
 .leftCol {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  max-width: 480px;
+  justify-content: center;
+  gap: 16px;
+  max-width: 420px;
   flex-shrink: 0;
   min-width: 0;
 }
@@ -68,9 +69,9 @@
 }
 
 .title {
-  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-size: clamp(2.5rem, 5vw, 4rem);
   font-weight: 900;
-  line-height: 1.05;
+  line-height: 1.1;
   color: #ffffff;
   letter-spacing: -0.02em;
   margin: 0;
@@ -192,8 +193,8 @@
 
 /* Poster central */
 .posterMain {
-  width: 320px;
-  height: 420px;
+  width: 380px;
+  height: 480px;
   flex-shrink: 0;
   border-radius: 16px;
   overflow: hidden;
@@ -220,12 +221,12 @@
 }
 
 .posterPeekCard {
-  width: 160px;
-  height: 420px;
+  width: 180px;
+  height: 480px;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  opacity: 0.6;
+  opacity: 0.55;
   filter: brightness(0.7);
   transition: opacity 200ms ease, filter 200ms ease;
   flex-shrink: 0;
@@ -289,13 +290,13 @@
   }
 
   .posterMain {
-    width: 240px;
-    height: 320px;
+    width: 280px;
+    height: 380px;
   }
 
   .posterPeekCard {
-    height: 320px;
-    width: 120px;
+    height: 380px;
+    width: 140px;
   }
 
   .posterPeekCardFar {

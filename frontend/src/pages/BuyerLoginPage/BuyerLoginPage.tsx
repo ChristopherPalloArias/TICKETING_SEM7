@@ -41,17 +41,7 @@ export default function BuyerLoginPage() {
 
   return (
     <div className={styles.page}>
-      {/* Panel izquierdo — branding */}
-      <div className={styles.brandPanel} aria-hidden="true">
-        <div className={styles.brandOverlay} />
-        <div className={styles.brandContent}>
-          <img src={logo} alt="SEM7" className={styles.brandLogoImg} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
-          <span className={styles.brandLogo}>SEM7</span>
-          <p className={styles.brandTagline}>La experiencia de teatro<br />que esperabas.</p>
-        </div>
-      </div>
-
-      {/* Panel derecho — formulario */}
+      {/* Panel izquierdo — formulario sobre fondo oscuro */}
       <motion.div
         key="login"
         className={styles.formPanel}
@@ -61,62 +51,69 @@ export default function BuyerLoginPage() {
         transition={{ duration: 0.35, ease: 'easeInOut' }}
         style={{ perspective: '1200px' }}
       >
-        <div className={styles.formCard}>
-          <button
-            id="login-back-btn"
-            data-testid="login-back-btn"
-            className={styles.backBtn}
-            onClick={() => navigate(from)}
-            aria-label="Volver"
-          >
-            <ArrowLeft size={18} />
-            Volver
-          </button>
-          <img src={logo} alt="SEM7" style={{ height: '40px', marginBottom: '24px' }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
-          <h1 className={styles.title}>Iniciar Sesión</h1>
-          <form className={styles.form} onSubmit={handleSubmit} noValidate>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="email">Correo electrónico</label>
+        <button
+          id="login-back-btn"
+          data-testid="login-back-btn"
+          className={styles.backBtn}
+          onClick={() => navigate(from)}
+          aria-label="Volver"
+        >
+          <ArrowLeft size={18} />
+          Volver
+        </button>
+        <img src={logo} alt="SEM7" className={styles.formLogo} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+        <h1 className={styles.title}>Iniciar Sesión</h1>
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="email">Correo electrónico</label>
+            <input
+              id="email"
+              data-testid="login-email-input"
+              className={styles.input}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
+          </div>
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="password">Contraseña</label>
+            <div className={styles.inputWrapper}>
               <input
-                id="email"
-                data-testid="login-email-input"
+                id="password"
+                data-testid="login-password-input"
                 className={styles.input}
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type={showPass ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
-                autoComplete="email"
+                autoComplete="current-password"
               />
+              <button type="button" className={styles.togglePass} onClick={() => setShowPass(!showPass)} aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
+                {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="password">Contraseña</label>
-              <div className={styles.inputWrapper}>
-                <input
-                  id="password"
-                  data-testid="login-password-input"
-                  className={styles.input}
-                  type={showPass ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                />
-                <button type="button" className={styles.togglePass} onClick={() => setShowPass(!showPass)} aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
-                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-            {error && <p className={styles.error} id="login-error-msg">{error}</p>}
-            <button id="login-submit-btn" data-testid="login-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
-              {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-            </button>
-          </form>
-          <p className={styles.footer}>
-            ¿No tienes cuenta?{' '}
-            <Link to="/registro" id="login-register-link" data-testid="login-register-link" className={styles.link}>Regístrate</Link>
-          </p>
-        </div>
+          </div>
+          {error && <p className={styles.error} id="login-error-msg">{error}</p>}
+          <button id="login-submit-btn" data-testid="login-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
+            {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+          </button>
+        </form>
+        <p className={styles.footer}>
+          ¿No tienes cuenta?{' '}
+          <Link to="/registro" id="login-register-link" data-testid="login-register-link" className={styles.link}>Regístrate</Link>
+        </p>
       </motion.div>
+
+      {/* Panel derecho — imagen */}
+      <div className={styles.imagePanel} aria-hidden="true">
+        <img
+          src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800"
+          alt=""
+          className={styles.heroImage}
+        />
+      </div>
     </div>
   );
 }
