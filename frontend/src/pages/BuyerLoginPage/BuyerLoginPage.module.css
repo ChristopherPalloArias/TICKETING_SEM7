@@ -31,6 +31,9 @@
   opacity: 1;
   color: #fff;
 }
+
+/* Panel izquierdo — imagen de concierto */
+.imagePanel {
   position: relative;
   overflow: hidden;
 }
@@ -40,35 +43,6 @@
   height: 100%;
   object-fit: cover;
   display: block;
-}
-
-.imageOverlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(10, 10, 10, 0.88) 0%,
-    rgba(10, 10, 10, 0.3) 60%,
-    transparent 100%
-  );
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 32px;
-}
-
-.overlayLogo {
-  height: 40px;
-  width: auto;
-  margin-bottom: 12px;
-}
-
-.overlayTagline {
-  font-size: 1.1rem;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.5;
-  margin: 0;
 }
 
 /* Panel derecho — formulario */
@@ -105,9 +79,6 @@
   color: #fff;
   margin: 0;
 }
-
-/* Panel izquierdo — imagen de concierto */
-.imagePanel {
 
 .form {
   display: flex;

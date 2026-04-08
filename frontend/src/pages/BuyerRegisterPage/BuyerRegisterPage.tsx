@@ -51,17 +51,25 @@ export default function BuyerRegisterPage() {
 
   return (
     <div className={styles.page}>
-      {/* Panel izquierdo — imagen de concierto con logo overlay */}
+      {/* Botón volver — flotante absoluto sobre la página */}
+      <button
+        id="register-back-btn"
+        data-testid="register-back-btn"
+        className={styles.backBtn}
+        onClick={() => navigate('/eventos')}
+        aria-label="Volver"
+      >
+        <ArrowLeft size={16} />
+        Volver
+      </button>
+
+      {/* Panel izquierdo — imagen de concierto */}
       <div className={styles.imagePanel} aria-hidden="true">
         <img
           src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800"
           alt=""
           className={styles.heroImage}
         />
-        <div className={styles.imageOverlay}>
-          <img src={logo} alt="SEM7" className={styles.overlayLogo} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
-          <p className={styles.overlayTagline}>La experiencia de teatro<br />que esperabas.</p>
-        </div>
       </div>
 
       {/* Panel derecho — formulario con card */}
@@ -75,18 +83,8 @@ export default function BuyerRegisterPage() {
         style={{ perspective: '1200px' }}
       >
         <div className={styles.formCard}>
-          <button
-            id="register-back-btn"
-            data-testid="register-back-btn"
-            className={styles.backBtn}
-            onClick={() => navigate('/eventos')}
-            aria-label="Volver"
-          >
-            <ArrowLeft size={18} />
-            Volver
-          </button>
-          <img src={logo} alt="SEM7" className={styles.cardLogo} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
           <h1 className={styles.title}>Crear Cuenta</h1>
+          <img src={logo} alt="SEM7" className={styles.cardLogo} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
           <form className={styles.form} onSubmit={handleSubmit} noValidate>
             <div className={styles.field}>
               <label className={styles.label} htmlFor="email">Correo electrónico</label>
