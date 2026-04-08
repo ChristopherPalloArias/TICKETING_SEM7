@@ -19,11 +19,11 @@
   opacity: 0.65;
 }
 
-/* Image wrapper — altura fija moderada */
+/* Image wrapper — portrait definitivo */
 .imageWrapper {
   position: relative;
   width: 100%;
-  height: 300px;
+  height: 460px;
   overflow: hidden;
   background-color: var(--color-surface-container);
 }
