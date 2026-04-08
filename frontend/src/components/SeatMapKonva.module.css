@@ -1,0 +1,75 @@
+/* Outer wrapper */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: #111111;
+}
+
+/* Canvas container — relative so tooltip can be absolute */
+.canvasBox {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0; /* remove inline gap under canvas */
+}
+
+/* HTML tooltip overlay */
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(10, 10, 10, 0.92);
+  color: #F7FAFC;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 5px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  transform: translateX(-50%);
+}
+
+/* Zoom/drag hint */
+.hint {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+  letter-spacing: 0.02em;
+}
+
+/* Legend row */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  justify-content: center;
+  padding: 0.9rem 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: #9CA3AF;
+  font-weight: 500;
+}
+
+.dot {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}

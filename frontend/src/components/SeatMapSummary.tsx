@@ -66,25 +66,6 @@ export function SeatMapSummary({
           {isLoading ? 'Cargando...' : 'Continuar al pago'}
         </button>
       </div>
-
-      <div className={styles.legendContainer}>
-        <div className={styles.legend}>
-          <div className={`${styles.legendItem} ${styles.seatAvailable}`} />
-          <span>Disponible</span>
-        </div>
-        <div className={styles.legend}>
-          <div className={`${styles.legendItem} ${styles.seatSelected}`} />
-          <span>Seleccionado</span>
-        </div>
-        <div className={styles.legend}>
-          <div className={`${styles.legendItem} ${styles.seatReserved}`} />
-          <span>Reservado</span>
-        </div>
-        <div className={styles.legend}>
-          <div className={`${styles.legendItem} ${styles.seatSold}`} />
-          <span>Vendido</span>
-        </div>
-      </div>
     </div>
   );
 }

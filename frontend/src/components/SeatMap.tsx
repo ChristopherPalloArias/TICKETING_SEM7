@@ -3,7 +3,7 @@ import React from 'react';
 import styles from './SeatMap.module.css';
 import { useSeatSelection } from '../hooks/useSeatSelection';
 import { useSeatMapAPI } from '../hooks/useSeatMapAPI';
-import { SeatGrid } from './SeatGrid';
+import { SeatMapKonva } from './SeatMapKonva';
 import { SeatMapSummary } from './SeatMapSummary';
 
 interface SeatMapProps {
@@ -113,14 +113,12 @@ export function SeatMap({
 
       {!isLoading && totalSeats > 0 && (
         <>
-          <div className={styles.gridSection}>
-            <SeatGrid
-              seats={seats}
-              selectedSeatIds={selectedSeatIds}
-              onSeatClick={toggleSeat}
-              disabled={disabled}
-            />
-          </div>
+          <SeatMapKonva
+            seats={seats}
+            selectedSeatIds={selectedSeatIds}
+            onSeatClick={toggleSeat}
+            disabled={disabled}
+          />
 
           <SeatMapSummary
             selectedCount={getSelectedCount()}
