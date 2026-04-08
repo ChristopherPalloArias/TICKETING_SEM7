@@ -45,6 +45,12 @@ export default function HeroCarousel({ events }: HeroCarouselProps) {
   const nextIndex = (activeIndex + 1) % events.length;
   const nextNext = (activeIndex + 2) % events.length;
 
+  const posterVariants = {
+    enter: { x: '100%', scale: 0.85, opacity: 0.5 },
+    center: { x: 0, scale: 1, opacity: 1 },
+    exit: { x: '-100%', scale: 0.85, opacity: 0.5 },
+  };
+
   return (
     <section className={styles.section} data-testid="hero-carousel">
       {/* Background blur — animated per slide */}
@@ -67,10 +73,10 @@ export default function HeroCarousel({ events }: HeroCarouselProps) {
           <motion.div
             key={`left-${activeIndex}`}
             className={styles.leftCol}
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.6, ease: 'easeInOut' }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.4 }}
           >
             {active.tag && (
               <span className={styles.tag}>{active.tag}</span>
@@ -137,14 +143,15 @@ export default function HeroCarousel({ events }: HeroCarouselProps) {
         {/* CENTER + RIGHT — Pósters en carrusel */}
         <div className={styles.postersArea}>
           {/* Poster activo */}
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="popLayout" initial={false}>
             <motion.div
               key={`poster-${activeIndex}`}
               className={styles.posterMain}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              transition={{ duration: 0.6, ease: 'easeInOut' }}
+              variants={posterVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
               <Link to={`/eventos/${active.id}`} data-testid={`hero-poster-${activeIndex}`}>
                 <img

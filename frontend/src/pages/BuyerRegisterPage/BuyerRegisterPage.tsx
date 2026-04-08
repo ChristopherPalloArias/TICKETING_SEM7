@@ -84,7 +84,6 @@ export default function BuyerRegisterPage() {
             transition={{ duration: 0.35, ease: 'easeInOut' }}
             style={{ transformPerspective: 1000 }}
           >
-            {/* Botón volver — absoluto en el panel del formulario */}
             <h1 className={styles.title}>Crear Cuenta</h1>
             <img src={logo} alt="SEM7" className={styles.cardLogo} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
             
