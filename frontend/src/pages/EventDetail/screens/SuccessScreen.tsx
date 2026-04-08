@@ -1,6 +1,8 @@
+import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, Download } from 'lucide-react';
 import DigitalTicket from '../../../components/Ticket/DigitalTicket';
+import { printElement } from '../../../utils/printTicket';
 import type { EventResponse } from '../../../types/event.types';
 import type { Order, TicketInfo } from '../../../types/flow.types';
 import styles from './SuccessScreen.module.css';
@@ -14,10 +16,17 @@ interface SuccessScreenProps {
 
 export default function SuccessScreen({ event, ticket, order, onBackToCatalog }: SuccessScreenProps) {
   const navigate = useNavigate();
+  const ticketRef = useRef<HTMLDivElement>(null);
 
   const handleBackToCatalog = () => {
     onBackToCatalog();
     navigate('/eventos');
+  };
+
+  const handleDownload = () => {
+    if (ticketRef.current) {
+      printElement(ticketRef.current, `Ticket — ${event.title}`);
+    }
   };
 
   return (
@@ -33,11 +42,13 @@ export default function SuccessScreen({ event, ticket, order, onBackToCatalog }:
         </div>
 
         {/* Digital ticket */}
-        <DigitalTicket event={event} ticket={ticket} order={order} />
+        <div ref={ticketRef}>
+          <DigitalTicket event={event} ticket={ticket} order={order} />
+        </div>
 
         {/* Actions */}
         <div className={styles.actions}>
-          <button className={styles.downloadBtn} type="button">
+          <button className={styles.downloadBtn} type="button" onClick={handleDownload}>
             <Download size={18} />
             <span>Descargar Ticket</span>
           </button>

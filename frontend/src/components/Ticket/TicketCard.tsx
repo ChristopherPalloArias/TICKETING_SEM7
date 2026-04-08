@@ -1,6 +1,7 @@
+import { useRef } from 'react';
 import { Tag, Calendar, Download } from 'lucide-react';
 import type { MyTicketResponse } from '../../services/ticketService';
-import { downloadTicketPdf } from '../../services/ticketService';
+import { printElement } from '../../utils/printTicket';
 import { showToast } from '../../utils/toast';
 import styles from './TicketCard.module.css';
 
@@ -25,28 +26,20 @@ function formatTime(iso: string): string {
 }
 
 export default function TicketCard({ ticket }: TicketCardProps) {
+  const cardRef = useRef<HTMLElement>(null);
   const isValid = ticket.status === 'VALID';
 
-  async function handleDownloadPdf() {
-    try {
-      const blob = await downloadTicketPdf(ticket.ticketId);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `ticket-${ticket.ticketId}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      showToast('Ticket descargado', 'success');
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error al descargar ticket';
-      showToast(message, 'error');
+  function handleDownloadPdf() {
+    if (cardRef.current) {
+      printElement(cardRef.current, `Ticket — ${ticket.eventTitle}`);
+      showToast('Abriendo diálogo de impresión…', 'success');
+    } else {
+      showToast('No se pudo obtener el ticket', 'error');
     }
   }
 
   return (
-    <article className={styles.card}>
+    <article ref={cardRef} className={styles.card}>
       <div className={styles.cardHeader}>
         <h3 className={styles.eventTitle}>{ticket.eventTitle}</h3>
         <span className={`${styles.statusBadge} ${styles[`status${ticket.status}`]}`}>

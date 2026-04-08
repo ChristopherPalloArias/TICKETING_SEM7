@@ -99,6 +99,7 @@ function mergeNotifications(
 export function NotificationsProvider({ children }: { children: React.ReactNode }) {
   const { userId } = useAuth();
   const [localNotifications, setLocalNotifications] = useState<AppNotification[]>([]);
+  const [hiddenBackendIds, setHiddenBackendIds] = useState<Set<string>>(new Set());
   const [pollingEnabled, setPollingEnabled] = useState(true);
   const counterRef = useRef(0);
 
@@ -108,8 +109,9 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
   });
 
   const notifications = useMemo(
-    () => mergeNotifications(localNotifications, backendNotifications),
-    [localNotifications, backendNotifications],
+    () => mergeNotifications(localNotifications, backendNotifications)
+      .filter((n) => !hiddenBackendIds.has(n.id)),
+    [localNotifications, backendNotifications, hiddenBackendIds],
   );
 
   const addNotification = useCallback((type: NotificationType, eventTitle: string, reservationId?: string, eventId?: string) => {
@@ -141,12 +143,16 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
   const clearAll = useCallback(() => {
     const prevLocal = localNotifications;
+    // Immediately hide backend notifications in the UI
+    const currentBackendIds = new Set(backendNotifications.map((bn) => bn.id));
+    setHiddenBackendIds((prev) => new Set([...prev, ...currentBackendIds]));
     setLocalNotifications([]);
     archiveAllApi(userId ?? '').catch((err) => {
       console.error('[NotificationsContext] archiveAll failed, rolling back:', err);
       setLocalNotifications(prevLocal);
+      setHiddenBackendIds(new Set());
     });
-  }, [localNotifications, userId]);
+  }, [localNotifications, userId, backendNotifications]);
 
   const unreadCount = useMemo(() => {
     const backendKeys = new Set(
