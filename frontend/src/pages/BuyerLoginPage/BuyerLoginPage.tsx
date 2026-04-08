@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
+import logo from '../../assets/logo.png';
 import styles from './BuyerLoginPage.module.css';
 
 export default function BuyerLoginPage() {
@@ -13,6 +14,7 @@ export default function BuyerLoginPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
 
   if (isAuthenticated) {
@@ -43,6 +45,7 @@ export default function BuyerLoginPage() {
       <div className={styles.brandPanel} aria-hidden="true">
         <div className={styles.brandOverlay} />
         <div className={styles.brandContent}>
+          <img src={logo} alt="SEM7" className={styles.brandLogoImg} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
           <span className={styles.brandLogo}>SEM7</span>
           <p className={styles.brandTagline}>La experiencia de teatro<br />que esperabas.</p>
         </div>
@@ -69,6 +72,7 @@ export default function BuyerLoginPage() {
             <ArrowLeft size={18} />
             Volver
           </button>
+          <img src={logo} alt="SEM7" style={{ height: '40px', marginBottom: '24px' }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
           <h1 className={styles.title}>Iniciar Sesión</h1>
           <form className={styles.form} onSubmit={handleSubmit} noValidate>
             <div className={styles.field}>
@@ -86,16 +90,21 @@ export default function BuyerLoginPage() {
             </div>
             <div className={styles.field}>
               <label className={styles.label} htmlFor="password">Contraseña</label>
-              <input
-                id="password"
-                data-testid="login-password-input"
-                className={styles.input}
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-              />
+              <div className={styles.inputWrapper}>
+                <input
+                  id="password"
+                  data-testid="login-password-input"
+                  className={styles.input}
+                  type={showPass ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                />
+                <button type="button" className={styles.togglePass} onClick={() => setShowPass(!showPass)} aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
+                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
             {error && <p className={styles.error} id="login-error-msg">{error}</p>}
             <button id="login-submit-btn" data-testid="login-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
