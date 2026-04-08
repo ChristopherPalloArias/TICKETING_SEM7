@@ -13,20 +13,21 @@
   z-index: 10;
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #888;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #ffffff;
   border: none;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 8px 14px;
   cursor: pointer;
-  padding: 0;
-  transition: color 150ms ease;
+  transition: all 200ms ease;
 }
 
 .backBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
   color: #fff;
 }
 
@@ -62,6 +63,10 @@
   padding: 64px 56px;
   width: 100%;
   max-width: 500px;
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.8);
 }
 
@@ -75,9 +80,9 @@
 
 .cardLogo {
   display: block;
-  height: 72px;
+  height: 96px;
   width: auto;
-  margin: 0 auto 36px;
+  margin: 24px auto 40px;
 }
 
 .form {
