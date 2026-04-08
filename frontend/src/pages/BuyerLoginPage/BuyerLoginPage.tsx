@@ -120,49 +120,5 @@ export default function BuyerLoginPage() {
       </motion.div>
     </div>
   );
-          <form className={styles.form} onSubmit={handleSubmit} noValidate>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="email">Correo electrónico</label>
-              <input
-                id="email"
-                data-testid="login-email-input"
-                className={styles.input}
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="password">Contraseña</label>
-              <div className={styles.inputWrapper}>
-                <input
-                  id="password"
-                  data-testid="login-password-input"
-                  className={styles.input}
-                  type={showPass ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                />
-                <button type="button" className={styles.togglePass} onClick={() => setShowPass(!showPass)} aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
-                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-            {error && <p className={styles.error} id="login-error-msg">{error}</p>}
-            <button id="login-submit-btn" data-testid="login-submit-btn" className={styles.submitBtn} type="submit" disabled={isLoading}>
-              {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-            </button>
-          </form>
-          <p className={styles.footer}>
-            ¿No tienes cuenta?{' '}
-            <Link to="/registro" id="login-register-link" data-testid="login-register-link" className={styles.link}>Regístrate</Link>
-          </p>
-        </div>
-      </motion.div>
-    </div>
-  );
+
 }
