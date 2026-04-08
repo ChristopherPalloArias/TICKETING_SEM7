@@ -22,7 +22,8 @@
 /* Image wrapper — portrait aspect ratio */
 .imageWrapper {
   position: relative;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 4 / 5;
+  max-height: 260px;
   overflow: hidden;
   background-color: var(--color-surface-container);
 }
@@ -89,14 +90,14 @@
 
 /* Info section — below image */
 .info {
-  padding: 10px 12px 14px;
+  padding: 10px 4px 4px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
 .date {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -108,7 +109,7 @@
 }
 
 .title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: #fff;
   margin: 0;
