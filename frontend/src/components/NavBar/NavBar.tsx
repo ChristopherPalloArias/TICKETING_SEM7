@@ -34,6 +34,9 @@ export default function NavBar({ activeLink = 'eventos', isTransactional = false
   const { events } = useEvents();
   const navigate = useNavigate();
 
+  function openSearch() { setSearchQuery(''); setSearchOpen(true); }
+  function closeSearch() { setSearchOpen(false); setSearchQuery(''); }
+
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === 'Escape') closeSearch();
@@ -44,9 +47,6 @@ export default function NavBar({ activeLink = 'eventos', isTransactional = false
     }
     return () => document.removeEventListener('keydown', handleKey);
   }, [searchOpen]);
-
-  function openSearch() { setSearchQuery(''); setSearchOpen(true); }
-  function closeSearch() { setSearchOpen(false); setSearchQuery(''); }
 
   const searchResults = searchQuery.trim().length > 1
     ? events.filter(e => e.title.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 6)

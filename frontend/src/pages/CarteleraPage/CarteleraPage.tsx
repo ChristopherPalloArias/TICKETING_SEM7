@@ -24,7 +24,7 @@ export default function CarteleraPage() {
           <p>No te pierdas estos grandes eventos, ¡conoce cuáles están por llegar!</p>
         </div>
         <EventGrid
-          events={events as any}
+          events={events.map(toViewModel)}
           loading={loading}
           loadingMore={loadingMore}
           error={error}

@@ -44,7 +44,6 @@ apiClient.interceptors.response.use(
   (error) => {
     const status = error?.response?.status;
     if (status === 401) {
-      const role = sessionStorage.getItem(ROLE_KEY);
       sessionStorage.removeItem(TOKEN_KEY);
       sessionStorage.removeItem(ROLE_KEY);
       sessionStorage.removeItem('user_id');
