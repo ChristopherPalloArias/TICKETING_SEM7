@@ -29,8 +29,7 @@ describe('useAdminEvents', () => {
 
   it('loads events on mount', async () => {
     mockGetAllEvents.mockResolvedValue({
-      total: 1,
-      events: [{
+      content: [{
         id: 'e1',
         title: 'Show',
         description: 'Desc',
@@ -43,6 +42,10 @@ describe('useAdminEvents', () => {
         created_at: '2026-01-01T00:00:00',
         updated_at: '2026-01-01T00:00:00',
       }],
+      totalElements: 1,
+      totalPages: 1,
+      page: 0,
+      size: 10,
     });
 
     const { result } = renderHook(() => useAdminEvents());
