@@ -31,7 +31,7 @@
   opacity: 0.85;
 }
 
-.filterBar {
+.filters {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1.25rem;

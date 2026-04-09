@@ -7,11 +7,10 @@
   align-items: stretch;
   overflow: hidden;
   box-sizing: border-box;
-  /* Compensa NavBar fijo */
   padding-top: var(--navbar-height);
 }
 
-/* Fondo desenfocado desde la imagen del evento activo */
+/* Fondo desenfocado */
 .bgBlur {
   position: absolute;
   inset: 0;
@@ -41,7 +40,8 @@
   align-items: center;
   justify-content: center;
   padding: 100px 80px;
-  gap: 80px;
+  overflow: hidden;
+  gap: clamp(24px, 5vw, 80px);
 }
 
 /* ── Columna izquierda ─────────────────────────────────── */
@@ -50,9 +50,12 @@
   flex-direction: column;
   justify-content: center;
   gap: 20px;
-  max-width: 400px;
-  flex-shrink: 0;
-  min-width: 0;
+
+  flex: 1;
+  max-width: 520px;
+  min-width: 280px;
+
+  min-width: 0; /* 🔥 clave para evitar overflow en flex */
 }
 
 .tag {
@@ -69,15 +72,23 @@
   border-radius: 9999px;
 }
 
+/* 🔥 TÍTULO OPTIMIZADO */
 .title {
-  font-size: clamp(3rem, 6vw, 5rem);
+  font-size: clamp(1.5rem, 2.6vw, 2.8rem);
   font-weight: 900;
-  line-height: 1.05;
+  line-height: 1.12;
   color: #ffffff;
   letter-spacing: -0.02em;
   margin: 0;
-  word-break: break-word;
+
+  word-break: normal;
   overflow-wrap: break-word;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .metaList {
@@ -194,9 +205,8 @@
   flex-shrink: 0;
 }
 
-/* Poster central */
 .posterMain {
-  width: 580px;
+  width: clamp(280px, 35vw, 580px);
   height: 75vh;
   max-height: 720px;
   flex-shrink: 0;
@@ -217,7 +227,7 @@
   display: block;
 }
 
-/* Pósters asomando */
+/* Pósters secundarios */
 .posterPeek {
   display: flex;
   gap: 0.75rem;
@@ -255,7 +265,7 @@
   display: block;
 }
 
-/* Flechas de navegación */
+/* Flechas */
 .arrow {
   position: absolute;
   top: 50%;
@@ -279,13 +289,8 @@
   border-color: #FF6B47;
 }
 
-.arrowLeft {
-  left: -1.5rem;
-}
-
-.arrowRight {
-  right: -1.5rem;
-}
+.arrowLeft { left: -1.5rem; }
+.arrowRight { right: -1.5rem; }
 
 /* Scroll indicator */
 .scrollIndicator {
@@ -305,10 +310,10 @@
   pointer-events: none;
 }
 
-/* ── Responsive ────────────────────────────────────────── */
+/* Responsive */
 @media (max-width: 1024px) {
   .inner {
-    padding: 2rem 2rem;
+    padding: 2rem;
     gap: 2rem;
   }
 
@@ -342,7 +347,6 @@
 
   .leftCol {
     max-width: 100%;
-    flex-shrink: 1;
     width: 100%;
   }
 

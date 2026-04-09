@@ -96,8 +96,11 @@ export interface AdminEventResponse {
 }
 
 export interface AdminEventsListResponse {
-  total: number;
-  events: AdminEventResponse[];
+  content: AdminEventResponse[];
+  totalElements: number;
+  totalPages: number;
+  page: number;
+  size: number;
 }
 
 export interface EventCreateFormData {

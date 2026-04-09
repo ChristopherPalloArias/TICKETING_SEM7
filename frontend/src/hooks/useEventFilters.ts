@@ -27,7 +27,7 @@ function getDateRange(filter: DateFilterOption): { from: Date; to: Date } | null
   return { from: now, to };
 }
 
-function toViewModel(event: EventResponse): EventViewModel {
+export function toViewModel(event: EventResponse): EventViewModel {
   const displayStatus = event.availableTiers.some((t) => t.isAvailable)
     ? 'DISPONIBLE'
     : 'AGOTADO';

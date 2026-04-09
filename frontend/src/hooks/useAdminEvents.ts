@@ -28,7 +28,7 @@ export function useAdminEvents(): UseAdminEventsResult {
         setError(null);
         const data = await getAllEvents();
         if (!cancelled) {
-          setEvents(data.events);
+          setEvents(data.content ?? []);
         }
       } catch {
         if (!cancelled) {

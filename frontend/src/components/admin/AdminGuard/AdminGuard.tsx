@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 
 function isTokenExpired(token: string): boolean {
@@ -12,10 +12,11 @@ function isTokenExpired(token: string): boolean {
 }
 
 export default function AdminGuard() {
-  const { isAuthenticated, token } = useAuth();
+  const { isAuthenticated, token, role } = useAuth();
+  const location = useLocation();
 
-  if (!isAuthenticated || !token || isTokenExpired(token)) {
-    return <Navigate to="/login" replace />;
+  if (!isAuthenticated || !token || isTokenExpired(token) || role !== 'ADMIN') {
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
   return <Outlet />;

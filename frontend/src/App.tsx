@@ -46,6 +46,9 @@ function AppRoutes() {
         <Route path="/registro" element={<BuyerRegisterPage />} />
         <Route path="/" element={<Navigate to="/eventos" replace />} />
 
+        {/* Alias /admin/login → /login para evitar pantalla negra */}
+        <Route path="/admin/login" element={<Navigate to="/login" replace />} />
+
         {/* Rutas admin — protegidas */}
         <Route path="/admin" element={<AdminGuard />}>
           <Route element={<AdminLayout />}>

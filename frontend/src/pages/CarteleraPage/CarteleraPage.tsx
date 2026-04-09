@@ -3,6 +3,7 @@ import BottomNav from '../../components/NavBar/BottomNav';
 import EventGrid from '../../components/EventGrid/EventGrid';
 import HeroCarousel from '../../components/HeroCarousel/HeroCarousel';
 import { useEvents } from '../../hooks/useEvents';
+import { toViewModel } from '../../hooks/useEventFilters';
 import styles from './CarteleraPage.module.css';
 
 export default function CarteleraPage() {
@@ -14,7 +15,7 @@ export default function CarteleraPage() {
 
       {/* HeroCarousel: todos los eventos, edge-to-edge */}
       {!loading && events.length > 0 && (
-        <HeroCarousel events={events as any} />
+        <HeroCarousel events={events.map(toViewModel)} />
       )}
 
       <main className={styles.main}>
