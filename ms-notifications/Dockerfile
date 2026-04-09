@@ -7,7 +7,7 @@ COPY ms-notifications/gradlew* ./
 COPY ms-notifications/build.gradle ms-notifications/
 COPY ms-notifications/settings.gradle ms-notifications/
 
-RUN chmod +x ./gradlew
+RUN sed -i 's/\r$//' ./gradlew && chmod +x ./gradlew
 
 RUN ./gradlew dependencies -p ms-notifications --no-daemon 2>&1 | head -20
 

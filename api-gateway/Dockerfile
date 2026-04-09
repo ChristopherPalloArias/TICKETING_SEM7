@@ -5,7 +5,7 @@ COPY api-gateway/gradle/ gradle/
 COPY api-gateway/gradlew* ./
 COPY api-gateway/build.gradle api-gateway/
 COPY api-gateway/settings.gradle api-gateway/
-RUN chmod +x ./gradlew
+RUN sed -i 's/\r$//' ./gradlew && chmod +x ./gradlew
 RUN ./gradlew dependencies -p api-gateway --no-daemon 2>&1 | head -20
 COPY api-gateway/src/ api-gateway/src/
 RUN ./gradlew bootJar -p api-gateway --no-daemon -x test

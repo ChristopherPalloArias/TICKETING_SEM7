@@ -7,7 +7,7 @@ COPY ms-events/gradlew* ./
 COPY ms-events/build.gradle ms-events/
 COPY ms-events/settings.gradle ms-events/
 
-RUN chmod +x ./gradlew
+RUN sed -i 's/\r$//' ./gradlew && chmod +x ./gradlew
 
 RUN ./gradlew dependencies -p ms-events --no-daemon 2>&1 | head -20
 

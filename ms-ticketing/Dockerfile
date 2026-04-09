@@ -7,7 +7,7 @@ COPY ms-ticketing/gradlew* ./
 COPY ms-ticketing/build.gradle ms-ticketing/
 COPY ms-ticketing/settings.gradle ms-ticketing/
 
-RUN chmod +x ./gradlew
+RUN sed -i 's/\r$//' ./gradlew && chmod +x ./gradlew
 
 RUN ./gradlew dependencies -p ms-ticketing --no-daemon 2>&1 | head -20
 
