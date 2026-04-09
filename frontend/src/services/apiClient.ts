@@ -44,6 +44,8 @@ apiClient.interceptors.response.use(
   (error) => {
     const status = error?.response?.status;
     if (status === 401) {
+      const role = sessionStorage.getItem(ROLE_KEY);
+      const redirectPath = role === 'ADMIN' ? '/admin/login' : '/login';
       sessionStorage.removeItem(TOKEN_KEY);
       sessionStorage.removeItem(ROLE_KEY);
       sessionStorage.removeItem('user_id');
@@ -53,7 +55,7 @@ apiClient.interceptors.response.use(
           detail: { message: 'Tu sesión ha expirado', type: 'error', id: Date.now() },
         }),
       );
-      window.location.replace('/login');
+      window.location.replace(redirectPath);
     } else if (status === 403) {
       window.dispatchEvent(
         new CustomEvent('app:toast', {

@@ -15,6 +15,8 @@ vi.mock('lucide-react', () => {
     ShoppingCart: stub('ShoppingCart'),
     Timer: stub('Timer'),
     LogOut: stub('LogOut'),
+    Search: stub('Search'),
+    X: stub('X'),
   };
 });
 

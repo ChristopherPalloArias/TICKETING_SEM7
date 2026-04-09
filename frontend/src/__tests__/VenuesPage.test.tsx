@@ -5,6 +5,9 @@ import VenuesPage from '../pages/VenuesPage/VenuesPage';
 
 vi.mock('../services/venueService');
 vi.mock('../services/eventService');
+vi.mock('../hooks/useEvents', () => ({
+  useEvents: () => ({ events: [], loading: false, loadingMore: false, error: null, hasMore: false, loadMore: vi.fn() }),
+}));
 vi.mock('../contexts/NotificationsContext', () => ({
   useNotifications: () => ({
     notifications: [],

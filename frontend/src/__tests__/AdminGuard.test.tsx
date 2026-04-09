@@ -67,7 +67,7 @@ describe('AdminGuard', () => {
   it('renderiza Outlet si autenticado con token válido no expirado', () => {
     // GIVEN: usuario autenticado con token que expira en 1 hora
     const validToken = makeJWT(3600);
-    renderGuard({ isAuthenticated: true, token: validToken });
+    renderGuard({ isAuthenticated: true, token: validToken, role: 'ADMIN' });
 
     // THEN: renderiza el Outlet con el contenido protegido
     expect(screen.getByTestId('protected')).toBeInTheDocument();
@@ -79,7 +79,7 @@ describe('AdminGuard', () => {
   it('AdminGuard_withValidNonExpiredToken_rendersChildren — token JWT válido y no expirado renderiza los hijos', () => {
     // GIVEN: token que expira dentro de 1 hora
     const validToken = makeJWT(3600);
-    renderGuard({ isAuthenticated: true, token: validToken });
+    renderGuard({ isAuthenticated: true, token: validToken, role: 'ADMIN' });
 
     // THEN: se muestra el contenido protegido
     expect(screen.getByTestId('protected')).toBeInTheDocument();

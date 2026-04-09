@@ -3,6 +3,20 @@ import { render, screen } from '@testing-library/react';
 import CheckoutScreen from '../pages/EventDetail/screens/CheckoutScreen';
 import type { EventResponse, TierResponse } from '../types/event.types';
 
+vi.mock('../hooks/useAuth', () => ({
+  useAuth: () => ({
+    token: null,
+    role: null,
+    userId: null,
+    email: null,
+    isAuthenticated: false,
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
+    registerBuyer: vi.fn(),
+  }),
+}));
+
 vi.mock('lucide-react', () => ({
   ChevronLeft: () => <span data-testid="icon-chevron" />,
   Ticket: () => <span data-testid="icon-ticket" />,

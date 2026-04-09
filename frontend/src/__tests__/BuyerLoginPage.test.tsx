@@ -4,6 +4,13 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import BuyerLoginPage from '../pages/BuyerLoginPage/BuyerLoginPage';
 
+vi.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div {...props}>{children}</div>,
+  },
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 vi.mock('../hooks/useAuth');
 
 import { useAuth } from '../hooks/useAuth';
@@ -44,7 +51,7 @@ describe('BuyerLoginPage (SPEC-021)', () => {
     renderPage(login);
 
     await user.type(screen.getByLabelText(/correo electrónico/i), 'buyer@test.com');
-    await user.type(screen.getByLabelText(/contraseña/i), 'Password1');
+    await user.type(screen.getByLabelText(/^contraseña$/i), 'Password1');
     await user.click(screen.getByRole('button', { name: /iniciar sesión/i }));
 
     await waitFor(() => {
